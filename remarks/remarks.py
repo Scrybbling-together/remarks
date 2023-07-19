@@ -166,6 +166,15 @@ def process_document(
         f = metadata_path.with_name(f"{metadata_path.stem}.pdf")
         pdf_src = fitz.open(f)
 
+        blank_page_dims = (pdf_src[0].rect.width, pdf_src[0].rect.height)
+        for i, page_idx in enumerate(pages_map):
+            if page_idx == -1:
+                pdf_src.new_page(
+                    width=blank_page_dims[0],
+                    height=blank_page_dims[1],
+                    pno=i,
+                )
+
     # Thanks to @apoorvkh
     # - https://github.com/lucasrla/remarks/issues/11#issuecomment-1287175782
     # - https://github.com/apoorvkh/remarks/blob/64dd3b586b96195b00e727fc1f1e537b90d841dc/remarks/remarks.py#L16-L38
@@ -410,6 +419,7 @@ def process_document(
         work_doc.close()
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
+    pathlib.Path(out_path.parent).mkdir(parents=True, exist_ok=True)
     # print("out_doc_path_str:", out_doc_path_str)
 
     if combined_pdf:

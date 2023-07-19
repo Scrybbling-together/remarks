@@ -63,10 +63,15 @@ def get_ui_path(path):
 
 def get_pages_data(path):
     content = read_meta_file(path, suffix=".content")
-    if "redirectionPageMap" in content:
-        return content["pages"], content["redirectionPageMap"]
+    redirection_map = list()
+    for i, page in enumerate(content["cPages"]["pages"]):
+        if "redir" in page.keys():
+            redirection_map.append(page["redir"]["value"])
+        else:
+            redirection_map.append(-1)
+    
     if "cPages" in content:
-        return [page["id"] for page in content["cPages"]["pages"] if not page.get("deleted", {"value": 0})["value"] == 1], []
+        return [page["id"] for page in content["cPages"]["pages"] if not page.get("deleted", {"value": 0})["value"] == 1], redirection_map
     return content["pages"], []
 
 
