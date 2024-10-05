@@ -7,6 +7,8 @@ class LengthUnit(Enum):
     rmpts = "ReMarkable points"
     mupts = "PyMuPDF points"
     mm = "Millimeter"
+    # in Typography, a point is 1/72th of an inch
+    pt = "Typographic point"
 
 
 @dataclass
@@ -43,6 +45,15 @@ class PaperDimensions(Dimensions):
 
 
 @dataclass
+class TypographicDimensions(Dimensions):
+    """Dimensions in pts for Typography, useful to specify standardized sizes like PDFs"""
+    unit: LengthUnit = LengthUnit.mm
+
+    def to_mu(self):
+        return PyMuPDFDimensions(int(self.width * (210 / 595)), int(self.height * (210 / 595)))
+
+
+@dataclass
 class PyMuPDFDimensions(Dimensions):
     """The internal values used in PyMuPdf to specify a pdf size"""
     unit: LengthUnit = LengthUnit.mupts
@@ -58,3 +69,5 @@ a4_dimensions = PaperDimensions(width=210, height=297)
 REMARKABLE_PHYSICAL_SCREEN = PaperDimensions(width=188, height=246)
 REMARKABLE_DOCUMENT = ReMarkableDimensions(width=1404, height=1872)
 mu_a4 = PyMuPDFDimensions(width=595, height=842)
+
+REMARKABLE_PDF_EXPORT = TypographicDimensions(width=445, height=594)

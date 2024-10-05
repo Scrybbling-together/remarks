@@ -25,7 +25,7 @@ from .conversion.text import (
     extract_groups_from_smart_hl,
     prepare_md_from_hl_groups,
 )
-from .dimensions import REMARKABLE_DOCUMENT
+from .dimensions import REMARKABLE_DOCUMENT, REMARKABLE_PDF_EXPORT
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .utils import (
     is_document,
@@ -153,19 +153,19 @@ def process_document(
         # Get document page dimensions and calculate what scale should be
         # applied to fit it into the device (given the device's own dimensions)
         if rm_annotation_file:
-            try:
-                dims = determine_document_dimensions(rm_annotation_file)
-            except ValueError:
-                dims = REMARKABLE_DOCUMENT
+            # try:
+            #     dims = determine_document_dimensions(rm_annotation_file)
+            # except ValueError:
+            dims = REMARKABLE_PDF_EXPORT
         else:
-            dims = REMARKABLE_DOCUMENT
+            dims = REMARKABLE_PDF_EXPORT
         ann_page = work_doc.new_page(
             width=dims.width,
             height=dims.height,
         )
 
         pdf_src_page_rect = fitz.Rect(
-            0, 0, REMARKABLE_DOCUMENT.width, REMARKABLE_DOCUMENT.height
+            0, 0, REMARKABLE_PDF_EXPORT.width, REMARKABLE_PDF_EXPORT.height
         )
 
         # This check is necessary because PyMuPDF doesn't let us
