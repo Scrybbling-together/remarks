@@ -36,14 +36,6 @@ from .utils import (
 )
 
 
-# TODO: add support to `.textconversion/*.json` files, that's an easy way to
-# start offering some support to handwriting conversion...
-#
-# See also:
-# - https://github.com/lucasrla/remarks/issues/13
-# - https://github.com/lucasrla/remarks/issues/11
-
-
 def run_remarks(
     input_dir, output_dir, file_name=None, file_uuid=None, file_path=None, **kwargs
 ):
@@ -102,7 +94,6 @@ A4 has a size of 210x297mm.
 """
 
 
-# TODO: review args
 def process_document(
     metadata_path,
     out_path,
@@ -201,40 +192,19 @@ def process_document(
                 "- Found highlighted text on page #{page_idx} but `--ann_type` flag is set to `scribbles` only, so we won't bother with it"
             )
 
-        is_ocred = False
         if ann_data:
             if "text" in ann_data:
                 obsidian_markdown.add_text(page_idx, ann_data['text'])
             if "highlights" in ann_data:
                 obsidian_markdown.add_highlights(page_idx, ann_data["highlights"])
 
-        # This is for highlights that reMarkable's own "smart" detection misses
-        # Most likely, they're highlights on scanned / image-based PDF, so in
-        # order to extract any text from it, we need to run the PDF through OCR
-        #
-        # TODO: isn't it faster to run ocr through the whole PDF document at
-        # once? (as opposed to doing it per page)
-        if (
-            document.doc_type == "pdf"
-            and "highlights" in ann_type
-            and has_ann_hl
-            and not is_text_extractable
-            and is_executable_available("ocrmypdf")
-            and not avoid_ocr
-        ):
-            logging.warning("- Will run OCRmyPDF on this document. Hold on!")
-            work_doc, ann_page = process_ocr(work_doc)
-            is_ocred = True
-
         if has_annotations:
             ann_page = draw_annotations_on_pdf(ann_data, ann_page)
-
-        # TODO: add ability to extract highlighted images / tables (via pixmaps)?
 
         if (
             "highlights" in ann_type
             and has_ann_hl
-            and (is_text_extractable or is_ocred)
+            and is_text_extractable
         ):
             pass
         elif "highlights" in ann_type and has_ann_hl and document.doc_type == "pdf":
@@ -259,9 +229,8 @@ def process_document(
             pages_order.append(page_idx)
 
         # If there are annotations outside the original page limits
-        # or if the PDF has been OCRed by us, insert the annotated page
         # that we've just (re)created from scratch
-        if combined_pdf and (is_ann_out_page or is_ocred):
+        if combined_pdf and is_ann_out_page:
             pdf_src.insert_pdf(work_doc, start_at=page_idx)
             pdf_src.delete_page(page_idx + 1)
 
@@ -306,27 +275,3 @@ def process_document(
     obsidian_markdown.save(out_doc_path_str)
 
     pdf_src.close()
-
-
-def process_ocr(work_doc):
-    tmp_fname = "_tmp.pdf"
-    work_doc.save(tmp_fname)
-
-    # Note that OCRmyPDF does not recognize handwriting (as of Oct 2022)
-    # https://github.com/ocrmypdf/OCRmyPDF/blob/7bd0e43243a05e56a92d6b00fcaa3c826fb3cccd/docs/introduction.rst#L152
-    # "- It is not capable of recognizing handwriting."
-    tmp_fname = run_ocr(tmp_fname)
-
-    tmp_doc = fitz.open(tmp_fname)
-
-    # Insert the brand new OCRed page as the first one (index=0)
-    work_doc.insert_pdf(tmp_doc, start_at=0)
-    # Delete the non-OCRed page, now in the second position (index=1)
-    work_doc.delete_page(1)
-    # Update ann_page reference to the OCRed page
-    ann_page = work_doc[0]
-
-    tmp_doc.close()
-    pathlib.Path(tmp_fname).unlink()
-
-    return work_doc, ann_page
