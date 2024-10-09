@@ -38,6 +38,7 @@ pkgs.mkShell {
     pkgs.zlib
     pkgs.gnumake
     pkgs.libgcc.lib
+    pkgs.inotify-tools.out
   ];
 
   shellHook = builtins.readFile "${shellHookChecked}/shellhook.sh";
