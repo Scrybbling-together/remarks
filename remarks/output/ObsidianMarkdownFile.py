@@ -28,7 +28,9 @@ class ObsidianMarkdownFile:
         if len(frontmatter) > 0:
             frontmatter_md = f"""---
 {yaml.dump(frontmatter, indent=2)}
----"""
+---
+
+"""
             self.content += frontmatter_md
 
         self.content += f"""# {self.document.name}

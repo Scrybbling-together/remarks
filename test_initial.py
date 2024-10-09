@@ -1,3 +1,4 @@
+import re
 import os
 import tempfile
 import pytest
@@ -111,13 +112,17 @@ def test_generated_markdown_has_autogeneration_warning():
     with open("tests/out/docsfordevelopers _obsidian.md") as f:
         assert autogeneration_warning in f.read()
 
+@with_remarks("tests/in/v3_markdown_tags")
 @with_remarks("tests/in/highlighter-test")
 @pytest.mark.markdown
-def test_generated_markdown_starts_with_content():
-    remarks.run_remarks("tests/in/highlighter-test", "tests/out", **default_args)
-
+def test_generated_markdown_heading_is_positioned_correctly():
     with open("tests/out/docsfordevelopers _obsidian.md") as f:
         assert f.readline()[0] == "#"
+    with open("tests/out/tags test _obsidian.md") as f:
+        content = f.read()
+        # Make sure that the title is on its own line
+        match = re.search(r"^# tags test$", content, re.MULTILINE)
+        assert match, "Title '# tags test' not found on its own line in the file"
 
 @with_remarks("tests/in/v3_markdown_tags")
 @pytest.mark.markdown
