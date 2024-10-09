@@ -92,12 +92,12 @@ def test_generated_markdown_has_autogeneration_warning():
     with open("tests/out/docsfordevelopers _obsidian.md") as f:
         assert autogeneration_warning in f.read()
 
-# @pytest.mark.markdown
-# def test_generated_markdown_starts_with_content():
-#     remarks.run_remarks("tests/in/highlighter-test", "tests/out", **default_args)
-#
-#     with open("tests/out/docsfordevelopers _obsidian.md") as f:
-#         assert f.readline()[0] == "#"
+@pytest.mark.markdown
+def test_generated_markdown_starts_with_content():
+    remarks.run_remarks("tests/in/highlighter-test", "tests/out", **default_args)
+
+    with open("tests/out/docsfordevelopers _obsidian.md") as f:
+        assert f.readline()[0] == "#"
 
 @pytest.mark.markdown
 def test_yaml_frontmatter_is_valid():
