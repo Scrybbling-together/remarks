@@ -189,6 +189,8 @@ def process_document(
 
         is_ann_out_page = False
 
+
+
         scale = 1
         if "scribbles" in ann_type and has_annotations:
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
@@ -196,7 +198,6 @@ def process_document(
             offset_x = 0
             offset_y = 0
             is_ann_out_page = True
-            obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document)
             if version == "V6":
                 offset_x = RM_WIDTH / 2
             if dims.height >= (RM_HEIGHT + 88 * 3):
@@ -213,6 +214,11 @@ def process_document(
             )
 
         is_ocred = False
+        if ann_data:
+            if "text" in ann_data:
+                obsidian_markdown.add_text(page_idx, ann_data['text'])
+            if "highlights" in ann_data:
+                obsidian_markdown.add_highlights(page_idx, ann_data["highlights"])
 
         # This is for highlights that reMarkable's own "smart" detection misses
         # Most likely, they're highlights on scanned / image-based PDF, so in
@@ -234,6 +240,7 @@ def process_document(
 
         if has_annotations:
             ann_page = draw_annotations_on_pdf(ann_data, ann_page)
+            # self, page_idx: int, highlights: List[GlyphRange], doc: Document
 
         # TODO: add ability to extract highlighted images / tables (via pixmaps)?
 
@@ -269,34 +276,9 @@ def process_document(
 
         if per_page_targets and (has_annotations or has_smart_highlights):
             out_path.mkdir(parents=True, exist_ok=True)
-
             if "pdf" in per_page_targets:
                 subdir = prepare_subdir(out_path, "pdf")
                 work_doc.save(f"{subdir}/{page_idx:0{pages_magnitude}}.pdf")
-
-            if "png" in per_page_targets:
-                # (2, 2) is a short-hand for 2x zoom on (x, y)
-                # https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_pixmap
-                ann_pixmap = ann_page.get_pixmap(matrix=fitz.Matrix(2, 2))
-
-                subdir = prepare_subdir(out_path, "png")
-                ann_pixmap.save(f"{subdir}/{page_idx:0{pages_magnitude}}.png")
-
-            if "svg" in per_page_targets:
-                # (2, 2) is a short-hand for 2x zoom on (x, y)
-                # https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_svg_image
-                ann_svg_str = ann_page.get_svg_image(
-                    matrix=fitz.Matrix(2, 2), text_as_path=False
-                )
-
-                subdir = prepare_subdir(out_path, "svg")
-                with open(f"{subdir}/{page_idx:0}.svg", "w") as f:
-                    f.write(ann_svg_str)
-
-            if "md" in per_page_targets:
-                subdir = prepare_subdir(out_path, "md")
-                with open(f"{subdir}/{page_idx:0{pages_magnitude}}.md", "w") as f:
-                    f.write(hl_text)
 
         if modified_pdf and (has_annotations or has_smart_highlights):
             mod_pdf.insert_pdf(work_doc, start_at=-1)
