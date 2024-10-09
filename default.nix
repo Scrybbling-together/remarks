@@ -38,6 +38,7 @@ in
 pkgs.mkShell {
   buildInputs = [
     pythonEnv
+    pkgs.poetry
     pkgs.zlib
     pkgs.gnumake
     pkgs.libgcc.lib
