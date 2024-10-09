@@ -16,7 +16,7 @@ from .conversion.ocrmypdf import (
 from .conversion.parsing import (
     parse_rm_file,
     rescale_parsed_data,
-    get_ann_max_bound,
+    get_ann_max_bound, determine_document_dimensions,
 )
 from .conversion.text import (
     check_if_text_extractable,
@@ -143,10 +143,10 @@ def process_document(
         # Get document page dimensions and calculate what scale should be
         # applied to fit it into the device (given the device's own dimensions)
         if rm_annotation_file:
-            # try:
-            #     dims = determine_document_dimensions(rm_annotation_file)
-            # except ValueError:
-            dims = REMARKABLE_PDF_EXPORT
+            try:
+                dims = determine_document_dimensions(rm_annotation_file)
+            except ValueError:
+                dims = REMARKABLE_PDF_EXPORT
         else:
             dims = REMARKABLE_PDF_EXPORT
         ann_page = work_doc.new_page(

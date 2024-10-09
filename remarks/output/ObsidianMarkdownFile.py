@@ -1,5 +1,4 @@
-import re
-from typing import List
+from typing import List, Dict
 
 import yaml
 from rmscene.scene_items import GlyphRange
@@ -14,6 +13,7 @@ class RMPage:
 
 class ObsidianMarkdownFile:
     def __init__(self, document: Document):
+        self.pages: Dict[int, RMPage] = {}
         self.content = ""
         self.page_content = {}
         self.document = document
@@ -97,11 +97,26 @@ class ObsidianMarkdownFile:
             self.page_content[page_idx] = highlight_content
 
     def add_text(self, page_idx: int, text):
-        page_idx += 1
         if not text:
             return
+        if page_idx not in self.pages:
+            page = RMPage(page_idx)
+            self.pages[page_idx] = page
+        else:
+            page = self.pages[page_idx]
+
+        print(text.keys())
 
         for paragraph in text['text'].contents:
-            self.page_content[page_idx] += f"""
-{paragraph}
-"""
+            print(paragraph)
+        # page.add_user_written_paragraph(text)
+        # page.highlights.append(GlyphRange(text))
+
+#         page_idx += 1
+#         if not text:
+#             return
+#
+#         for paragraph in text['text'].contents:
+#             self.page_content[page_idx] += f"""
+# {paragraph}
+# """
