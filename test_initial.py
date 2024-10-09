@@ -7,7 +7,6 @@ import functools
 
 def run_once(func):
     """Decorator to run a function only once."""
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if not wrapper.has_run:
@@ -19,7 +18,6 @@ def run_once(func):
 
 def with_remarks(input_name):
     """Decorator to run remarks for a specific input directory."""
-
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -30,11 +28,8 @@ def with_remarks(input_name):
             if not getattr(with_remarks, f"run_{input_name}", False):
                 remarks.run_remarks(input_dir, output_dir, **default_args)
                 setattr(with_remarks, f"run_{input_name}", True)
-
             return func(*args, **kwargs)
-
         return wrapper
-
     return decorator
 
 class JPEGImageExtension(SingleFileSnapshotExtension):
@@ -60,7 +55,6 @@ default_args = {
     "avoid_ocr": False,
 }
 
-
 def snapshot_test_pdf(filename: str, snapshot):
     """Snapshots a pdf by converting all pages to jpeg images and collecting their hashes.
     Makes a snapshot for each page"""
@@ -76,17 +70,17 @@ def snapshot_test_pdf(filename: str, snapshot):
                 assert f.read() == snapshot(name=name)
 
 
+@with_remarks("tests/in/pdf_with_multiple_added_pages")
 def test_pdf_with_inserted_pages(snapshot):
-    remarks.run_remarks(
-        "tests/in/pdf_with_multiple_added_pages", "tests/out", **default_args
-    )
     snapshot_test_pdf("pdf_longer _remarks.pdf", snapshot)
 
+
+@with_remarks("tests/in/highlighter-test")
 def test_pdf_with_glyphrange_highlights(snapshot):
-    remarks.run_remarks("tests/in/highlighter-test", "tests/out", **default_args)
     snapshot_test_pdf("docsfordevelopers _remarks.pdf", snapshot)
 
 
+@with_remarks("demo/on-computable-numbers/xochitl")
 def test_can_process_demo_with_default_args():
     remarks.run_remarks(
         "demo/on-computable-numbers/xochitl", "tests/out", **default_args
@@ -100,15 +94,12 @@ def test_can_process_demo_with_default_args():
     )
 
 
+@with_remarks("tests/in/v2_notebook_complex")
 def test_can_handle_drawing_with_many_scribbles():
-    remarks.run_remarks("tests/in/v2_notebook_complex", "tests/out", **default_args)
-
     assert os.path.isfile("tests/out/Gosper _remarks.pdf")
 
-
+@with_remarks("tests/in/v2_book_with_ann")
 def test_can_handle_book():
-    remarks.run_remarks("tests/in/v2_book_with_ann", "tests/out", **default_args)
-
     assert os.path.isfile("tests/out/Gosper _remarks.pdf")
 
 @with_remarks("tests/in/highlighter-test")
@@ -128,9 +119,9 @@ def test_generated_markdown_starts_with_content():
     with open("tests/out/docsfordevelopers _obsidian.md") as f:
         assert f.readline()[0] == "#"
 
+@with_remarks("tests/in/v3_markdown_tags")
 @pytest.mark.markdown
 def test_yaml_frontmatter_is_valid():
-    remarks.run_remarks("tests/in/v3_markdown_tags", "tests/out", **default_args)
     with open('tests/out/tags test _obsidian.md') as f:
         content = f.read()
         assert content.startswith("---")
