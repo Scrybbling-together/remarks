@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+echo "Running pytest before commit..."
+
+# Run pytest
+nix-shell --run "pytest"
+
+# Check the exit status of pytest
+if [ $? -ne 0 ]; then
+    echo "pytest failed. Aborting commit."
+    exit 1
+fi
+
+echo "pytest passed. Proceeding with commit."
+exit 0
