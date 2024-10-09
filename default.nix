@@ -11,6 +11,9 @@ let
       pkgs.zlib
     ]}:$LD_LIBRARY_PATH"
 
+    echo "Setting up Git hooks"
+    git config core.hooksPath .githooks
+
     if ! [[ -d .venv ]]; then
       ${pythonEnv}/bin/python -m venv .venv
       # shellcheck disable=SC1091
