@@ -334,6 +334,8 @@ def process_document(
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
 
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
     if combined_pdf:
         pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
 
