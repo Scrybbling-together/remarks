@@ -1,3 +1,4 @@
+import os
 import logging
 import pathlib
 import sys
@@ -333,6 +334,8 @@ def process_document(
         work_doc.close()
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
 
     if combined_pdf:
         pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
