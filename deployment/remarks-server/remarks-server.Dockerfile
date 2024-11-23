@@ -1,4 +1,4 @@
-FROM laauurraaa/remarks-bin:0.3.16
+FROM laauurraaa/remarks-bin:latest
 
 COPY server.py /app/server.py
 RUN ["/root/.local/bin/poetry", "run", "pip", "install", "flask"]
