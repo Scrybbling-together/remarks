@@ -16,16 +16,13 @@ from .conversion.ocrmypdf import (
 from .conversion.parsing import (
     parse_rm_file,
     rescale_parsed_data,
-    get_ann_max_bound,
-    determine_document_dimensions,
+    get_ann_max_bound, determine_document_dimensions,
 )
 from .conversion.text import (
     check_if_text_extractable,
-    extract_groups_from_pdf_ann_hl,
     extract_groups_from_smart_hl,
-    prepare_md_from_hl_groups,
 )
-from .dimensions import REMARKABLE_DOCUMENT
+from .dimensions import REMARKABLE_PDF_EXPORT
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .utils import (
     is_document,
@@ -113,20 +110,13 @@ def process_document(
     ann_type=None,
     combined_pdf=False,
     modified_pdf=False,
-    combined_md=False,
     assume_malformed_pdfs=False,
     avoid_ocr=False,
-    md_hl_format="whole_block",
-    md_page_offset=0,
-    md_header_format="atx",
 ):
     document = Document(metadata_path)
     pdf_src = document.open_source_pdf()
 
     pages_magnitude = document.pages_magnitude()
-
-    if combined_md:
-        combined_md_strs = []
 
     if modified_pdf:
         mod_pdf = fitz.open()
@@ -156,16 +146,16 @@ def process_document(
             try:
                 dims = determine_document_dimensions(rm_annotation_file)
             except ValueError:
-                dims = REMARKABLE_DOCUMENT
+                dims = REMARKABLE_PDF_EXPORT
         else:
-            dims = REMARKABLE_DOCUMENT
+            dims = REMARKABLE_PDF_EXPORT
         ann_page = work_doc.new_page(
             width=dims.width,
             height=dims.height,
         )
 
         pdf_src_page_rect = fitz.Rect(
-            0, 0, REMARKABLE_DOCUMENT.width, REMARKABLE_DOCUMENT.height
+            0, 0, REMARKABLE_PDF_EXPORT.width, REMARKABLE_PDF_EXPORT.height
         )
 
         # This check is necessary because PyMuPDF doesn't let us
@@ -196,7 +186,6 @@ def process_document(
             offset_x = 0
             offset_y = 0
             is_ann_out_page = True
-            obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document)
             if version == "V6":
                 offset_x = RM_WIDTH / 2
             if dims.height >= (RM_HEIGHT + 88 * 3):
@@ -213,6 +202,11 @@ def process_document(
             )
 
         is_ocred = False
+        if ann_data:
+            if "text" in ann_data:
+                obsidian_markdown.add_text(page_idx, ann_data['text'])
+            if "highlights" in ann_data:
+                obsidian_markdown.add_highlights(page_idx, ann_data["highlights"])
 
         # This is for highlights that reMarkable's own "smart" detection misses
         # Most likely, they're highlights on scanned / image-based PDF, so in
@@ -237,16 +231,12 @@ def process_document(
 
         # TODO: add ability to extract highlighted images / tables (via pixmaps)?
 
-        ann_hl_groups = []
         if (
             "highlights" in ann_type
             and has_ann_hl
             and (is_text_extractable or is_ocred)
         ):
-            ann_hl_groups = extract_groups_from_pdf_ann_hl(
-                ann_page,
-                malformed=assume_malformed_pdfs,
-            )
+            pass
         elif "highlights" in ann_type and has_ann_hl and document.doc_type == "pdf":
             logging.info(
                 f"- Found highlights on page #{page_idx} but couldn't extract them to Markdown. Maybe run it through OCRmyPDF next time?"
@@ -258,52 +248,15 @@ def process_document(
             ann_page = add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
             smart_hl_groups = extract_groups_from_smart_hl(smart_hl_data)
 
-        hl_text = ""
-        if len(ann_hl_groups + smart_hl_groups) > 0:
-            hl_text = prepare_md_from_hl_groups(
-                ann_page,
-                ann_hl_groups,
-                smart_hl_groups,
-                presentation=md_hl_format,
-            )
-
         if per_page_targets and (has_annotations or has_smart_highlights):
             out_path.mkdir(parents=True, exist_ok=True)
-
             if "pdf" in per_page_targets:
                 subdir = prepare_subdir(out_path, "pdf")
                 work_doc.save(f"{subdir}/{page_idx:0{pages_magnitude}}.pdf")
 
-            if "png" in per_page_targets:
-                # (2, 2) is a short-hand for 2x zoom on (x, y)
-                # https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_pixmap
-                ann_pixmap = ann_page.get_pixmap(matrix=fitz.Matrix(2, 2))
-
-                subdir = prepare_subdir(out_path, "png")
-                ann_pixmap.save(f"{subdir}/{page_idx:0{pages_magnitude}}.png")
-
-            if "svg" in per_page_targets:
-                # (2, 2) is a short-hand for 2x zoom on (x, y)
-                # https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_svg_image
-                ann_svg_str = ann_page.get_svg_image(
-                    matrix=fitz.Matrix(2, 2), text_as_path=False
-                )
-
-                subdir = prepare_subdir(out_path, "svg")
-                with open(f"{subdir}/{page_idx:0}.svg", "w") as f:
-                    f.write(ann_svg_str)
-
-            if "md" in per_page_targets:
-                subdir = prepare_subdir(out_path, "md")
-                with open(f"{subdir}/{page_idx:0{pages_magnitude}}.md", "w") as f:
-                    f.write(hl_text)
-
         if modified_pdf and (has_annotations or has_smart_highlights):
             mod_pdf.insert_pdf(work_doc, start_at=-1)
             pages_order.append(page_idx)
-
-        if combined_md and (has_ann_hl or has_smart_highlights):
-            combined_md_strs += [(page_idx + md_page_offset, hl_text + "\n")]
 
         # If there are annotations outside the original page limits
         # or if the PDF has been OCRed by us, insert the annotated page
@@ -349,24 +302,6 @@ def process_document(
         mod_pdf.select(pages_order)
         mod_pdf.save(f"{out_doc_path_str} _remarks-only.pdf")
         mod_pdf.close()
-
-    if combined_md and len(combined_md_strs) > 0:
-        combined_md_strs = sorted(combined_md_strs, key=lambda t: t[0])
-
-        if md_header_format == "atx":
-            combined_md_str = "".join(
-                [f"\n## Page {s[0]}\n\n" + s[1] for s in combined_md_strs]
-            )
-            combined_md_str = f"# {out_path.name}\n" + combined_md_str
-
-        elif md_header_format == "setex":
-            combined_md_str = "".join(
-                [f"\nPage {s[0]}\n--------\n" + s[1] for s in combined_md_strs]
-            )
-            combined_md_str = f"{out_path.name}\n========\n" + combined_md_str
-
-        with open(f"{out_doc_path_str} _highlights.md", "w") as f:
-            f.write(combined_md_str)
 
     obsidian_markdown.save(out_doc_path_str)
 

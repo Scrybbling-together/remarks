@@ -1,5 +1,4 @@
 import logging
-from pprint import pprint
 
 import fitz  # PyMuPDF
 import shapely.geometry as geom  # Shapely
@@ -132,11 +131,63 @@ def prepare_segments(data: TLayers):
 
     return segs
 
+def cursor_newline(cursor: fitz.Point, font, fontsize):
+    HORIZONTAL_START = 40
+    line_height = get_line_height(font, fontsize)
+    return fitz.Point(HORIZONTAL_START, cursor.y + line_height)
+
+def get_line_height(font, font_size):
+    ascender = font.ascender
+    descender = font.descender
+
+    line_height = (ascender - descender) * font_size
+
+    return line_height
+
+def layout_text(text, page_width, margin_x, font, fontsize):
+    words = text.split()
+    lines = []
+    current_line = []
+    line_width = 0
+    max_width = page_width - margin_x * 2
+
+    space_width = fitz.get_text_length(" ", font.name, fontsize=fontsize)
+
+    for word in words:
+        word_with = fitz.get_text_length(word, font.name, fontsize=fontsize)
+        if line_width + word_with <= max_width:
+            current_line.append(word)
+            line_width += word_with + space_width
+        else:
+            lines.append(" ".join(current_line))
+            current_line = [word]
+            line_width = word_with + space_width
+
+    if current_line:
+        lines.append(' '.join(current_line))
+
+    return lines
+
 
 def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
+    FONT_SIZE_PLAIN = 11
+    FONT_SIZE_HEADING = 22
     segments = prepare_segments(data)
 
-    # TODO class: ReMarkable text writer
+    # def visit_span(
+    #     span: CrdtStr,
+    #     cursor: fitz.Point,
+    #     font: fitz.Font,
+    #     fontsize=11,
+    # ):
+    #     # font = plain_font
+    #     # lines = layout_text(str(span), 445, 40, font, fontsize)
+    #     # for line in lines:
+    #     #     _, cursor = plain_writer.append(cursor, line, font=font, fontsize=fontsize)
+    #     #     cursor = cursor_newline(cursor, font, fontsize=fontsize)
+    #     #
+    #     # return cursor
+
     # plain_writer = fitz.TextWriter(page.rect)
     # plain_font = fitz.Font("helv")
     # italic_font = fitz.Font("helvetica-oblique", is_italic=True)
@@ -147,62 +198,22 @@ def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
     #     is_italic=True,
     # )
 
-    # def visit_span(
-    #     span: TextSpan,
-    #     last_point: fitz.Point,
-    #     font_size=11,
-    #     bold: bool = False,
-    #     italic: bool = False,
-    # ):
-    #     if isinstance(span, CrdtStr):
-    #         font = plain_font
-    #         if bold and italic:
-    #             font = bold_italic_font
-    #         elif bold:
-    #             font = bold_font
-    #         elif italic:
-    #             font = italic_font
-    #         _, last_point = plain_writer.append(
-    #             last_point, str(span), font=font, fontsize=font_size
-    #         )
-    #         return last_point
-    #     else:
-    #         for inner_span in span.contents:
-    #             if isinstance(span, BoldSpan):
-    #                 last_point = visit_span(
-    #                     inner_span, last_point, font_size, True, italic
-    #                 )
-    #             elif isinstance(span, ItalicSpan):
-    #                 last_point = visit_span(
-    #                     inner_span, last_point, font_size, bold, True
-    #                 )
-    #             else:
-    #                 last_point = visit_span(
-    #                     inner_span, last_point, font_size, bold, italic
-    #                 )
-    #         return last_point
-    #
-    # if data["text"]:
-    #     text_block: TTextBlock = data["text"]
-    #     cursor = fitz.Point(text_block["pos_x"], text_block["pos_y"])
-    #
-    #     for paragraph in text_block["text"].contents:
+    # if data['text']:
+    #     text_block: TTextBlock = data['text']
+    #     text = data['text']['text']
+    #     # Initialize cursor
+    #     horizontal_start_position = text_block['pos_x'] / 3.155
+    #     cursor = fitz.Point(horizontal_start_position, text_block['pos_y'] / 3.155)
+    #     print(f"There are {len(text.contents)} paragraphs on this page")
+    #     print(f"The text starts at ({text_block['pos_x'] / 3.155}, {text_block['pos_y'] / 3.155})")
+    #     for paragraph in text.contents:
     #         if len(str(paragraph)) > 0:
-    #             if paragraph.style.value == ParagraphStyle.BOLD:
-    #                 cursor = fitz.Point(234, cursor.y + 13 * 2)
-    #             elif paragraph.style.value == ParagraphStyle.HEADING:
-    #                 cursor = fitz.Point(234, cursor.y + 22 * 2)
-    #             else:
-    #                 cursor = fitz.Point(234, cursor.y + 11 * 2)
-    #         if paragraph.style.value == ParagraphStyle.BULLET:
-    #             _, cursor = plain_writer.append(cursor, "• ")
-    #         for span in paragraph.contents:
-    #             if paragraph.style.value == ParagraphStyle.BOLD:
-    #                 cursor = visit_span(span, cursor, font_size=13)
-    #             elif paragraph.style.value == ParagraphStyle.HEADING:
-    #                 cursor = visit_span(span, cursor, font_size=22)
-    #             else:
-    #                 cursor = visit_span(span, cursor, font_size=11)
+    #             for span in paragraph.contents:
+    #                 if paragraph.style.value == ParagraphStyle.HEADING:
+    #                     cursor = visit_span(span, cursor, plain_font, fontsize=FONT_SIZE_HEADING)
+    #                 else:
+    #                     cursor = visit_span(span, cursor, plain_font, fontsize=FONT_SIZE_PLAIN)
+    #                     cursor = cursor_newline(cursor, plain_font, fontsize=FONT_SIZE_PLAIN)
     #
     # plain_writer.write_text(page)
 
