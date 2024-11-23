@@ -34,8 +34,7 @@ def process():
     print(f"Got a request to process {params['in_path']}")
 
     parent_dir = in_path
-    for i in range(1):
-        parent_dir = os.path.dirname(parent_dir)
+    parent_dir = os.path.dirname(parent_dir)
     out_dir = os.path.join(parent_dir, "out")
 
     print(f"Making directory {out_dir}")
