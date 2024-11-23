@@ -1,6 +1,4 @@
 import logging
-from pprint import pprint
-from pydoc import plain
 
 import fitz  # PyMuPDF
 import shapely.geometry as geom  # Shapely
@@ -176,50 +174,48 @@ def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
     FONT_SIZE_HEADING = 22
     segments = prepare_segments(data)
 
-    def visit_span(
-        span: CrdtStr,
-        cursor: fitz.Point,
-        font: fitz.Font,
-        fontsize=11,
-    ):
-        font = plain_font
-        lines = layout_text(str(span), 445, 40, font, fontsize)
-        for line in lines:
-            _, cursor = plain_writer.append(cursor, line, font=font, fontsize=fontsize)
-            cursor = cursor_newline(cursor, font, fontsize=fontsize)
+    # def visit_span(
+    #     span: CrdtStr,
+    #     cursor: fitz.Point,
+    #     font: fitz.Font,
+    #     fontsize=11,
+    # ):
+    #     # font = plain_font
+    #     # lines = layout_text(str(span), 445, 40, font, fontsize)
+    #     # for line in lines:
+    #     #     _, cursor = plain_writer.append(cursor, line, font=font, fontsize=fontsize)
+    #     #     cursor = cursor_newline(cursor, font, fontsize=fontsize)
+    #     #
+    #     # return cursor
 
-        return cursor
+    # plain_writer = fitz.TextWriter(page.rect)
+    # plain_font = fitz.Font("helv")
+    # italic_font = fitz.Font("helvetica-oblique", is_italic=True)
+    # bold_font = fitz.Font("helvetica-bold", is_bold=True)
+    # bold_italic_font = fitz.Font(
+    #     "helvetica-boldoblique",
+    #     is_bold=True,
+    #     is_italic=True,
+    # )
 
-    plain_writer = fitz.TextWriter(page.rect)
-    plain_font = fitz.Font("helv")
-    italic_font = fitz.Font("helvetica-oblique", is_italic=True)
-    bold_font = fitz.Font("helvetica-bold", is_bold=True)
-    bold_italic_font = fitz.Font(
-        "helvetica-boldoblique",
-        is_bold=True,
-        is_italic=True,
-    )
-
-    if data['text']:
-        text_block: TTextBlock = data['text']
-        text = data['text']['text']
-        # Initialize cursor
-        horizontal_start_position = text_block['pos_x'] / 3.155
-        cursor = fitz.Point(horizontal_start_position, text_block['pos_y'] / 3.155)
-        print(f"There are {len(text.contents)} paragraphs on this page")
-        print(f"The text starts at ({text_block['pos_x'] / 3.155}, {text_block['pos_y'] / 3.155})")
-        for paragraph in text.contents:
-            print(dir(paragraph))
-            if len(str(paragraph)) > 0:
-                for span in paragraph.contents:
-                    if paragraph.style.value == ParagraphStyle.HEADING:
-                        cursor = visit_span(span, cursor, plain_font, fontsize=FONT_SIZE_HEADING)
-                        cursor = cursor_newline(cursor, plain_font, fontsize=FONT_SIZE_HEADING)
-                    else:
-                        cursor = visit_span(span, cursor, plain_font, fontsize=FONT_SIZE_PLAIN)
-                        cursor = cursor_newline(cursor, plain_font, fontsize=FONT_SIZE_PLAIN)
-
-    plain_writer.write_text(page)
+    # if data['text']:
+    #     text_block: TTextBlock = data['text']
+    #     text = data['text']['text']
+    #     # Initialize cursor
+    #     horizontal_start_position = text_block['pos_x'] / 3.155
+    #     cursor = fitz.Point(horizontal_start_position, text_block['pos_y'] / 3.155)
+    #     print(f"There are {len(text.contents)} paragraphs on this page")
+    #     print(f"The text starts at ({text_block['pos_x'] / 3.155}, {text_block['pos_y'] / 3.155})")
+    #     for paragraph in text.contents:
+    #         if len(str(paragraph)) > 0:
+    #             for span in paragraph.contents:
+    #                 if paragraph.style.value == ParagraphStyle.HEADING:
+    #                     cursor = visit_span(span, cursor, plain_font, fontsize=FONT_SIZE_HEADING)
+    #                 else:
+    #                     cursor = visit_span(span, cursor, plain_font, fontsize=FONT_SIZE_PLAIN)
+    #                     cursor = cursor_newline(cursor, plain_font, fontsize=FONT_SIZE_PLAIN)
+    #
+    # plain_writer.write_text(page)
 
     # annot.update() calls have a lot of overhead.
     # We can batch tools with equal settings to reduce the amount of calls drastically
