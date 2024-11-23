@@ -11,19 +11,22 @@ let
       pkgs.zlib
     ]}:$LD_LIBRARY_PATH"
 
-    echo "Setting up Git hooks"
-    git config core.hooksPath .githooks
+    if ! [[ -f .githooks/pre-commit ]]; then
+      echo "Setting up Git hooks"
+      git config core.hooksPath .githooks
+    fi
 
     if ! [[ -d .venv ]]; then
       ${pythonEnv}/bin/python -m venv .venv
       # shellcheck disable=SC1091
       source .venv/bin/activate
-      pip install poetry
-      poetry install
     else
       # shellcheck disable=SC1091
       source .venv/bin/activate
     fi
+
+    pip install poetry
+    poetry install
   '';
 
   shellHookChecked = pkgs.runCommand "shell-hook-checked" {
