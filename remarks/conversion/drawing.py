@@ -2,8 +2,8 @@ import logging
 
 import fitz  # PyMuPDF
 import shapely.geometry as geom  # Shapely
-from rmscene.scene_items import ParagraphStyle
-from rmscene.text import CrdtStr
+
+from rmscene.scene_items import PenColor
 
 from .parsing import TLayers, TTextBlock
 from ..utils import (
@@ -11,25 +11,27 @@ from ..utils import (
     RM_HEIGHT,
 )
 
-HL_COLOR_CODES = {
-    3: "yellow",
-    4: "green",
-    5: "magenta",
-    8: "gray",
-}
-
-SC_COLOR_CODES = {
-    0: "black",
-    1: "gray",
-    2: "white",
-    6: "blue",
-    7: "red",
+# Taken from github:ricklupton/rmc:src/rmc/exporters/writing_tools.py#remarkable_palette
+RM_TOOL_TO_FITZ_COLOR = {
+    PenColor.BLACK: (0, 0, 0),
+    PenColor.GRAY: (144/255, 144/255, 144/255),
+    PenColor.WHITE: (1, 1, 1),
+    PenColor.YELLOW: (251/255, 247/255, 25/255),
+    PenColor.GREEN: (0, 255/255, 0),
+    PenColor.PINK: (255/255, 192/255, 203/255),
+    PenColor.BLUE: (78/255, 105/255, 201/255),
+    PenColor.RED: (179/255, 62/255, 57/255),
+    PenColor.GRAY_OVERLAP: (125/255, 125/255, 125/255),
+    #! Skipped as different colors are used for highlights
+    #! PenColor.HIGHLIGHT = ...
+    PenColor.GREEN_2: (161/255, 216/255, 125/255),
+    PenColor.CYAN: (139/255, 208/255, 229/255),
+    PenColor.MAGENTA: (183/255, 130/255, 205/255),
+    PenColor.YELLOW_2: (247/255, 232/255, 81/255)
 }
 
 
 def draw_svg(data, dims={"x": RM_WIDTH, "y": RM_HEIGHT}):
-    stroke_color = SC_COLOR_CODES
-
     output = f'<svg xmlns="http://www.w3.org/2000/svg" width="{dims["x"]}" height="{dims["y"]}">'
 
     output += """
@@ -48,7 +50,7 @@ def draw_svg(data, dims={"x": RM_WIDTH, "y": RM_HEIGHT}):
 
         for st_name, st_content in layer["strokes"].items():
             output += f'<g id="stroke-{st_name}" style="display:inline">'
-            st_color = stroke_color[st_content["tool"]["color-code"]]
+            st_color = RM_TOOL_TO_FITZ_COLOR[st_content["tool"]["color-code"]]
 
             for sg_name, sg_content in st_content["segments"].items():
                 sg_width = sg_content["style"]["stroke-width"]
@@ -244,7 +246,7 @@ def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
 
                 try:
                     color_array = fitz.utils.getColor(
-                        HL_COLOR_CODES[seg_data["color-code"]]
+                        RM_TOOL_TO_FITZ_COLOR[seg_data["color-code"]]
                     )
                 except KeyError:
                     # Defaults to yellow if color hasn't been defined yet
@@ -288,7 +290,7 @@ def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
         annot.set_border(width=stroke_width)
         annot.set_opacity(opacity)
 
-        color_array = fitz.utils.getColor(SC_COLOR_CODES[color_code])
+        color_array = RM_TOOL_TO_FITZ_COLOR[color_code]
         annot.set_colors(stroke=color_array)
 
         annot.update()
@@ -358,7 +360,7 @@ def add_smart_highlight_annotations(hl_data, page, scale, inplace=False):
 
         # Support to colors
         try:
-            color_array = fitz.utils.getColor(HL_COLOR_CODES[hl["color"]])
+            color_array = fitz.utils.getColor(RM_TOOL_TO_FITZ_COLOR[hl["color"]])
         except KeyError:
             # Defaults to yellow if color hasn't been defined yet
             color_array = fitz.utils.getColor("yellow")
