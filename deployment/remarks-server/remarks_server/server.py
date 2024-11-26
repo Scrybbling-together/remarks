@@ -10,8 +10,6 @@ default_args = {
     "md_hl_format": "whole_block",
     "md_page_offset": 0,
     "md_header_format": "atx",
-    "per_page_targets": [],
-    "assume_malformed_pdfs": False,
 }
 
 app = Flask("Remarks http server")

@@ -6,8 +6,7 @@ import pytest
 from syrupy.extensions.single_file import SingleFileSnapshotExtension
 import remarks
 
-default_args = {"ann_type": ["scribbles", "highlights"], "combined_pdf": True, "modified_pdf": False,
-                "per_page_targets": []}
+default_args = {"ann_type": ["scribbles", "highlights"], "combined_pdf": True, "modified_pdf": False}
 
 
 class JPEGImageExtension(SingleFileSnapshotExtension):

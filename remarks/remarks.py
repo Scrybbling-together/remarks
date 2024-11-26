@@ -87,7 +87,6 @@ A4 has a size of 210x297mm.
 def process_document(
     metadata_path,
     out_path,
-    per_page_targets=None,
     ann_type=None,
     combined_pdf=False,
     modified_pdf=False,
@@ -204,12 +203,6 @@ def process_document(
             smart_hl_data = load_json_file(rm_highlights_file)
             ann_page = add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
             smart_hl_groups = extract_groups_from_smart_hl(smart_hl_data)
-
-        if per_page_targets and (has_annotations or has_smart_highlights):
-            out_path.mkdir(parents=True, exist_ok=True)
-            if "pdf" in per_page_targets:
-                subdir = prepare_subdir(out_path, "pdf")
-                work_doc.save(f"{subdir}/{page_idx:0{pages_magnitude}}.pdf")
 
         if modified_pdf and (has_annotations or has_smart_highlights):
             mod_pdf.insert_pdf(work_doc, start_at=-1)

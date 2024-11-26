@@ -40,13 +40,6 @@ def main():
         help="Create a '*_remarks-only.pdf' file with annotated pages only (unannotated ones will be out)",
     )
     parser.add_argument(
-        "--per_page_targets",
-        nargs="+",
-        help="Target specific file formats per page. Choose at least one of the following extensions: md pdf png svg. This is empty by default",
-        default=[],
-        metavar="FILE_EXTENSION",
-    )
-    parser.add_argument(
         "-v",
         "--version",
         action="version",
