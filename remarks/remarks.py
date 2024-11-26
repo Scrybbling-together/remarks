@@ -33,7 +33,7 @@ from .utils import (
 
 
 def run_remarks(
-    input_dir, output_dir, file_name=None, file_uuid=None, file_path=None, **kwargs
+    input_dir, output_dir, file_uuid=None, file_path=None, **kwargs
 ):
     num_docs = sum(1 for _ in pathlib.Path(f"{input_dir}/").glob("*.metadata"))
 
@@ -60,7 +60,7 @@ def run_remarks(
 
         doc_name = get_visible_name(metadata_path)
 
-        if (file_name and (file_name not in doc_name)) or not doc_name:
+        if not doc_name:
             continue
 
         if doc_type in supported_types:

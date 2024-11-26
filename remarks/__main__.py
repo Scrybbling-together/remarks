@@ -22,11 +22,6 @@ def main():
         metavar="OUTPUT_DIRECTORY",
     )
     parser.add_argument(
-        "--file_name",
-        help="Work only on files whose original document names (visibleName) contain this string",
-        metavar="FILENAME_STRING",
-    )
-    parser.add_argument(
         "--file_uuid",
         help="Work only on files whose uuid is this string",
         metavar="UUID_STRING",

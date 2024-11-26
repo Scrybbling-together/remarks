@@ -3,7 +3,6 @@ from remarks import remarks
 import os, os.path
 
 default_args = {
-    "file_name": None,
     "ann_type": ["scribbles", "highlights"],
     "combined_pdf": True,
     "combined_md": True,
