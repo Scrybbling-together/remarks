@@ -33,7 +33,7 @@ from .utils import (
 
 
 def run_remarks(
-    input_dir, output_dir, file_path=None, **kwargs
+    input_dir, output_dir, **kwargs
 ):
     num_docs = sum(1 for _ in pathlib.Path(f"{input_dir}/").glob("*.metadata"))
 
@@ -65,9 +65,6 @@ def run_remarks(
 
             in_device_dir = get_ui_path(metadata_path)
             out_path = pathlib.Path(f"{output_dir}/{in_device_dir}/{doc_name}/")
-
-            if file_path is not None and file_path not in str(in_device_dir):
-                continue
 
             process_document(metadata_path, out_path, **kwargs)
         else:

@@ -22,11 +22,6 @@ def main():
         metavar="OUTPUT_DIRECTORY",
     )
     parser.add_argument(
-        "--file_path",
-        help="Work only on files whose (meaningful) path contains this string",
-        metavar="FILEPATH_STRING",
-    )
-    parser.add_argument(
         "--ann_type",
         help="Force remarks to handle only a specific type of annotation: highlights or scribbles. If none is specified, remarks will handle both by default",
         default=["scribbles", "highlights"],
