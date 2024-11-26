@@ -22,12 +22,6 @@ def main():
         metavar="OUTPUT_DIRECTORY",
     )
     parser.add_argument(
-        "--skip_combined_pdf",
-        dest="combined_pdf",
-        action="store_false",
-        help="Skip the creation of the default '*_remarks.pdf' file that contains all annotated pages merged into the original PDF file",
-    )
-    parser.add_argument(
         "-v",
         "--version",
         action="version",

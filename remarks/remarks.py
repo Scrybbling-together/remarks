@@ -31,7 +31,7 @@ from .utils import (
 
 
 def run_remarks(
-    input_dir, output_dir, **kwargs
+    input_dir, output_dir
 ):
     num_docs = sum(1 for _ in pathlib.Path(f"{input_dir}/").glob("*.metadata"))
 
@@ -64,7 +64,7 @@ def run_remarks(
             in_device_dir = get_ui_path(metadata_path)
             out_path = pathlib.Path(f"{output_dir}/{in_device_dir}/{doc_name}/")
 
-            process_document(metadata_path, out_path, **kwargs)
+            process_document(metadata_path, out_path)
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -75,17 +75,9 @@ def run_remarks(
     )
 
 
-"""
-ReMarkable has a resolution, it's 1404x1872. We'll consider anything in this unit rmpts for "ReMarkable points"
-PyMuPDF has its own internal points-based resolution. We'll consider this the "mupts"
-A4 has a size of 210x297mm.
-"""
-
-
 def process_document(
     metadata_path,
     out_path,
-    combined_pdf=False,
 ):
     document = Document(metadata_path)
     pdf_src = document.open_source_pdf()
@@ -171,34 +163,32 @@ def process_document(
 
         # If there are annotations outside the original page limits
         # that we've just (re)created from scratch
-        if combined_pdf and is_ann_out_page:
+        if is_ann_out_page:
             pdf_src.insert_pdf(work_doc, start_at=page_idx)
             pdf_src.delete_page(page_idx + 1)
 
         # Else, draw annotations on the original PDF page (in-place) to do
         # our best to preserve in-PDF links and the original page size
-        elif combined_pdf:
-            if has_annotations:
-                draw_annotations_on_pdf(
-                    ann_data,
-                    pdf_src[page_idx],
-                    inplace=True,
-                )
+        if has_annotations:
+            draw_annotations_on_pdf(
+                ann_data,
+                pdf_src[page_idx],
+                inplace=True,
+            )
 
-            if has_smart_highlights:
-                add_smart_highlight_annotations(
-                    smart_hl_data,
-                    pdf_src[page_idx],
-                    scale,
-                    inplace=True,
-                )
+        if has_smart_highlights:
+            add_smart_highlight_annotations(
+                smart_hl_data,
+                pdf_src[page_idx],
+                scale,
+                inplace=True,
+            )
 
         work_doc.close()
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
 
-    if combined_pdf:
-        pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
+    pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
 
     obsidian_markdown.save(out_doc_path_str)
 

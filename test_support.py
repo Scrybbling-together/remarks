@@ -6,8 +6,6 @@ import pytest
 from syrupy.extensions.single_file import SingleFileSnapshotExtension
 import remarks
 
-default_args = {"combined_pdf": True}
-
 
 class JPEGImageExtension(SingleFileSnapshotExtension):
     _file_extension = "jpg"
@@ -37,7 +35,7 @@ def with_remarks(input_name):
 
             # Run remarks if it hasn't been run for this input directory
             if not getattr(with_remarks, f"run_{input_name}", False):
-                remarks.run_remarks(input_dir, output_dir, **default_args)
+                remarks.run_remarks(input_dir, output_dir)
                 setattr(with_remarks, f"run_{input_name}", True)
             return func(*args, **kwargs)
 
