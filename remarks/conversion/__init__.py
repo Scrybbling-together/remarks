@@ -16,5 +16,3 @@ from .text import (
     extract_groups_from_smart_hl,
     prepare_md_from_hl_groups,
 )
-
-from .ocrmypdf import is_executable_available, run_ocr

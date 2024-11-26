@@ -81,11 +81,6 @@ def main():
         metavar="LOG_LEVEL",
     )
     parser.add_argument(
-        "--avoid_ocr",
-        action="store_true",
-        help="By default, remarks tries to use OCRmyPDF to extract highlighted text from image-based PDFs. Use this flag to skip running the ocrmypdf executable altogether",
-    )
-    parser.add_argument(
         "-h",
         "--help",
         action="help",
@@ -96,7 +91,6 @@ def main():
         combined_pdf=True,
         modified_pdf=False,
         assume_malformed_pdfs=False,
-        avoid_ocr=False,
     )
 
     args = parser.parse_args()

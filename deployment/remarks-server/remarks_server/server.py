@@ -13,7 +13,6 @@ default_args = {
     "md_header_format": "atx",
     "per_page_targets": [],
     "assume_malformed_pdfs": False,
-    "avoid_ocr": False,
 }
 
 app = Flask("Remarks http server")

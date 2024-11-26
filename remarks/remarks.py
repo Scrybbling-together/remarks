@@ -9,10 +9,6 @@ from .conversion.drawing import (
     draw_annotations_on_pdf,
     add_smart_highlight_annotations,
 )
-from .conversion.ocrmypdf import (
-    is_executable_available,
-    run_ocr,
-)
 from .conversion.parsing import (
     parse_rm_file,
     rescale_parsed_data,
@@ -22,7 +18,7 @@ from .conversion.text import (
     check_if_text_extractable,
     extract_groups_from_smart_hl,
 )
-from .dimensions import REMARKABLE_PDF_EXPORT
+from .dimensions import REMARKABLE_PDF_EXPORT, REMARKABLE_DOCUMENT
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .utils import (
     is_document,
@@ -102,7 +98,6 @@ def process_document(
     combined_pdf=False,
     modified_pdf=False,
     assume_malformed_pdfs=False,
-    avoid_ocr=False,
 ):
     document = Document(metadata_path)
     pdf_src = document.open_source_pdf()
@@ -182,10 +177,10 @@ def process_document(
             if dims.height >= (RM_HEIGHT + 88 * 3):
                 offset_y = 3 * 88  # why 3 * text_offset? No clue, ask ReMarkable.
             if abs(x_min) + abs(x_max) > 1872:
-                scale = RM_WIDTH / (max(x_max, 1872) - min(x_min, 0))
+                scale = REMARKABLE_DOCUMENT.width / (max(x_max, 1872) - min(x_min, 0))
                 ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
             else:
-                scale = RM_HEIGHT / (max(y_max, 2048) - min(y_min, 0))
+                scale = REMARKABLE_DOCUMENT.height / (max(y_max, 2048) - min(y_min, 0))
                 ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
         if "highlights" not in ann_type and has_ann_hl:
             logging.info(
@@ -209,7 +204,7 @@ def process_document(
             pass
         elif "highlights" in ann_type and has_ann_hl and document.doc_type == "pdf":
             logging.info(
-                f"- Found highlights on page #{page_idx} but couldn't extract them to Markdown. Maybe run it through OCRmyPDF next time?"
+                f"- Found highlights on page #{page_idx} but couldn't extract them to Markdown."
             )
 
         smart_hl_groups = []

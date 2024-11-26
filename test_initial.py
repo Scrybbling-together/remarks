@@ -1,5 +1,4 @@
 import os
-import os
 
 import pytest
 from parsita import lit, reg, rep, Parser, opt, until, Failure
