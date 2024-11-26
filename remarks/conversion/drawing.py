@@ -360,7 +360,7 @@ def add_smart_highlight_annotations(hl_data, page, scale, inplace=False):
 
         # Support to colors
         try:
-            color_array = fitz.utils.getColor(RM_TOOL_TO_FITZ_COLOR[hl["color"]])
+            color_array =RM_TOOL_TO_FITZ_COLOR[hl["color"]]
         except KeyError:
             # Defaults to yellow if color hasn't been defined yet
             color_array = fitz.utils.getColor("yellow")
