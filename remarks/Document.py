@@ -84,8 +84,6 @@ class Document:
         return math.floor(math.log10(len(self.pages_list))) + 1
 
     def pages(self):
-        has_annotation_highlights = False
-
         page_uuids = set(
             [f.stem for f in self.rm_annotation_files]
             + [f.stem for f in self.rm_highlight_files]

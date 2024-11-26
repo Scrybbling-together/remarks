@@ -47,6 +47,7 @@ pkgs.mkShell {
     pkgs.libgcc.lib
     pkgs.poppler_utils.out
     pkgs.inotify-tools.out
+    pkgs.inkscape
   ];
 
   shellHook = builtins.readFile "${shellHookChecked}/shellhook.sh";
