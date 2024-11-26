@@ -5,7 +5,7 @@ import fitz
 
 
 # TODO: improve this check, it is still very rudimentary
-def check_if_text_extractable(page, malformed=False):
+def check_if_text_extractable(page):
     text_encoded = page.get_text("text").encode("utf-8")
     # print(text_encoded)
 
@@ -39,7 +39,7 @@ def check_if_text_extractable(page, malformed=False):
     # but it might also appear on perfectly fine LateX equations
     # See: https://github.com/lucasrla/remarks/pull/19
 
-    if b"\xef\xbf\xbd" in text_encoded and malformed:
+    if b"\xef\xbf\xbd" in text_encoded:
         return False
         # raise ValueError(
         #     f"Found an unmapped character: �. Something might be off with a PDF font. Check out `page.getFontList(full=True)`"

@@ -91,7 +91,6 @@ def process_document(
     ann_type=None,
     combined_pdf=False,
     modified_pdf=False,
-    assume_malformed_pdfs=False,
 ):
     document = Document(metadata_path)
     pdf_src = document.open_source_pdf()
@@ -154,7 +153,6 @@ def process_document(
 
         is_text_extractable = check_if_text_extractable(
             pdf_src[page_idx],
-            malformed=assume_malformed_pdfs,
         )
 
         is_ann_out_page = False

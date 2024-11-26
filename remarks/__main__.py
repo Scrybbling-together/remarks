@@ -47,12 +47,6 @@ def main():
         metavar="FILE_EXTENSION",
     )
     parser.add_argument(
-        "--assume_malformed_pdfs",
-        dest="assume_malformed_pdfs",
-        action="store_true",
-        help="Assume PDF files are malformed, i.e. words are NOT in their natural reading order and/or fonts are obfuscated. By default, we're optimists and assume your PDFs are well-formed",
-    )
-    parser.add_argument(
         "-v",
         "--version",
         action="version",
@@ -75,7 +69,6 @@ def main():
     parser.set_defaults(
         combined_pdf=True,
         modified_pdf=False,
-        assume_malformed_pdfs=False,
     )
 
     args = parser.parse_args()
