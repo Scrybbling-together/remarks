@@ -15,7 +15,6 @@ from .conversion.parsing import (
     get_ann_max_bound, determine_document_dimensions,
 )
 from .conversion.text import (
-    check_if_text_extractable,
     extract_groups_from_smart_hl,
 )
 from .dimensions import REMARKABLE_PDF_EXPORT, REMARKABLE_DOCUMENT
@@ -86,7 +85,6 @@ A4 has a size of 210x297mm.
 def process_document(
     metadata_path,
     out_path,
-    ann_type=None,
     combined_pdf=False,
 ):
     document = Document(metadata_path)
@@ -104,8 +102,6 @@ def process_document(
         has_smart_highlights,
     ) in document.pages():
         print(f"processing page {page_idx}, {page_uuid}")
-
-        has_ann_hl = False
 
         # Create a new PDF document to hold the page that will be annotated
         work_doc = fitz.open()
@@ -142,33 +138,22 @@ def process_document(
             # - https://pymupdf.readthedocs.io/en/latest/page.html#Page.show_pdf_page
             # - https://pymupdf.readthedocs.io/en/latest/document.html#Document.insert_pdf
 
-        is_text_extractable = check_if_text_extractable(
-            pdf_src[page_idx],
-        )
+        (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
+        x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
+        offset_x = 0
+        offset_y = 0
+        is_ann_out_page = True
+        if version == "V6":
+            offset_x = RM_WIDTH / 2
+        if dims.height >= (RM_HEIGHT + 88 * 3):
+            offset_y = 3 * 88  # why 3 * text_offset? No clue, ask ReMarkable.
+        if abs(x_min) + abs(x_max) > 1872:
+            scale = REMARKABLE_DOCUMENT.width / (max(x_max, 1872) - min(x_min, 0))
+            ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
+        else:
+            scale = REMARKABLE_DOCUMENT.height / (max(y_max, 2048) - min(y_min, 0))
+            ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
 
-        is_ann_out_page = False
-
-        scale = 1
-        if "scribbles" in ann_type and has_annotations:
-            (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
-            x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
-            offset_x = 0
-            offset_y = 0
-            is_ann_out_page = True
-            if version == "V6":
-                offset_x = RM_WIDTH / 2
-            if dims.height >= (RM_HEIGHT + 88 * 3):
-                offset_y = 3 * 88  # why 3 * text_offset? No clue, ask ReMarkable.
-            if abs(x_min) + abs(x_max) > 1872:
-                scale = REMARKABLE_DOCUMENT.width / (max(x_max, 1872) - min(x_min, 0))
-                ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
-            else:
-                scale = REMARKABLE_DOCUMENT.height / (max(y_max, 2048) - min(y_min, 0))
-                ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
-        if "highlights" not in ann_type and has_ann_hl:
-            logging.info(
-                "- Found highlighted text on page #{page_idx} but `--ann_type` flag is set to `scribbles` only, so we won't bother with it"
-            )
 
         if ann_data:
             if "text" in ann_data:
@@ -179,22 +164,10 @@ def process_document(
         if has_annotations:
             ann_page = draw_annotations_on_pdf(ann_data, ann_page)
 
-        if (
-            "highlights" in ann_type
-            and has_ann_hl
-            and is_text_extractable
-        ):
-            pass
-        elif "highlights" in ann_type and has_ann_hl and document.doc_type == "pdf":
-            logging.info(
-                f"- Found highlights on page #{page_idx} but couldn't extract them to Markdown."
-            )
-
-        smart_hl_groups = []
-        if "highlights" in ann_type and has_smart_highlights:
+        if has_smart_highlights:
             smart_hl_data = load_json_file(rm_highlights_file)
-            ann_page = add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
-            smart_hl_groups = extract_groups_from_smart_hl(smart_hl_data)
+            add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
+            extract_groups_from_smart_hl(smart_hl_data)
 
         # If there are annotations outside the original page limits
         # that we've just (re)created from scratch

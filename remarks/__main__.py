@@ -22,12 +22,6 @@ def main():
         metavar="OUTPUT_DIRECTORY",
     )
     parser.add_argument(
-        "--ann_type",
-        help="Force remarks to handle only a specific type of annotation: highlights or scribbles. If none is specified, remarks will handle both by default",
-        default=["scribbles", "highlights"],
-        metavar="ANNOTATION_TYPE",
-    )
-    parser.add_argument(
         "--skip_combined_pdf",
         dest="combined_pdf",
         action="store_false",
