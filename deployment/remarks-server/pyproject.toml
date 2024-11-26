@@ -1,15 +1,10 @@
-[tool.poetry]
+[project]
 name = "remarks-server"
 version = "0.1.0"
 description = ""
-authors = ["Laura Brekelmans <mail@laura.fm>"]
+authors = [{ name = "Laura Brekelmans", email = "mail@laura.fm" }]
 readme = "README.md"
+dependencies = ["Flask >= 3.0.3", "remarks @ ../../"]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-Flask = "^3.1.0"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[project.scripts]
+remarks-server = "remarks_server.server:main"

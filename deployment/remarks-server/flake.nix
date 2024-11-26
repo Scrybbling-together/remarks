@@ -25,6 +25,6 @@
       let
         attrs = project.renderers.buildPythonPackage { inherit python; };
       in
-      python.pkgs.buildPythonPackage (attrs // {});
+      python.pkgs.buildPythonPackage (attrs // { env.CUSTOM_ENVVAR = "hello"; });
   };
 }
