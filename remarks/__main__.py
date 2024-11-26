@@ -34,12 +34,6 @@ def main():
         help="Skip the creation of the default '*_remarks.pdf' file that contains all annotated pages merged into the original PDF file",
     )
     parser.add_argument(
-        "--modified_pdf",
-        dest="modified_pdf",
-        action="store_true",
-        help="Create a '*_remarks-only.pdf' file with annotated pages only (unannotated ones will be out)",
-    )
-    parser.add_argument(
         "-v",
         "--version",
         action="version",
@@ -61,7 +55,6 @@ def main():
 
     parser.set_defaults(
         combined_pdf=True,
-        modified_pdf=False,
     )
 
     args = parser.parse_args()

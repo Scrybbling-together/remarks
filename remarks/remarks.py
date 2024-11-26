@@ -26,7 +26,6 @@ from .utils import (
     get_visible_name,
     get_ui_path,
     load_json_file,
-    prepare_subdir,
     RM_WIDTH,
     RM_HEIGHT,
 )
@@ -89,16 +88,9 @@ def process_document(
     out_path,
     ann_type=None,
     combined_pdf=False,
-    modified_pdf=False,
 ):
     document = Document(metadata_path)
     pdf_src = document.open_source_pdf()
-
-    pages_magnitude = document.pages_magnitude()
-
-    if modified_pdf:
-        mod_pdf = fitz.open()
-        pages_order = []
 
     obsidian_markdown = ObsidianMarkdownFile(document)
     obsidian_markdown.add_document_header()
@@ -204,10 +196,6 @@ def process_document(
             ann_page = add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
             smart_hl_groups = extract_groups_from_smart_hl(smart_hl_data)
 
-        if modified_pdf and (has_annotations or has_smart_highlights):
-            mod_pdf.insert_pdf(work_doc, start_at=-1)
-            pages_order.append(page_idx)
-
         # If there are annotations outside the original page limits
         # that we've just (re)created from scratch
         if combined_pdf and is_ann_out_page:
@@ -238,19 +226,6 @@ def process_document(
 
     if combined_pdf:
         pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
-
-    if modified_pdf and (document.doc_type == "notebook" and combined_pdf):
-        logging.info(
-            "- You asked for the modified PDF, but we won't bother generated it for this notebook. It would be the same as the combined PDF, which you're already getting anyway"
-        )
-    elif modified_pdf:
-        pages_order = sorted(
-            range(len(pages_order)),
-            key=pages_order.__getitem__,
-        )
-        mod_pdf.select(pages_order)
-        mod_pdf.save(f"{out_doc_path_str} _remarks-only.pdf")
-        mod_pdf.close()
 
     obsidian_markdown.save(out_doc_path_str)
 

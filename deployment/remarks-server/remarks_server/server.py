@@ -6,7 +6,6 @@ default_args = {
     "ann_type": ["scribbles", "highlights"],
     "combined_pdf": True,
     "combined_md": True,
-    "modified_pdf": False,
     "md_hl_format": "whole_block",
     "md_page_offset": 0,
     "md_header_format": "atx",
