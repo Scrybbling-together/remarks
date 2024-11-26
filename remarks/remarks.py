@@ -33,7 +33,7 @@ from .utils import (
 
 
 def run_remarks(
-    input_dir, output_dir, file_uuid=None, file_path=None, **kwargs
+    input_dir, output_dir, file_path=None, **kwargs
 ):
     num_docs = sum(1 for _ in pathlib.Path(f"{input_dir}/").glob("*.metadata"))
 
@@ -48,9 +48,6 @@ def run_remarks(
     )
 
     for metadata_path in pathlib.Path(f"{input_dir}/").glob("*.metadata"):
-        if file_uuid is not None and metadata_path.stem != file_uuid:
-            continue
-
         if not is_document(metadata_path):
             continue
 
