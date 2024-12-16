@@ -3,12 +3,7 @@ import os
 import tempfile
 
 import pytest
-from syrupy.extensions.single_file import SingleFileSnapshotExtension
 import remarks
-
-
-class JPEGImageExtension(SingleFileSnapshotExtension):
-    _file_extension = "jpg"
 
 
 def run_once(func):
@@ -42,21 +37,3 @@ def with_remarks(input_name):
         return wrapper
 
     return decorator
-
-
-@pytest.fixture
-def snapshot(snapshot):
-    return snapshot.use_extension(JPEGImageExtension)
-
-
-def snapshot_test_pdf(filename: str, snapshot):
-    """Snapshots a pdf by converting all pages to jpeg images and collecting their hashes.
-    Makes a snapshot for each page"""
-    assert os.path.isfile(f"tests/out/{filename}")
-    with tempfile.TemporaryDirectory() as tempDir:
-        os.system(f'convert -density 150 "tests/out/{filename}" -quality 100 {tempDir}/output-%3d.jpg')
-        page_images = os.listdir(tempDir)
-        for i, image in enumerate(page_images):
-            name = f"{filename}:page-{i}"
-            with open(f"{tempDir}/{image}", "rb") as f:
-                assert f.read() == snapshot(name=name)

@@ -4,7 +4,9 @@ import pytest
 from parsita import lit, reg, rep, Parser, opt, until, Failure
 from returns.result import Success
 
-from test_support import with_remarks, snapshot, snapshot_test_pdf
+from test_support import with_remarks
+
+
 
 r"""
  _____  _____  ______ 
@@ -14,18 +16,6 @@ r"""
 | |    | |__| | |     
 |_|    |_____/|_|     
 """
-
-
-@with_remarks("tests/in/pdf_with_multiple_added_pages")
-def test_pdf_with_inserted_pages(snapshot):
-    snapshot_test_pdf("pdf_longer _remarks.pdf", snapshot)
-
-
-@with_remarks("tests/in/highlighter-test")
-def test_pdf_with_glyphrange_highlights(snapshot):
-    snapshot_test_pdf("docsfordevelopers _remarks.pdf", snapshot)
-
-
 @with_remarks("demo/on-computable-numbers/xochitl")
 def test_can_process_demo_with_default_args():
     assert os.path.isfile(

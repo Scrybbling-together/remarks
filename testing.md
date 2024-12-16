@@ -1,43 +1,24 @@
 # Testing remarks
 
-Testing is primarily done using a technique called [snapshot testing](https://tophat.github.io/syrupy/) using a library
-called syrupy.
-
-Snapshot testing is where you save correct results and get notified by a failing test whenever your snapshot is
-different from the initially verified output.
-
-This type of testing is meant to verify that your output is as it is intended and to catch regressions!
+Testing is still a work-in-progress, but is integral to good software.
 
 ## Set-up
 
-1. [ ] Make sure you have our Python dependencies installed.
-2. [ ] ImageMagick should be installed; `convert` should be available in path
-3. [ ] ImageMagick might fail due to a Policy error, edit `/etc/ImageMagick-6/policy.xml` and comment out this line
-       `<policy domain="coder" rights="none" pattern="PDF" />`
+Simply run the nix development environment, as usual:
 
-## How we use snapshot testing to verify rendered PDFs stay the same after code changes
-
-So in our case, we render all pages of a pdf as jpg images and hash the contents.
-When we write a test-case, it should be red. Once we have verified that the generated pdf looks good, we run
-`pytest --snapshot-update` to tell `syrupy` to create a snapshot of the rendered pdf hash.
-
-Every time our tests are run afterward, syrupy will render the pdf as JPEGs again, hash the contents and compare them to
-the verified-by-hand snapshots we made with `pytest --snapshot-update`. If the hash changed, that means that our output changed.
-
-In some cases, changed output is desired, in others it's not.
+```shell
+$ nix-shell
+```
 
 ## Running tests
 
-Simply run `pytest` in the root directory.
+Run tests with `pytest`. Tests are also automatically ran prior to committing.
 
-## Updating snapshots
-
-You only need to ever update snapshots when either
-
-1. You added a new test and you have verified that the pdf is rendered correctly
-2. You change the way a ReMarkable notebook is rendered, in this case you need to look at **ALL** PDFs
-
-To update snapshots, run `pytest --snapshot-update`
+```shell
+$ pytest
+# or run the tests in watch mode, during development
+$ bash testloop
+```
 
 ## Directory structure
 

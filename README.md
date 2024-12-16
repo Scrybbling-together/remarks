@@ -20,8 +20,6 @@ This project assumes familiarity with `git`, `python` and the commandline.
 
 Highlight and annotate PDFs
 
-<!-- How to host images on GitHub but outside your repository? Open an issue, upload your images, and voila! Trick learned from http://felixhayashi.github.io/ReadmeGalleryCreatorForGitHub/ -->
-
 <img width="300" alt="IMG_0642-low.jpg" src="https://user-images.githubusercontent.com/1920195/88480247-3d776680-cf2b-11ea-9c30-061ec0e5cc60.jpg">
 
 And then use `remarks` to export annotated pages to `Markdown`, `PDF`, `PNG`, or `SVG` on your computer:
@@ -52,54 +50,9 @@ poetry install
 
 To get `remarks` up and running on your local machine, follow the instructions below:
 
-### 1. Copy reMarkable's "raw" document files to your computer
-
-In order to reconstruct your highlights and annotations, `remarks` relies on specific files that are created by the reMarkable device as you use it. Because these specific files are internal to the reMarkable device, first we need to transfer them to your computer.
-
-There are several options for getting them to your computer. Find below some suggestions. Choose whatever fits you:
-
-- **Use `rsync`** ([i](https://en.wikipedia.org/wiki/Rsync))  
-  Check out the repository [@lucasrla/remarkable-utils](https://github.com/lucasrla/remarkable-utils) for the SSH & `rsync` setup I use (which includes automatic backups based on `cron`). 
-
-- **Use `scp`** ([i](https://en.wikipedia.org/wiki/Secure_copy_protocol))  
-  On your reMarkable tablet, go to `Menu > Settings > Help`, then under `About` tap on `Copyrights and licenses`. In `General information`, right after the section titled "GPLv3 Compliance", there will be the username (`root`), password and IP address needed for `SSH`ing into it. Using these credentials, `scp` the contents of `/home/root/.local/share/remarkable/xochitl` from your reMarkable to a directory on your computer. (Copying may take a while depending on the size of your document collection and the quality of your WiFi network.) To prevent any unintented interruptions, you can (optionally) switch off the `Auto sleep` feature in `Menu > Settings > Battery` before transferring your files.
-
-- **Use [@juruen/rmapi](https://github.com/juruen/rmapi) or [@subutux/rmapy](https://github.com/subutux/rmapy)**  
-  Both are free and open source software that allow you to access your reMarkable tablet files through reMarkable's cloud service.
-
-- **Copy from reMarkable's official desktop application**  
-  If you have a [reMarkable's official desktop app](https://support.remarkable.com/s/article/Desktop-app) installed, _most_ of the files we need are already easily available on your computer. For macOS users, the files are located at `~/Library/Application\ Support/remarkable/desktop`. To avoid interfering with reMarkable's official app, copy and paste all the contents of `~/Library/Application\ Support/remarkable/desktop` to another directory (one that you can safely interact with – say, `~/Documents/remarkable/docs`). Please note that this method won't allow you to use remarks' EPUB functionality. That's because this directory doesn't seem to include the [PDF files that reMarkable auto converts your EPUBs to](https://github.com/lucasrla/remarks/pull/34).
-
 ## Usage and Demo
 
 Run `remarks` and check out what arguments are available:
-
-
-```sh
-# Alan Turing's 1936 foundational paper (with a few highlights and scribbles)
-
-# Original PDF file downloaded from:
-# "On Computable Numbers, with an Application to the Entscheidungsproblem"
-# https://londmathsoc.onlinelibrary.wiley.com/doi/abs/10.1112/plms/s2-42.1.230
-
-python -m remarks demo/on-computable-numbers/xochitl remarks-example/
-```
-
-A few other examples:
-
-```sh
-# Assuming your `xochitl` files are at `~/backups/remarkable/xochitl/`
-
-python -m remarks ~/backups/remarkable/xochitl/ example_1/
-
-python -m remarks ~/backups/remarkable/xochitl/ example_2/
-```
-
-## Tests
-
-Run `pytest` in the root directory of the project after installing the dependencies using `poetry`. This will create files in the `tests/out` directory. The contents of this directory can safely be deleted.
-
-Example:
 
 ```sh
 python -m pytest -q remarks/test_initial.py
