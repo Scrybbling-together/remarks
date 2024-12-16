@@ -1,12 +1,10 @@
-import os
-
 import pytest
+from fitz import fitz
 from parsita import lit, reg, rep, Parser, opt, until, Failure
 from returns.result import Success
 
 from test_support import with_remarks
-from pdf_test_support import is_valid_pdf
-
+from pdf_test_support import is_valid_pdf, pdf_has_num_pages
 
 r"""
  _____  _____  ______ 
@@ -20,9 +18,15 @@ r"""
 @with_remarks("tests/in/v2_notebook_complex")
 @with_remarks("tests/in/v2_book_with_ann")
 def test_can_handle_drawing_with_many_scribbles():
-    assert is_valid_pdf("tests/out/Gosper _remarks.pdf")
-    assert is_valid_pdf("tests/out/Gosper _remarks.pdf")
-    assert is_valid_pdf("tests/out/Gosper _rmc.pdf")
+    gosper_notebook_page_count = 3
+
+    gosper_remarks = fitz.open("tests/out/Gosper _remarks.pdf")
+    assert is_valid_pdf(gosper_remarks)
+    assert gosper_remarks.page_count == gosper_notebook_page_count
+
+    gosper_rmc = fitz.open("tests/out/Gosper _rmc.pdf")
+    assert is_valid_pdf(gosper_rmc)
+    assert gosper_rmc.page_count == 3
 
 
 r"""

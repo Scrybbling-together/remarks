@@ -97,7 +97,8 @@ def process_document(
         print(f"processing page {page_idx}, {page_uuid}")
 
         # Create a new PDF document to hold the page that will be annotated
-        work_doc = fitz.open()
+        rmc_work_doc = fitz.open()
+        remarks_work_doc = fitz.open()
 
         # Get document page dimensions and calculate what scale should be
         # applied to fit it into the device (given the device's own dimensions)
@@ -108,7 +109,7 @@ def process_document(
                 dims = REMARKABLE_PDF_EXPORT
         else:
             dims = REMARKABLE_PDF_EXPORT
-        ann_page = work_doc.new_page(
+        ann_page = remarks_work_doc.new_page(
             width=dims.width,
             height=dims.height,
         )
@@ -165,7 +166,7 @@ def process_document(
         # If there are annotations outside the original page limits
         # that we've just (re)created from scratch
         if is_ann_out_page:
-            remarks_pdf_src.insert_pdf(work_doc, start_at=page_idx)
+            remarks_pdf_src.insert_pdf(remarks_work_doc, start_at=page_idx)
             remarks_pdf_src.delete_page(page_idx + 1)
 
         # Else, draw annotations on the original PDF page (in-place) to do
@@ -185,7 +186,7 @@ def process_document(
                 inplace=True,
             )
 
-        work_doc.close()
+        remarks_work_doc.close()
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
 
