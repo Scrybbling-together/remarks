@@ -4,7 +4,15 @@ from parsita import lit, reg, rep, Parser, opt, until, Failure
 from returns.result import Success
 
 from test_support import with_remarks
-from pdf_test_support import is_valid_pdf, pdf_has_num_pages
+from pdf_test_support import is_valid_pdf
+
+gosper_notebook = {
+    # ReMarkable document name
+    "notebook_name": "Gosper",
+    # Where the ReMarkable document can be found
+    ".rmn_source": "tests/in/v2_notebook_complex",
+    "page_count": 3
+}
 
 r"""
  _____  _____  ______ 
@@ -15,18 +23,16 @@ r"""
 |_|    |_____/|_|     
 """
 @with_remarks("demo/on-computable-numbers/xochitl")
-@with_remarks("tests/in/v2_notebook_complex")
+@with_remarks(gosper_notebook['.rmn_source'])
 @with_remarks("tests/in/v2_book_with_ann")
-def test_can_handle_drawing_with_many_scribbles():
-    gosper_notebook_page_count = 3
-
-    gosper_remarks = fitz.open("tests/out/Gosper _remarks.pdf")
+def test_pdf_output():
+    gosper_remarks = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _remarks.pdf")
     assert is_valid_pdf(gosper_remarks)
-    assert gosper_remarks.page_count == gosper_notebook_page_count
+    assert gosper_remarks.page_count == gosper_notebook["page_count"]
 
-    gosper_rmc = fitz.open("tests/out/Gosper _rmc.pdf")
+    gosper_rmc = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _rmc.pdf")
     assert is_valid_pdf(gosper_rmc)
-    assert gosper_rmc.page_count == 3
+    assert gosper_rmc.page_count == gosper_notebook["page_count"]
 
 
 r"""
