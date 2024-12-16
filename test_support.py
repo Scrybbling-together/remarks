@@ -33,3 +33,9 @@ def with_remarks(input_name):
         return wrapper
 
     return decorator
+
+
+class DevelopmentEnvironmentSetupException(Exception):
+    """Custom exception related to development environment not being set-up correctly.
+       Please refer to the project documentation for more information."""
+    pass

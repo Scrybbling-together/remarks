@@ -80,7 +80,8 @@ def process_document(
     out_path,
 ):
     document = Document(metadata_path)
-    pdf_src = document.open_source_pdf()
+    remarks_pdf_src = document.open_source_pdf()
+    rmc_pdf_src = document.open_source_pdf()
 
     obsidian_markdown = ObsidianMarkdownFile(document)
     obsidian_markdown.add_document_header()
@@ -119,10 +120,10 @@ def process_document(
         # This check is necessary because PyMuPDF doesn't let us
         # "show_pdf_page" from an empty (blank) page
         # - https://github.com/pymupdf/PyMuPDF/blob/9d2af43230f6d9944734320813acc79abe95d514/fitz/utils.py#L185-L186
-        if len(pdf_src[page_idx].get_contents()) != 0:
+        if len(remarks_pdf_src[page_idx].get_contents()) != 0:
             # Resize content of original page and copy it to the page that will
             # be annotated
-            ann_page.show_pdf_page(pdf_src_page_rect, pdf_src, pno=page_idx)
+            ann_page.show_pdf_page(pdf_src_page_rect, remarks_pdf_src, pno=page_idx)
 
             # `show_pdf_page()` works as a way to copy and resize content from
             # one doc/page/rect into another, but unlike `insert_pdf()` it will
@@ -164,22 +165,22 @@ def process_document(
         # If there are annotations outside the original page limits
         # that we've just (re)created from scratch
         if is_ann_out_page:
-            pdf_src.insert_pdf(work_doc, start_at=page_idx)
-            pdf_src.delete_page(page_idx + 1)
+            remarks_pdf_src.insert_pdf(work_doc, start_at=page_idx)
+            remarks_pdf_src.delete_page(page_idx + 1)
 
         # Else, draw annotations on the original PDF page (in-place) to do
         # our best to preserve in-PDF links and the original page size
         if has_annotations:
             draw_annotations_on_pdf(
                 ann_data,
-                pdf_src[page_idx],
+                remarks_pdf_src[page_idx],
                 inplace=True,
             )
 
         if has_smart_highlights:
             add_smart_highlight_annotations(
                 smart_hl_data,
-                pdf_src[page_idx],
+                remarks_pdf_src[page_idx],
                 scale,
                 inplace=True,
             )
@@ -188,8 +189,9 @@ def process_document(
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
 
-    pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
+    remarks_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
+    rmc_pdf_src.save(f"{out_doc_path_str} _rmc.pdf")
 
     obsidian_markdown.save(out_doc_path_str)
 
-    pdf_src.close()
+    remarks_pdf_src.close()

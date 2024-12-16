@@ -5,7 +5,7 @@ from parsita import lit, reg, rep, Parser, opt, until, Failure
 from returns.result import Success
 
 from test_support import with_remarks
-
+from pdf_test_support import is_valid_pdf
 
 
 r"""
@@ -17,19 +17,12 @@ r"""
 |_|    |_____/|_|     
 """
 @with_remarks("demo/on-computable-numbers/xochitl")
-def test_can_process_demo_with_default_args():
-    assert os.path.isfile(
-        "tests/out/1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing _remarks.pdf")
-
-
 @with_remarks("tests/in/v2_notebook_complex")
-def test_can_handle_drawing_with_many_scribbles():
-    assert os.path.isfile("tests/out/Gosper _remarks.pdf")
-
-
 @with_remarks("tests/in/v2_book_with_ann")
-def test_can_handle_book():
-    assert os.path.isfile("tests/out/Gosper _remarks.pdf")
+def test_can_handle_drawing_with_many_scribbles():
+    assert is_valid_pdf("tests/out/Gosper _remarks.pdf")
+    assert is_valid_pdf("tests/out/Gosper _remarks.pdf")
+    assert is_valid_pdf("tests/out/Gosper _rmc.pdf")
 
 
 r"""
@@ -92,6 +85,13 @@ def test_generated_markdown_has_autogeneration_warning():
     with open("tests/out/docsfordevelopers _obsidian.md") as f:
         assert_parser_succeeds(has_warning, f.read())
 
+@with_remarks("tests/in/v3_markdown_tags")
+@pytest.mark.markdown
+def test_yaml_frontmatter_is_valid():
+    with open('tests/out/tags test _obsidian.md') as f:
+        content = f.read()
+        assert_parser_succeeds(frontmatter << whatever, content, ["#remarkable/obsidian"])
+
 
 # @with_remarks("tests/in/v3_markdown_tags")
 # @with_remarks("tests/in/highlighter-test")
@@ -107,12 +107,6 @@ def test_generated_markdown_has_autogeneration_warning():
 #         assert_parser_succeeds(frontmatter >> rmdoc_title << whatever, content, "tags test")
 
 
-@with_remarks("tests/in/v3_markdown_tags")
-@pytest.mark.markdown
-def test_yaml_frontmatter_is_valid():
-    with open('tests/out/tags test _obsidian.md') as f:
-        content = f.read()
-        assert_parser_succeeds(frontmatter << whatever, content, ["#remarkable/obsidian"])
 
 # @with_remarks("tests/in/v3_typed_text")
 # def test_something():
