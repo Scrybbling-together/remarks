@@ -3,15 +3,26 @@ from fitz import fitz
 from parsita import lit, reg, rep, Parser, opt, until, Failure
 from returns.result import Success
 
+from remarks.metadata import ReMarkableAnnotationsFileHeaderVersion
 from test_support import with_remarks
 from pdf_test_support import is_valid_pdf
 
+# A metadata object MUST be entirely hand-crafted and hand-checked
 gosper_notebook = {
     # ReMarkable document name
     "notebook_name": "Gosper",
     # Where the ReMarkable document can be found
     ".rmn_source": "tests/in/v2_notebook_complex",
-    "page_count": 3
+    "page_count": 3,
+    "pages": [
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3
+        }, {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3
+        }, {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3
+        }
+    ]
 }
 
 r"""
@@ -33,6 +44,9 @@ def test_pdf_output():
     gosper_rmc = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _rmc.pdf")
     assert is_valid_pdf(gosper_rmc)
     assert gosper_rmc.page_count == gosper_notebook["page_count"]
+
+    text = "".join([page.get_text() for page in gosper_rmc])
+    assert "Scrybble error" in text
 
 
 r"""

@@ -10,6 +10,7 @@ from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock, LwwValue
 from rmscene.scene_items import Line, GlyphRange, Rectangle, ParagraphStyle, END_MARKER
 from rmscene.text import TextDocument
 
+from ..metadata import ReMarkableAnnotationsFileHeaderVersion
 from ..utils import (
     RM_WIDTH,
     RM_HEIGHT,
@@ -264,6 +265,25 @@ def determine_document_dimensions(file_path) -> ReMarkableDimensions:
     return ReMarkableDimensions(
         dims["x_max"] - dims["x_min"], dims["y_max"] - dims["y_min"]
     )
+
+
+def read_rm_file_version(file_path: str) -> ReMarkableAnnotationsFileHeaderVersion:
+    with open(file_path, "rb") as f:
+        src_header = f.readline()
+
+        expected_header_fmt = b"reMarkable .lines file, version=0          "
+        fmt = f"<{len(expected_header_fmt)}sI"
+        header, nlayers = struct.unpack_from(fmt, src_header, 0)
+
+        if header == "3":
+            return ReMarkableAnnotationsFileHeaderVersion.V3
+        elif header == "6":
+            return ReMarkableAnnotationsFileHeaderVersion.V6
+        else:
+            return ReMarkableAnnotationsFileHeaderVersion.UNKNOWN
+
+
+
 
 
 def check_rm_file_version(file_path):

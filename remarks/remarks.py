@@ -12,12 +12,13 @@ from .conversion.drawing import (
 from .conversion.parsing import (
     parse_rm_file,
     rescale_parsed_data,
-    get_ann_max_bound, determine_document_dimensions,
+    get_ann_max_bound, determine_document_dimensions, read_rm_file_version,
 )
 from .conversion.text import (
     extract_groups_from_smart_hl,
 )
 from .dimensions import REMARKABLE_PDF_EXPORT, REMARKABLE_DOCUMENT
+from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .utils import (
     is_document,
@@ -94,10 +95,9 @@ def process_document(
         rm_highlights_file,
         has_smart_highlights,
     ) in document.pages():
+        page = rmc_pdf_src[page_idx]
         print(f"processing page {page_idx}, {page_uuid}")
-
         # Create a new PDF document to hold the page that will be annotated
-        rmc_work_doc = fitz.open()
         remarks_work_doc = fitz.open()
 
         # Get document page dimensions and calculate what scale should be
@@ -109,22 +109,20 @@ def process_document(
                 dims = REMARKABLE_PDF_EXPORT
         else:
             dims = REMARKABLE_PDF_EXPORT
-        ann_page = remarks_work_doc.new_page(
+        remarks_annotations_page = remarks_work_doc.new_page(
             width=dims.width,
             height=dims.height,
         )
+
 
         pdf_src_page_rect = fitz.Rect(
             0, 0, REMARKABLE_PDF_EXPORT.width, REMARKABLE_PDF_EXPORT.height
         )
 
-        # This check is necessary because PyMuPDF doesn't let us
-        # "show_pdf_page" from an empty (blank) page
-        # - https://github.com/pymupdf/PyMuPDF/blob/9d2af43230f6d9944734320813acc79abe95d514/fitz/utils.py#L185-L186
         if len(remarks_pdf_src[page_idx].get_contents()) != 0:
             # Resize content of original page and copy it to the page that will
             # be annotated
-            ann_page.show_pdf_page(pdf_src_page_rect, remarks_pdf_src, pno=page_idx)
+            remarks_annotations_page.show_pdf_page(pdf_src_page_rect, remarks_pdf_src, pno=page_idx)
 
             # `show_pdf_page()` works as a way to copy and resize content from
             # one doc/page/rect into another, but unlike `insert_pdf()` it will
@@ -132,11 +130,18 @@ def process_document(
             # - https://pymupdf.readthedocs.io/en/latest/page.html#Page.show_pdf_page
             # - https://pymupdf.readthedocs.io/en/latest/document.html#Document.insert_pdf
 
+        rm_file_version = read_rm_file_version(rm_annotation_file)
+
+        if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
+            # TODO: Invoke rmc and paste output onto the page
+            raise NotImplementedError("")
+        else:
+            page.insert_text((10, 10), "Scrybble error")
+
         (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
         x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
         offset_x = 0
         offset_y = 0
-        is_ann_out_page = True
         if version == "V6":
             offset_x = RM_WIDTH / 2
         if dims.height >= (RM_HEIGHT + 88 * 3):
@@ -148,7 +153,6 @@ def process_document(
             scale = REMARKABLE_DOCUMENT.height / (max(y_max, 2048) - min(y_min, 0))
             ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
 
-
         if ann_data:
             if "text" in ann_data:
                 obsidian_markdown.add_text(page_idx, ann_data['text'])
@@ -156,18 +160,15 @@ def process_document(
                 obsidian_markdown.add_highlights(page_idx, ann_data["highlights"])
 
         if has_annotations:
-            ann_page = draw_annotations_on_pdf(ann_data, ann_page)
+            remarks_annotations_page = draw_annotations_on_pdf(ann_data, remarks_annotations_page)
 
         if has_smart_highlights:
             smart_hl_data = load_json_file(rm_highlights_file)
-            add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
+            add_smart_highlight_annotations(smart_hl_data, remarks_annotations_page, scale)
             extract_groups_from_smart_hl(smart_hl_data)
 
-        # If there are annotations outside the original page limits
-        # that we've just (re)created from scratch
-        if is_ann_out_page:
-            remarks_pdf_src.insert_pdf(remarks_work_doc, start_at=page_idx)
-            remarks_pdf_src.delete_page(page_idx + 1)
+        remarks_pdf_src.insert_pdf(remarks_work_doc, start_at=page_idx)
+        remarks_pdf_src.delete_page(page_idx + 1)
 
         # Else, draw annotations on the original PDF page (in-place) to do
         # our best to preserve in-PDF links and the original page size
