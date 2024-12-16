@@ -1,8 +1,4 @@
 import functools
-import os
-import tempfile
-
-import pytest
 import remarks
 
 
