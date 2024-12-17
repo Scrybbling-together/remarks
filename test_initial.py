@@ -1,3 +1,5 @@
+from enum import Enum
+
 import pytest
 from fitz import fitz
 from parsita import lit, reg, rep, Parser, opt, until, Failure
@@ -5,7 +7,18 @@ from returns.result import Success
 
 from remarks.metadata import ReMarkableAnnotationsFileHeaderVersion
 from test_support import with_remarks
-from pdf_test_support import is_valid_pdf
+from pdf_test_support import is_valid_pdf, assert_scrybble_warning_appears_on_page
+
+UNKNOWN = None
+"""
+This value is meant to be used in metadata objects, when data field value is not yet manually reviewed.
+"""
+
+class ReMarkableNotebookType(Enum):
+    NOTEBOOK = "Notebook"
+    EBOOK = "EBook"
+    PDF = "PDF"
+
 
 # A metadata object MUST be entirely hand-crafted and hand-checked
 gosper_notebook = {
@@ -13,17 +26,49 @@ gosper_notebook = {
     "notebook_name": "Gosper",
     # Where the ReMarkable document can be found
     ".rmn_source": "tests/in/v2_notebook_complex",
-    "page_count": 3,
-    "pages": [
+    "notebook_type": ReMarkableNotebookType.NOTEBOOK,
+    # The amount of pages that are coming from a source PDF
+    "pdf_pages": 0,
+    ".rm_files": [
         {
-            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3,
+            "output_document_position": 0
         }, {
-            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3,
+            "output_document_position": 1
         }, {
-            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3,
+            "output_document_position": 2
         }
     ]
 }
+
+on_computable_numbers = {
+    # ReMarkable document name
+    "notebook_name": "1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing",
+    # Where the ReMarkable document can be found
+    ".rmn_source": "tests/in/on-computable-numbers",
+    "notebook_type": ReMarkableNotebookType.PDF,
+    # The amount of pages that are coming from a source PDF
+    "pdf_pages": 36,
+    ".rm_files": [
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V5,
+            "output_document_position": 0
+
+        },
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V5,
+            "output_document_position": 1
+        },
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V5,
+            "output_document_position": 27
+        }
+    ]
+}
+
+
 
 r"""
  _____  _____  ______ 
@@ -33,20 +78,29 @@ r"""
 | |    | |__| | |     
 |_|    |_____/|_|     
 """
-@with_remarks("demo/on-computable-numbers/xochitl")
-@with_remarks(gosper_notebook['.rmn_source'])
-@with_remarks("tests/in/v2_book_with_ann")
-def test_pdf_output():
-    gosper_remarks = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _remarks.pdf")
-    assert is_valid_pdf(gosper_remarks)
-    assert gosper_remarks.page_count == gosper_notebook["page_count"]
 
+@with_remarks(on_computable_numbers['.rmn_source'])
+def test_v5_document():
+    on_computable_numbers_rmc = fitz.open(f"tests/out/{on_computable_numbers['notebook_name']} _rmc.pdf")
+    assert is_valid_pdf(on_computable_numbers_rmc)
+    assert on_computable_numbers_rmc.page_count == on_computable_numbers['pdf_pages']
+
+    # There should be a warning, since v5 is not yet supported by the rmc-renderer
+    assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][0]['output_document_position'])
+    assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][1]['output_document_position'])
+    assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][2]['output_document_position'])
+
+
+@with_remarks(gosper_notebook['.rmn_source'])
+def test_pdf_output():
     gosper_rmc = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _rmc.pdf")
     assert is_valid_pdf(gosper_rmc)
-    assert gosper_rmc.page_count == gosper_notebook["page_count"]
+    assert gosper_rmc.page_count == len(gosper_notebook[".rm_files"])
 
-    text = "".join([page.get_text() for page in gosper_rmc])
-    assert "Scrybble error" in text
+    # There should be a warning, since v3 is not yet supported by the rmc-renderer
+    assert_scrybble_warning_appears_on_page(gosper_rmc, gosper_notebook['.rm_files'][0]['output_document_position'])
+    assert_scrybble_warning_appears_on_page(gosper_rmc, gosper_notebook['.rm_files'][1]['output_document_position'])
+    assert_scrybble_warning_appears_on_page(gosper_rmc, gosper_notebook['.rm_files'][2]['output_document_position'])
 
 
 r"""

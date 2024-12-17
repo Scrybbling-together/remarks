@@ -95,8 +95,8 @@ def process_document(
         rm_highlights_file,
         has_smart_highlights,
     ) in document.pages():
-        page = rmc_pdf_src[page_idx]
         print(f"processing page {page_idx}, {page_uuid}")
+        page = rmc_pdf_src[page_idx]
         # Create a new PDF document to hold the page that will be annotated
         remarks_work_doc = fitz.open()
 
@@ -113,7 +113,6 @@ def process_document(
             width=dims.width,
             height=dims.height,
         )
-
 
         pdf_src_page_rect = fitz.Rect(
             0, 0, REMARKABLE_PDF_EXPORT.width, REMARKABLE_PDF_EXPORT.height
@@ -136,7 +135,13 @@ def process_document(
             # TODO: Invoke rmc and paste output onto the page
             raise NotImplementedError("")
         else:
-            page.insert_text((10, 10), "Scrybble error")
+            page.add_freetext_annot(
+                rect=fitz.Rect(10, 10, 300, 30),
+                text="Scrybble error",
+                fontsize=11,
+                text_color=(0, 0, 0),
+                fill_color=(1, 1, 1)
+            )
 
         (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
         x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)

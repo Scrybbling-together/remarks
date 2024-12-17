@@ -10,7 +10,7 @@ TODOs.md
 # ignore everything I have put in the `demo/` dir
 demo/
 # except for our public demo
-!demo/on-computable-numbers/xochitl/
+!tests/in/on-computable-numbers/xochitl/
 
 tests/out/*
 .pytest_cache/
