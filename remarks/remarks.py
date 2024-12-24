@@ -4,7 +4,7 @@ import sys
 import tempfile
 import zipfile
 
-import fitz
+import fitz  # PyMuPDF
 
 from .Document import Document
 from .conversion.drawing import (

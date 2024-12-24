@@ -12,5 +12,6 @@ demo/
 # except for our public demo
 !tests/in/on-computable-numbers/xochitl/
 
+tests/data-tests
 tests/out/*
 .pytest_cache/
