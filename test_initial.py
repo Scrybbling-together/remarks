@@ -68,7 +68,20 @@ on_computable_numbers = {
     ]
 }
 
-
+empty_document = {
+    "notebook_name": "Empty",
+    "description": """
+    This document is empty, and has only one page. It contains the handwritten annotation with the word "empty"
+    """,
+    ".rmn_source": "tests/in/empty_document.rmn",
+    "pdf_pages": 1,
+    ".rm_files": [
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
+            "output_document_position": 0
+        }
+    ]
+}
 
 r"""
  _____  _____  ______ 
@@ -90,6 +103,11 @@ def test_v5_document():
     assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][1]['output_document_position'])
     assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][2]['output_document_position'])
 
+
+@with_remarks(empty_document[".rmn_source"])
+def test_supports_rmn_notebook_as_input():
+    empty_document_rmc = fitz.open(f"tests/out/{empty_document['notebook_name']} _rmc.pdf")
+    assert is_valid_pdf(empty_document_rmc)
 
 @with_remarks(gosper_notebook['.rmn_source'])
 def test_pdf_output():

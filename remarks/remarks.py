@@ -1,8 +1,10 @@
 import logging
 import pathlib
 import sys
+import tempfile
+import zipfile
 
-import fitz  # PyMuPDF
+import fitz
 
 from .Document import Document
 from .conversion.drawing import (
@@ -34,6 +36,12 @@ from .utils import (
 def run_remarks(
     input_dir, output_dir
 ):
+    if input_dir.endswith(".rmn"):
+        temp_dir = tempfile.mkdtemp()
+        with zipfile.ZipFile(input_dir, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
+        input_dir = temp_dir
+
     num_docs = sum(1 for _ in pathlib.Path(f"{input_dir}/").glob("*.metadata"))
 
     if num_docs == 0:
