@@ -2,14 +2,6 @@ from flask import Flask, request, jsonify
 from remarks import remarks
 import os, os.path
 
-default_args = {
-    "combined_pdf": True,
-    "combined_md": True,
-    "md_hl_format": "whole_block",
-    "md_page_offset": 0,
-    "md_header_format": "atx",
-}
-
 app = Flask("Remarks http server")
 
 @app.post("/process")
@@ -34,7 +26,7 @@ def process():
     print(f"Making directory {out_dir}")
     os.makedirs(out_dir)
 
-    result = remarks.run_remarks(in_path, out_dir, **default_args)
+    result = remarks.run_remarks(in_path, out_dir)
 
     return "OK"
 

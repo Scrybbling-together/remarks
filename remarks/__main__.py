@@ -41,10 +41,6 @@ def main():
         help="Show this help message",
     )
 
-    parser.set_defaults(
-        combined_pdf=True,
-    )
-
     args = parser.parse_args()
     args_dict = vars(args)
 
