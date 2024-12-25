@@ -9,11 +9,6 @@ from remarks.metadata import ReMarkableAnnotationsFileHeaderVersion
 from test_support import with_remarks
 from pdf_test_support import is_valid_pdf, assert_scrybble_warning_appears_on_page
 
-UNKNOWN = None
-"""
-This value is meant to be used in metadata objects, when data field value is not yet manually reviewed.
-"""
-
 class ReMarkableNotebookType(Enum):
     NOTEBOOK = "Notebook"
     EBOOK = "EBook"
