@@ -3,7 +3,7 @@
 echo "Running pytest before commit..."
 
 # Run pytest
-nix-shell --run "pytest"
+nix develop --command "pytest"
 
 # Check the exit status of pytest
 if [ $? -ne 0 ]; then
