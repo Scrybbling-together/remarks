@@ -71,6 +71,11 @@
           remarks = remarksBin;
         };
 
+        apps.default = {
+          type = "app";
+          program = "${remarksBin}/bin/remarks";
+        };
+
         devShells.default = environment;
       });
 }
