@@ -1,10 +1,13 @@
 import logging
+import os
 import pathlib
 import sys
 import tempfile
 import zipfile
 
 import fitz  # PyMuPDF
+from fitz import Page
+from rmc.exporters.pdf import rm_to_pdf
 
 from .Document import Document
 from .conversion.drawing import (
@@ -140,16 +143,19 @@ def process_document(
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
-            # TODO: Invoke rmc and paste output onto the page
-            raise NotImplementedError("")
+            temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
+            try:
+                rm_to_pdf(rm_annotation_file, temp_pdf.name)
+                temp_pdf.close()
+                p = fitz.open(temp_pdf.name)
+                rmc_pdf_src.insert_pdf(p, start_at=page_idx)
+                rmc_pdf_src.delete_page(page_idx + 1)
+            except AttributeError:
+                add_error_annotation(page)
+            finally:
+                os.remove(temp_pdf.name)
         else:
-            page.add_freetext_annot(
-                rect=fitz.Rect(10, 10, 300, 30),
-                text="Scrybble error",
-                fontsize=11,
-                text_color=(0, 0, 0),
-                fill_color=(1, 1, 1)
-            )
+            add_error_annotation(page)
 
         (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
         x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
@@ -207,4 +213,14 @@ def process_document(
     rmc_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
 
     obsidian_markdown.save(out_doc_path_str)
+
+
+def add_error_annotation(page: Page):
+    page.add_freetext_annot(
+        rect=fitz.Rect(10, 10, 300, 30),
+        text="Scrybble error",
+        fontsize=11,
+        text_color=(0, 0, 0),
+        fill_color=(1, 1, 1)
+    )
 

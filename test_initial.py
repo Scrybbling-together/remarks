@@ -7,7 +7,8 @@ from returns.result import Success
 
 from remarks.metadata import ReMarkableAnnotationsFileHeaderVersion
 from test_support import with_remarks
-from pdf_test_support import is_valid_pdf, assert_scrybble_warning_appears_on_page
+from pdf_test_support import is_valid_pdf, assert_scrybble_warning_appears_on_page, assert_page_renders_without_warnings
+
 
 class ReMarkableNotebookType(Enum):
     NOTEBOOK = "Notebook"
@@ -63,13 +64,13 @@ on_computable_numbers = {
     ]
 }
 
-empty_document = {
-    "notebook_name": "Empty",
+black_and_white_document = {
+    "notebook_name": "B&W rmpp",
     "description": """
-    This document is empty, and has only one page. It contains the handwritten annotation with the word "empty"
+    A simple notebook with only black and white on one page
     """,
-    ".rmn_source": "tests/in/empty_document.rmn",
-    "pdf_pages": 1,
+    ".rmn_source": "tests/in/rmpp - v6 - black and white only.rmn",
+    "notebook_type": ReMarkableNotebookType.NOTEBOOK,
     ".rm_files": [
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
@@ -77,6 +78,7 @@ empty_document = {
         }
     ]
 }
+
 
 r"""
  _____  _____  ______ 
@@ -98,11 +100,14 @@ def test_v5_document():
     assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][1]['output_document_position'])
     assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][2]['output_document_position'])
 
+@with_remarks(black_and_white_document['.rmn_source'])
+def test_renders_notebook_with_single_v6_page_properly():
+    black_and_white_rmc = fitz.open(f"tests/out/{black_and_white_document['notebook_name']} _remarks.pdf")
+    assert is_valid_pdf(black_and_white_rmc)
+    assert black_and_white_rmc.page_count == 1
 
-@with_remarks(empty_document[".rmn_source"])
-def test_supports_rmn_notebook_as_input():
-    empty_document_rmc = fitz.open(f"tests/out/{empty_document['notebook_name']} _remarks.pdf")
-    assert is_valid_pdf(empty_document_rmc)
+    assert_page_renders_without_warnings(black_and_white_rmc, black_and_white_document['.rm_files'][0]['output_document_position'])
+
 
 @with_remarks(gosper_notebook['.rmn_source'])
 def test_pdf_output():

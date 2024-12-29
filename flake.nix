@@ -15,7 +15,7 @@
           mkPoetryApplication defaultPoetryOverrides;
         pythonEnv = pkgs.python310.withPackages (ps: [ ]);
 
-        poetryConfig = {
+        remarksBin = mkPoetryApplication {
           projectDir = ./.;
           python = pkgs.python310;
           preferWheels = true;
@@ -24,14 +24,10 @@
               buildInputs = (old.buildInputs or [ ]) ++ [ prev.flit-scm ];
             });
           });
+          extras = [ "server" ];
           # Optional overrides if needed:
           # overrides = poetry2nix.overrides.withDefaults (final: prev: { });
         };
-
-        remarksBin = mkPoetryApplication poetryConfig;
-        remarksServer = mkPoetryApplication (poetryConfig // {
-          extras = [ "server" ];
-        });
 
         environment = pkgs.mkShell {
           buildInputs = [

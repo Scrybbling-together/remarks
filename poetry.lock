@@ -548,6 +548,21 @@ check-laws = ["hypothesis (>=6.98,<7.0)", "pytest (>=8.0,<9.0)"]
 compatible-mypy = ["mypy (>=1.10,<1.11)"]
 
 [[package]]
+name = "rmc"
+version = "0.2.1"
+description = "Convert to/from v6 .rm files from the reMarkable tablet"
+optional = false
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "rmc-0.2.1-py3-none-any.whl", hash = "sha256:814433f7b728ddaea918166795feec245e897aec93f7d14e1d7bf99b3b1593fa"},
+    {file = "rmc-0.2.1.tar.gz", hash = "sha256:34f03406ae58b26b7e9c66ed00eb2a1368768dc2aaa95eaca518d8f939dc615c"},
+]
+
+[package.dependencies]
+click = ">=8.0,<9.0"
+rmscene = ">=0.6.0,<0.7.0"
+
+[[package]]
 name = "rmscene"
 version = "0.6.0"
 description = "Read v6 .rm files from the reMarkable tablet"
@@ -713,4 +728,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "fc02d5043276ac5eb9d40925cef8c841a16197bf54e523ac38d787f2bf499061"
+content-hash = "a066874235076306b9df86a6ed84851ae61d0a8847fb2df99d191575e7d3afe5"

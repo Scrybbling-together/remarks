@@ -5,7 +5,7 @@ description = "Extract annotations (highlights and scribbles) from PDF, EPUB, an
 authors = ["Laura <https://github.com/azeirah>"]
 readme = "README.md"
 license = "GPL-3.0-only"
-repository = "https://github.com/lucasrla/remarks"
+repository = "https://github.com/az/remarks"
 keywords = ["remarkable-tablet", "remarkable", "markdown", "png", "pdf", "svg", "annotations", "highlights", "scribbles"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -24,13 +24,14 @@ pyyaml = "^6.0.1"
 parsita = "^2.1.1"
 numpy = "^2.2.1"
 flask = "^3.1.0"
+rmc = "^0.2.1"
 
 [tool.poetry.extras]
 server = ["flask"]
 
 [tool.poetry.scripts]
 remarks = 'remarks.__main__:main'
-remarks-server = "server.__main__:main"
+remarks-server = "remarks.server:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"

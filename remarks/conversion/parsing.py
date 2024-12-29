@@ -271,13 +271,17 @@ def read_rm_file_version(file_path: str) -> ReMarkableAnnotationsFileHeaderVersi
     with open(file_path, "rb") as f:
         src_header = f.readline()
 
+        # 32nd character (marked with V) is the version number
+        #                                                       V
         expected_header_fmt = b"reMarkable .lines file, version=0          "
         fmt = f"<{len(expected_header_fmt)}sI"
         header, nlayers = struct.unpack_from(fmt, src_header, 0)
+        # 32nd character is the version number
+        version = chr(header[32])
 
-        if header == "3":
+        if version == "3":
             return ReMarkableAnnotationsFileHeaderVersion.V3
-        elif header == "6":
+        elif version == "6":
             return ReMarkableAnnotationsFileHeaderVersion.V6
         else:
             return ReMarkableAnnotationsFileHeaderVersion.UNKNOWN
