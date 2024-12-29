@@ -204,9 +204,7 @@ def process_document(
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
 
-    remarks_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
-    rmc_pdf_src.save(f"{out_doc_path_str} _rmc.pdf")
+    rmc_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
 
     obsidian_markdown.save(out_doc_path_str)
 
-    remarks_pdf_src.close()

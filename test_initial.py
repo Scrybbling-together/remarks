@@ -89,7 +89,7 @@ r"""
 
 @with_remarks(on_computable_numbers['.rmn_source'])
 def test_v5_document():
-    on_computable_numbers_rmc = fitz.open(f"tests/out/{on_computable_numbers['notebook_name']} _rmc.pdf")
+    on_computable_numbers_rmc = fitz.open(f"tests/out/{on_computable_numbers['notebook_name']} _remarks.pdf")
     assert is_valid_pdf(on_computable_numbers_rmc)
     assert on_computable_numbers_rmc.page_count == on_computable_numbers['pdf_pages']
 
@@ -101,12 +101,12 @@ def test_v5_document():
 
 @with_remarks(empty_document[".rmn_source"])
 def test_supports_rmn_notebook_as_input():
-    empty_document_rmc = fitz.open(f"tests/out/{empty_document['notebook_name']} _rmc.pdf")
+    empty_document_rmc = fitz.open(f"tests/out/{empty_document['notebook_name']} _remarks.pdf")
     assert is_valid_pdf(empty_document_rmc)
 
 @with_remarks(gosper_notebook['.rmn_source'])
 def test_pdf_output():
-    gosper_rmc = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _rmc.pdf")
+    gosper_rmc = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _remarks.pdf")
     assert is_valid_pdf(gosper_rmc)
     assert gosper_rmc.page_count == len(gosper_notebook[".rm_files"])
 

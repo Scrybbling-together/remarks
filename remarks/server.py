@@ -1,5 +1,5 @@
 from flask import Flask, request
-from remarks import remarks
+import remarks
 import os, os.path
 
 app = Flask("Remarks http server")
