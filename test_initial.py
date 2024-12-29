@@ -77,7 +77,6 @@ black_and_white_document = {
     """,
     ".rmn_source": "tests/in/rmpp - v6 - black and white only.rmn",
     "notebook_type": ReMarkableNotebookType.NOTEBOOK,
-    "merged_pages": 1,
     ".rm_files": [
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
@@ -87,6 +86,36 @@ black_and_white_document = {
     "export_properties": {
         # the amount of pages it should have after export
         "merged_pages": 1
+    }
+}
+
+colored_real_document = {
+    "notebook_name": "Biological relativity",
+    "description": """
+    A notebook with a few pages and various drawings.
+    """,
+    ".rmn_source": "tests/in/rmpp - v6 - various colors.rmn",
+    "notebook_tpye": ReMarkableNotebookType.NOTEBOOK,
+    ".rm_files": [
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
+            "output_document_position": 0
+        },
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
+            "output_document_position": 1
+        },
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
+            "output_document_position": 2
+        },
+        {
+            ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
+            "output_document_position": 3
+        }
+    ],
+    "export_properties": {
+        "merged_pages": 4
     }
 }
 
@@ -118,6 +147,17 @@ def test_renders_notebook_with_single_v6_page_properly():
     assert black_and_white_rmc.page_count == black_and_white_document["export_properties"]["merged_pages"]
 
     assert_page_renders_without_warnings(black_and_white_rmc, black_and_white_document['.rm_files'][0]['output_document_position'])
+
+@with_remarks(colored_real_document[".rmn_source"])
+def test_renders_notebook_with_rmpp_v6_colors_properly():
+    colored_document = fitz.open(f"tests/out/{colored_real_document['notebook_name']} _remarks.pdf")
+    assert is_valid_pdf(colored_document)
+    assert colored_document.page_count == colored_real_document["export_properties"]["merged_pages"]
+
+    assert_page_renders_without_warnings(colored_document, colored_real_document['.rm_files'][0]['output_document_position'])
+    assert_page_renders_without_warnings(colored_document, colored_real_document['.rm_files'][0]['output_document_position'])
+    assert_page_renders_without_warnings(colored_document, colored_real_document['.rm_files'][0]['output_document_position'])
+    assert_page_renders_without_warnings(colored_document, colored_real_document['.rm_files'][0]['output_document_position'])
 
 
 @with_remarks(gosper_notebook['.rmn_source'])

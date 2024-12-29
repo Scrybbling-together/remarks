@@ -25,6 +25,10 @@
             });
           });
           extras = [ "server" ];
+
+          propagatedBuildInputs = [
+            pkgs.inkscape
+          ];
           # Optional overrides if needed:
           # overrides = poetry2nix.overrides.withDefaults (final: prev: { });
         };
@@ -69,7 +73,7 @@
           name = "remarks-bin";
           config = { Entrypoint = [ "${remarksBin}/bin/remarks" ]; };
         };
-        dockerServer = pkgs.dockerTools.buildImage {
+        dockerServer = pkgs.dockerTools.buildLayeredImage {
           name = "remarks-server";
           config = { Entrypoint = [ "${remarksBin}/bin/remarks-server" ]; };
         };
