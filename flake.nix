@@ -29,8 +29,13 @@
           propagatedBuildInputs = [
             pkgs.inkscape
           ];
-          # Optional overrides if needed:
-          # overrides = poetry2nix.overrides.withDefaults (final: prev: { });
+          nativeCheckInputs = [
+            pkgs.inkscape
+          ];
+          checkPhase = ''
+            pytest
+          '';
+          doCheck = true;
         };
 
         environment = pkgs.mkShell {
@@ -84,6 +89,8 @@
           dockerServer = dockerServer;
           dockerBin = dockerBinary;
         };
+
+        checks.default = remarksBin;
 
         apps.default = {
           type = "app";

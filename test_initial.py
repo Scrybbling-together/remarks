@@ -95,7 +95,7 @@ colored_real_document = {
     A notebook with a few pages and various drawings.
     """,
     ".rmn_source": "tests/in/rmpp - v6 - various colors.rmn",
-    "notebook_tpye": ReMarkableNotebookType.NOTEBOOK,
+    "notebook_type": ReMarkableNotebookType.NOTEBOOK,
     ".rm_files": [
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,

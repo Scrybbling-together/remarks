@@ -2,8 +2,7 @@
 
 echo "Running pytest before commit..."
 
-# Run pytest
-nix develop --command "pytest"
+nix flake check
 
 # Check the exit status of pytest
 if [ $? -ne 0 ]; then
