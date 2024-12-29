@@ -707,7 +707,10 @@ MarkupSafe = ">=2.1.1"
 [package.extras]
 watchdog = ["watchdog (>=2.3)"]
 
+[extras]
+server = ["flask"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "cb73765b7dd1020019da5d7d0dbc9abbdc7efb7a0863cecc9d96e6ef8ecef15d"
+content-hash = "fc02d5043276ac5eb9d40925cef8c841a16197bf54e523ac38d787f2bf499061"

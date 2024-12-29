@@ -30,7 +30,7 @@ server = ["flask"]
 
 [tool.poetry.scripts]
 remarks = 'remarks.__main__:main'
-remarks-server = "server.server:main"
+remarks-server = "server.__main__:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"
