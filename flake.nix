@@ -12,10 +12,10 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; })
-          mkPoetryApplication mkPoetryEnv defaultPoetryOverrides;
-        pythonEnv = pkgs.python310.withPackages (ps: with ps; [ ]);
+          mkPoetryApplication defaultPoetryOverrides;
+        pythonEnv = pkgs.python310.withPackages (ps: [ ]);
 
-        remarksBin = mkPoetryApplication {
+        poetryConfig = {
           projectDir = ./.;
           python = pkgs.python310;
           preferWheels = true;
@@ -27,6 +27,11 @@
           # Optional overrides if needed:
           # overrides = poetry2nix.overrides.withDefaults (final: prev: { });
         };
+
+        remarksBin = mkPoetryApplication poetryConfig;
+        remarksServer = mkPoetryApplication (poetryConfig // {
+          extras = [ "server" ];
+        });
 
         environment = pkgs.mkShell {
           buildInputs = [
@@ -63,10 +68,21 @@
             poetry install
           '';
         };
+
+        dockerBinary = pkgs.dockerTools.buildImage {
+          name = "remarks-bin";
+          config = { Entrypoint = [ "${remarksBin}/bin/remarks" ]; };
+        };
+        dockerServer = pkgs.dockerTools.buildImage {
+          name = "remarks-server";
+          config = { Entrypoint = [ "${remarksBin}/bin/remarks-server" ]; };
+        };
       in {
         packages = {
           default = remarksBin;
           remarks = remarksBin;
+          dockerServer = dockerServer;
+          dockerBin = dockerBinary;
         };
 
         apps.default = {
