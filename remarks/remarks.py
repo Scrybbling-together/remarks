@@ -10,19 +10,13 @@ from fitz import Page
 from rmc.exporters.pdf import rm_to_pdf
 
 from .Document import Document
-from .conversion.drawing import (
-    draw_annotations_on_pdf,
-    add_smart_highlight_annotations,
-)
 from .conversion.parsing import (
     parse_rm_file,
-    rescale_parsed_data,
-    get_ann_max_bound, determine_document_dimensions, read_rm_file_version,
+    read_rm_file_version,
 )
 from .conversion.text import (
     extract_groups_from_smart_hl,
 )
-from .dimensions import REMARKABLE_PDF_EXPORT, REMARKABLE_DOCUMENT
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .utils import (
@@ -31,8 +25,6 @@ from .utils import (
     get_visible_name,
     get_ui_path,
     load_json_file,
-    RM_WIDTH,
-    RM_HEIGHT,
 )
 
 
@@ -107,23 +99,6 @@ def process_document(
     ) in document.pages():
         print(f"processing page {page_idx}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
-        # Create a new PDF document to hold the page that will be annotated
-        remarks_work_doc = fitz.open()
-
-        # Get document page dimensions and calculate what scale should be
-        # applied to fit it into the device (given the device's own dimensions)
-        if rm_annotation_file:
-            try:
-                dims = determine_document_dimensions(rm_annotation_file)
-            except ValueError:
-                dims = REMARKABLE_PDF_EXPORT
-        else:
-            dims = REMARKABLE_PDF_EXPORT
-        remarks_annotations_page = remarks_work_doc.new_page(
-            width=dims.width,
-            height=dims.height,
-        )
-
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
@@ -132,8 +107,10 @@ def process_document(
                 rm_to_pdf(rm_annotation_file, temp_pdf.name)
                 temp_pdf.close()
                 p = fitz.open(temp_pdf.name)
+                # dumb workaround
+                if len(page.read_contents()) < 5:
+                    rmc_pdf_src.delete_page(page_idx)
                 rmc_pdf_src.insert_pdf(p, start_at=page_idx)
-                rmc_pdf_src.delete_page(page_idx + 1)
             except AttributeError:
                 add_error_annotation(page)
             finally:
@@ -149,15 +126,9 @@ def process_document(
             if "highlights" in ann_data:
                 obsidian_markdown.add_highlights(page_idx, ann_data["highlights"])
 
-        if has_annotations:
-            remarks_annotations_page = draw_annotations_on_pdf(ann_data, remarks_annotations_page)
-
         if has_smart_highlights:
             smart_hl_data = load_json_file(rm_highlights_file)
-            add_smart_highlight_annotations(smart_hl_data, remarks_annotations_page, scale)
             extract_groups_from_smart_hl(smart_hl_data)
-
-        remarks_work_doc.close()
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
 
