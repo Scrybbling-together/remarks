@@ -92,7 +92,6 @@ def process_document(
     out_path,
 ):
     document = Document(metadata_path)
-    remarks_pdf_src = document.open_source_pdf()
     rmc_pdf_src = document.open_source_pdf()
 
     obsidian_markdown = ObsidianMarkdownFile(document)
@@ -125,21 +124,6 @@ def process_document(
             height=dims.height,
         )
 
-        pdf_src_page_rect = fitz.Rect(
-            0, 0, REMARKABLE_PDF_EXPORT.width, REMARKABLE_PDF_EXPORT.height
-        )
-
-        if len(remarks_pdf_src[page_idx].get_contents()) != 0:
-            # Resize content of original page and copy it to the page that will
-            # be annotated
-            remarks_annotations_page.show_pdf_page(pdf_src_page_rect, remarks_pdf_src, pno=page_idx)
-
-            # `show_pdf_page()` works as a way to copy and resize content from
-            # one doc/page/rect into another, but unlike `insert_pdf()` it will
-            # not carry over in-PDF links, annotations, etc:
-            # - https://pymupdf.readthedocs.io/en/latest/page.html#Page.show_pdf_page
-            # - https://pymupdf.readthedocs.io/en/latest/document.html#Document.insert_pdf
-
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
@@ -158,19 +142,6 @@ def process_document(
             add_error_annotation(page)
 
         (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
-        x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
-        offset_x = 0
-        offset_y = 0
-        if version == "V6":
-            offset_x = RM_WIDTH / 2
-        if dims.height >= (RM_HEIGHT + 88 * 3):
-            offset_y = 3 * 88  # why 3 * text_offset? No clue, ask ReMarkable.
-        if abs(x_min) + abs(x_max) > 1872:
-            scale = REMARKABLE_DOCUMENT.width / (max(x_max, 1872) - min(x_min, 0))
-            ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
-        else:
-            scale = REMARKABLE_DOCUMENT.height / (max(y_max, 2048) - min(y_min, 0))
-            ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
 
         if ann_data:
             if "text" in ann_data:
@@ -185,26 +156,6 @@ def process_document(
             smart_hl_data = load_json_file(rm_highlights_file)
             add_smart_highlight_annotations(smart_hl_data, remarks_annotations_page, scale)
             extract_groups_from_smart_hl(smart_hl_data)
-
-        remarks_pdf_src.insert_pdf(remarks_work_doc, start_at=page_idx)
-        remarks_pdf_src.delete_page(page_idx + 1)
-
-        # Else, draw annotations on the original PDF page (in-place) to do
-        # our best to preserve in-PDF links and the original page size
-        if has_annotations:
-            draw_annotations_on_pdf(
-                ann_data,
-                remarks_pdf_src[page_idx],
-                inplace=True,
-            )
-
-        if has_smart_highlights:
-            add_smart_highlight_annotations(
-                smart_hl_data,
-                remarks_pdf_src[page_idx],
-                scale,
-                inplace=True,
-            )
 
         remarks_work_doc.close()
 

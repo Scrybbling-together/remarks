@@ -36,7 +36,10 @@ gosper_notebook = {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V3,
             "output_document_position": 2
         }
-    ]
+    ],
+    "export_properties": {
+        "merged_pages": 3
+    }
 }
 
 on_computable_numbers = {
@@ -61,7 +64,10 @@ on_computable_numbers = {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V5,
             "output_document_position": 27
         }
-    ]
+    ],
+    "export_properties": {
+        "merged_pages": 36
+    }
 }
 
 black_and_white_document = {
@@ -71,12 +77,17 @@ black_and_white_document = {
     """,
     ".rmn_source": "tests/in/rmpp - v6 - black and white only.rmn",
     "notebook_type": ReMarkableNotebookType.NOTEBOOK,
+    "merged_pages": 1,
     ".rm_files": [
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
             "output_document_position": 0
         }
-    ]
+    ],
+    "export_properties": {
+        # the amount of pages it should have after export
+        "merged_pages": 1
+    }
 }
 
 
@@ -93,7 +104,7 @@ r"""
 def test_v5_document():
     on_computable_numbers_rmc = fitz.open(f"tests/out/{on_computable_numbers['notebook_name']} _remarks.pdf")
     assert is_valid_pdf(on_computable_numbers_rmc)
-    assert on_computable_numbers_rmc.page_count == on_computable_numbers['pdf_pages']
+    assert on_computable_numbers_rmc.page_count == on_computable_numbers["export_properties"]["merged_pages"]
 
     # There should be a warning, since v5 is not yet supported by the rmc-renderer
     assert_scrybble_warning_appears_on_page(on_computable_numbers_rmc, on_computable_numbers['.rm_files'][0]['output_document_position'])
@@ -104,7 +115,7 @@ def test_v5_document():
 def test_renders_notebook_with_single_v6_page_properly():
     black_and_white_rmc = fitz.open(f"tests/out/{black_and_white_document['notebook_name']} _remarks.pdf")
     assert is_valid_pdf(black_and_white_rmc)
-    assert black_and_white_rmc.page_count == 1
+    assert black_and_white_rmc.page_count == black_and_white_document["export_properties"]["merged_pages"]
 
     assert_page_renders_without_warnings(black_and_white_rmc, black_and_white_document['.rm_files'][0]['output_document_position'])
 
@@ -113,7 +124,7 @@ def test_renders_notebook_with_single_v6_page_properly():
 def test_pdf_output():
     gosper_rmc = fitz.open(f"tests/out/{gosper_notebook['notebook_name']} _remarks.pdf")
     assert is_valid_pdf(gosper_rmc)
-    assert gosper_rmc.page_count == len(gosper_notebook[".rm_files"])
+    assert gosper_rmc.page_count == gosper_notebook["export_properties"]["merged_pages"]
 
     # There should be a warning, since v3 is not yet supported by the rmc-renderer
     assert_scrybble_warning_appears_on_page(gosper_rmc, gosper_notebook['.rm_files'][0]['output_document_position'])
