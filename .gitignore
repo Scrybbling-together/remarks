@@ -7,7 +7,7 @@ __pycache__/
 _/
 TODOs.md
 
-tests/data-tests/
 tests/in/private-tests/
+tests/in/data-tests/
 tests/out/*
 .pytest_cache/
