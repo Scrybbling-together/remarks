@@ -86,7 +86,13 @@ def process_file(file_path):
             capture_output=True, 
             check=True, 
             text=True,
-            timeout=180
+            timeout=180,
+            env={
+                **os.environ,
+                # remarks depends on rmc, rmc depends on inkscape, inkscape can crash in parallel
+                # https://gitlab.com/inkscape/inkscape/-/issues/4716#note_1898150983
+                "SELF_CALL": "anything"
+            }
         )
         duration = time.time() - start_time
         return True, file_path, result.stdout, result.stderr, None, duration
