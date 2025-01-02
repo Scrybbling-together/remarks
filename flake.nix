@@ -23,15 +23,14 @@
             click = prev.click.overridePythonAttrs (old: {
               buildInputs = (old.buildInputs or [ ]) ++ [ prev.flit-scm ];
             });
+            rmc = prev.rmc.overridePythonAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ prev.poetry-core ];
+            });
           });
           extras = [ "server" ];
 
-          propagatedBuildInputs = [
-            pkgs.inkscape
-          ];
-          nativeCheckInputs = [
-            pkgs.inkscape
-          ];
+          propagatedBuildInputs = [ pkgs.inkscape ];
+          nativeCheckInputs = [ pkgs.inkscape ];
           checkPhase = ''
             pytest
           '';
