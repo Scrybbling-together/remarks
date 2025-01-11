@@ -68,7 +68,6 @@
               source .venv/bin/activate
             fi
 
-            pip install poetry
             poetry install
           '';
         };
