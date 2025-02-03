@@ -179,9 +179,9 @@ def test_renders_notebook_with_rmpp_v6_colors_properly():
     assert colored_document.page_count == colored_real_document_metadata.export_properties["merged_pages"]
 
     assert_page_renders_without_warnings(colored_document, colored_real_document_metadata.rm_files[0]['output_document_position'])
-    assert_page_renders_without_warnings(colored_document, colored_real_document_metadata.rm_files[0]['output_document_position'])
-    assert_page_renders_without_warnings(colored_document, colored_real_document_metadata.rm_files[0]['output_document_position'])
-    assert_page_renders_without_warnings(colored_document, colored_real_document_metadata.rm_files[0]['output_document_position'])
+    assert_page_renders_without_warnings(colored_document, colored_real_document_metadata.rm_files[1]['output_document_position'])
+    assert_page_renders_without_warnings(colored_document, colored_real_document_metadata.rm_files[2]['output_document_position'])
+    assert_page_renders_without_warnings(colored_document, colored_real_document_metadata.rm_files[3]['output_document_position'])
 
 
 @with_remarks(gosper_notebook_metadata)
