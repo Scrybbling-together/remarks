@@ -1,19 +1,9 @@
 import functools
+import shutil
+
 import remarks
 from NotebookMetadata import NotebookMetadata
-
-
-def run_once(func):
-    """Decorator to run a function only once."""
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        if not wrapper.has_run:
-            wrapper.has_run = True
-            return func(*args, **kwargs)
-
-    wrapper.has_run = False
-    return wrapper
+from fitz import Document
 
 
 def with_remarks(metadata: NotebookMetadata):
@@ -30,14 +20,21 @@ def with_remarks(metadata: NotebookMetadata):
             if not getattr(with_remarks, f"run_{input_name}", False):
                 remarks.run_remarks(input_dir, output_dir)
                 setattr(with_remarks, f"run_{input_name}", True)
+
+                remarks_generated_pdf = Document(f"tests/out/{metadata.notebook_name} _remarks.pdf")
+                for file in metadata.rm_files:
+                    if "photo" in file:
+                        # show the photo next to the generated page
+                        # - [ ] Get the generated page from the output
+                        position = file["output_document_position"]
+                        img_output = remarks_generated_pdf[position].get_pixmap()
+                        img_output.save(f"tests/out/{metadata.notebook_name} - {position} - Remarks.jpg")
+                        shutil.copy(file["photo"], f"tests/out/{metadata.notebook_name} - {position} - ReMarkable.jpg")
+
+
             return func(*args, **kwargs)
 
         return wrapper
 
     return decorator
 
-
-class DevelopmentEnvironmentSetupException(Exception):
-    """Custom exception related to development environment not being set-up correctly.
-       Please refer to the project documentation for more information."""
-    pass
