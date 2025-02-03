@@ -1,5 +1,6 @@
 import functools
 import remarks
+from NotebookMetadata import NotebookMetadata
 
 
 def run_once(func):
@@ -15,8 +16,9 @@ def run_once(func):
     return wrapper
 
 
-def with_remarks(input_name):
+def with_remarks(metadata: NotebookMetadata):
     """Decorator to run remarks for a specific input directory."""
+    input_name = metadata.rmn_source
 
     def decorator(func):
         @functools.wraps(func)
