@@ -12,7 +12,7 @@ from pdf_test_support import is_valid_pdf, assert_scrybble_warning_appears_on_pa
 markdown_tags = NotebookMetadata(
     description="""A document with a few tags""",
     notebook_name="tags test",
-    rmn_source="tests/in/v3_markdown_tags",
+    rmn_source="tests/in/v3 markdown tags.rmn",
     pdf_pages=0,
     rm_files=[],
     notebook_type=ReMarkableNotebookType.NOTEBOOK,
@@ -22,7 +22,7 @@ markdown_tags = NotebookMetadata(
 gosper_notebook_metadata = NotebookMetadata(
     description="""A document with complex hand-drawn annotations""",
     notebook_name="Gosper",
-    rmn_source="tests/in/v2_notebook_complex",
+    rmn_source="tests/in/v2 notebook complex.rmn",
     pdf_pages=0,
     rm_files=[
         {
