@@ -251,7 +251,7 @@ h1_tag = lit("# ")
 h2_tag = lit("## ")
 h3_tag = lit("### ")
 h4_tag = lit("#### ")
-h6_tag = lit("##### ")
+h5_tag = lit("##### ")
 h6_tag = lit("###### ")
 
 
