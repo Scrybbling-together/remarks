@@ -56,11 +56,13 @@ document_with_various_highlights_metadata = NotebookMetadata(
     rm_files=[
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
-            "output_document_position": 0
+            "output_document_position": 0,
+            "photo": "tests/in/on-computable-numbers-page-1.jpeg"
         },
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
-            "output_document_position": 1
+            "output_document_position": 1,
+            "photo": "tests/in/on-computable-numbers-page-2.jpeg"
         }
     ],
     export_properties={}
@@ -69,17 +71,17 @@ document_with_various_highlights_metadata = NotebookMetadata(
 on_computable_numbers_metadata = NotebookMetadata(
     notebook_name="1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing",
     description="",  # No description provided; set it as an empty string
-    rmn_source="tests/in/on-computable-numbers",
+    rmn_source="tests/in/on computable numbers - v5.rmn",
     notebook_type=ReMarkableNotebookType.PDF,
-    pdf_pages=36,  # From the 'pdf_pages' field in the original dictionary
+    pdf_pages=36,
     rm_files=[
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V5,
-            "output_document_position": 0
+            "output_document_position": 0,
         },
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V5,
-            "output_document_position": 1
+            "output_document_position": 1,
         },
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V5,
@@ -87,7 +89,7 @@ on_computable_numbers_metadata = NotebookMetadata(
         }
     ],
     export_properties={
-        "merged_pages": 36  # Metadata on the exported notebook
+        "merged_pages": 36
     }
 )
 
@@ -98,7 +100,7 @@ black_and_white_metadata = NotebookMetadata(
     """,
     rmn_source="tests/in/rmpp - v6 - black and white only.rmn",
     notebook_type=ReMarkableNotebookType.NOTEBOOK,
-    pdf_pages=1,  # Mapped `merged_pages` to `pdf_pages` since it seems equivalent in intent
+    pdf_pages=1,
     rm_files=[
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
@@ -117,7 +119,7 @@ colored_real_document_metadata = NotebookMetadata(
     """,
     rmn_source="tests/in/rmpp - v6 - various colors.rmn",
     notebook_type=ReMarkableNotebookType.NOTEBOOK,
-    pdf_pages=4,  # From 'merged_pages' in the 'export_properties'
+    pdf_pages=4,
     rm_files=[
         {
             ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
@@ -137,7 +139,7 @@ colored_real_document_metadata = NotebookMetadata(
         }
     ],
     export_properties={
-        "merged_pages": 4  # Metadata on the exported notebook
+        "merged_pages": 4
     }
 )
 
