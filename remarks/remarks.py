@@ -87,8 +87,10 @@ def run_remarks(
 def process_document(
         metadata_path,
         out_path,
-        template_path = None
+        templates_per_page = None
 ):
+    if templates_per_page is None:
+        templates_per_page = {}
     document = Document(metadata_path)
     rmc_pdf_src = document.open_source_pdf()
 
@@ -114,7 +116,7 @@ def process_document(
                 # convert the pdf
                 with open(rm_annotation_file, "rb") as infile, open(temp_svg.name, "wt") as outfile:
                     tree = read_tree(infile)
-                    tree_to_svg(tree, outfile, template_path)
+                    tree_to_svg(tree, outfile, templates_per_page.get(page_uuid, None))
                 with open(temp_svg.name, "r") as svg_f, open(temp_pdf.name, "wb") as pdf_f:
                     svg_to_pdf(svg_f, pdf_f)
                 svg_pdf = fitz.open(temp_pdf.name)
