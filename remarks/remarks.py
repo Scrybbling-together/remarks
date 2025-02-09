@@ -10,7 +10,7 @@ import zipfile
 import fitz  # PyMuPDF
 from fitz import Page
 from rmc.exporters.pdf import svg_to_pdf
-from rmc.exporters.svg import rm_to_svg, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
+from rmc.exporters.svg import read_tree, tree_to_svg, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
 
 from .Document import Document
 from .conversion.parsing import (
@@ -87,7 +87,10 @@ def run_remarks(
 def process_document(
         metadata_path,
         out_path,
+        templates_per_page = None
 ):
+    if templates_per_page is None:
+        templates_per_page = {}
     document = Document(metadata_path)
     rmc_pdf_src = document.open_source_pdf()
 
@@ -111,7 +114,9 @@ def process_document(
             temp_svg = tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False)
             try:
                 # convert the pdf
-                rm_to_svg(rm_annotation_file, temp_svg.name)
+                with open(rm_annotation_file, "rb") as infile, open(temp_svg.name, "wt") as outfile:
+                    tree = read_tree(infile)
+                    tree_to_svg(tree, outfile, templates_per_page.get(page_uuid, None))
                 with open(temp_svg.name, "r") as svg_f, open(temp_pdf.name, "wb") as pdf_f:
                     svg_to_pdf(svg_f, pdf_f)
                 svg_pdf = fitz.open(temp_pdf.name)
