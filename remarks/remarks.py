@@ -161,14 +161,10 @@ def process_document(
                                         height=height)
                     page.show_pdf_page(fitz.Rect(x_bg, y_bg, x_bg + w_bg, y_bg + h_bg),
                                        rmc_pdf_src,
-<<<<<<< HEAD
-                                       page_idx)
-=======
                                        page_idx,
                                        # The rect above is in rotated coordinates, so we need to rotate the page to match
                                        # ... why this needs to be the negative of the page rotation is beyond me though...
                                        rotate=-page_rotation)
->>>>>>> a757d7e (Fix rotated documents)
                     page.show_pdf_page(fitz.Rect(x_svg, y_svg, x_svg + w_svg, y_svg + h_svg),
                                        svg_pdf,
                                        0)
