@@ -223,23 +223,23 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
             last_highlight = new_highlights[-1]
             last_end = last_highlight.start + last_highlight.length
             current_end = highlight.start + highlight.length
-            
+
             # Check if there's an overlap
             if highlight.start <= last_end:
                 # Calculate the combined range
                 combined_end = max(last_end, current_end)
-                
+
                 # Merge the text
                 # First, keep the text from last_highlight up to the start of the overlap
                 merged_text = last_highlight.text
-                
+
                 # If the current highlight extends beyond the previous one, append that part
                 if current_end > last_end:
                     # We take everything after the overlap from this.
                     extension_start = max(0, last_end - highlight.start)
                     extension_text = highlight.text[extension_start:]
                     merged_text += extension_text
-                
+
                 # Update the last highlight with the merged information
                 last_highlight.text = merged_text
                 last_highlight.length = combined_end - last_highlight.start
@@ -247,10 +247,12 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
                 # No overlap, just add the new highlight
                 new_highlights.append(copy.copy(highlight))
     highlights = new_highlights
-    
-    highlight_quads: List[Quad] = []
+
+    highlight_quads: List[tuple[Point, Point]] = []
     # (x0, y0, x1, y1, "word", block_no, line_no, word_no)
-    word_bounding_boxes: List[tuple[float, float, float, float, string, int, int, int]] = page.get_textpage().extractWORDS()
+    word_bounding_boxes: List[
+        tuple[float, float, float, float, string, int, int, int]
+    ] = page.get_textpage().extractWORDS()
     for highlight in highlights:
         highlight_words = highlight.text.split()
         if highlight_words == []:
@@ -261,23 +263,62 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
             if word[4] in highlight_words:
                 candidates.append(i)
         # Then we check if the rest of the highlight words are in the right order
-        for candidate in candidates:
-            match = True
-            for i, word in enumerate(highlight_words):
-                if candidate + i >= len(word_bounding_boxes) or word_bounding_boxes[candidate + i][4] != word:
-                    match = False
-                    break
+        for candidate_idx in candidates:
+            match_idx = match_highlight(word_bounding_boxes, candidate_idx, highlight_words)
             # If we found a full match, we add the highlight to the list
-            if match:
-                first_word = word_bounding_boxes[candidate]
-                last_word = word_bounding_boxes[candidate + len(highlight_words) - 1]
-                text_p1 = fitz.Point(first_word[0], first_word[1])
-                text_p2 = fitz.Point(last_word[2], last_word[3])
-                highlight_quads.append(fitz.Rect(text_p1, text_p2))
+            if match_idx is not None:
+                first_word = word_bounding_boxes[candidate_idx]
+                last_word = word_bounding_boxes[
+                    candidate_idx + len(highlight_words) + match_idx - 1
+                ]
+                # In order to make sure we don't highlight any text we don't want to highlight, we take the center line of the text. This is a bit of a hack, but it works.
+                text_p1 = fitz.Point(first_word[0], (first_word[1] + first_word[3]) / 2)
+                text_p2 = fitz.Point(
+                    last_word[2], (last_word[1] + last_word[3]) / 2 * 1.0001
+                )
+                print(last_word)
+                print(
+                    f"Highlighting from {text_p1} to {text_p2} with text {highlight.text}"
+                )
+                # highlight_quads.append(fitz.Rect(text_p1, text_p2))
+                highlight_quads.append((text_p1, text_p2))
                 break
-    # Finally, we highlight all the quads we found
-    for quad in highlight_quads:
-        annot = page.add_highlight_annot(quads=quad)
+    # Finally, we highlight all the matches
+    for start, stop in highlight_quads:
+        annot = page.add_highlight_annot(start=start, stop=stop)
         # We should support colours in the future
         # annot.set_colors(stroke=(1, 0, 0))
         # annot.update()
+
+
+def match_highlight(
+    word_bounding_boxes, candidate_idx: int, highlight_words: List[str]
+) -> int:
+    partial_word_counter = 0
+    for i, expected_word in enumerate(highlight_words):
+        current_idx = candidate_idx + i + partial_word_counter
+
+        if current_idx >= len(word_bounding_boxes):  # Bounds
+            return None
+
+        actual_word = word_bounding_boxes[current_idx][4]
+
+        if actual_word == expected_word:
+            # Full match
+            continue
+
+        # Partial match - actual word is a prefix of the expected word
+        if expected_word.startswith(actual_word):
+            if current_idx + 1 >= len(word_bounding_boxes):  # Bounds
+                return None
+
+            # Check if the next word is the rest of the expected word
+            next_word = word_bounding_boxes[current_idx + 1][4]
+            if next_word == expected_word[len(actual_word) :]:
+                # We've found a match. We can continue, but need to skip the next word as we've already matched it.
+                partial_word_counter += 1
+            else:
+                return None
+        else:
+            return None
+    return partial_word_counter
