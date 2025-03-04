@@ -50,9 +50,6 @@
           ];
 
           shellHook = ''
-            echo "🔍 Remarks Development Environment"
-            echo "• Run 'poetry install' to set up dependencies"
-
             export LD_LIBRARY_PATH="${
               pkgs.lib.makeLibraryPath [ pkgs.libgcc.lib pkgs.zlib ]
             }:$LD_LIBRARY_PATH"
@@ -69,6 +66,16 @@
             fi
 
             poetry install
+
+            echo "🔍 Remarks Development Environment"
+            echo "Nix set-up poetry for you, configured git hooks and activated the python environment :)"
+
+            echo "To run remarks:"
+            echo "python -m remarks {IN_FILE.rmn} {OUTPUT_LOCATION}"
+
+            echo ""
+            echo "To test remarks:"
+            echo "pytest"
           '';
         };
 
