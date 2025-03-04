@@ -5,16 +5,20 @@ With Remarks, you can export notebooks and PDFs from your ReMarkable.
 1. Export your notebooks as PDF
 2. Extract highlights as text
 
-## Goals
+## Install
 
-This is a fork of https://github.com/lucasrla/remarks. This fork has a few goals
+Remarks is designed and developed for Linux. There are no Remarks binaries.
 
-- Support ReMarkable v3
-- Support Type Folio output
-- Retain support for older ReMarkable versions
-- Note: This fork **does not** support all original output variants offered by the original remarks. The focus lies only on getting PDFs and text highlights out. You can use other tools such as Pandoc for conversion.
+1. [Install nix](https://determinate.systems/posts/determinate-nix-installer/)
+2. `nix develop` to work on remarks
+3. `nix run .#` to run remarks
 
-This project assumes familiarity with `git`, `python` and the commandline.
+If you don't want to use Nix, you can use [poetry](https://python-poetry.org/) and install the dependencies manually.
+
+## Functionality
+
+- Convert a ReMarkable notebook to PDF
+- Extract highlights to (Obsidian-compatible) markdown
 
 ## A visual example
 
@@ -32,23 +36,6 @@ And then use `remarks` to export annotated pages to `Markdown`, `PDF`, `PNG`, or
 > 
 > <mark>To</mark>
 > <mark>the memory of My</mark> <mark>Parents</mark>
-
-## Installing Remarks
-
-Linux is recommended, Windows should work too.
-
-- Install Python 3.10+ and [Poetry](https://python-poetry.org/docs/)
-
-```bash
-## Get remarks on your computer
-git clone https://github.com/lucasrla/remarks.git && cd remarks
-## Install the dependencies
-poetry install
-```
-
-## Using Remarks
-
-To get `remarks` up and running on your local machine, follow the instructions below:
 
 ## Usage and Demo
 
