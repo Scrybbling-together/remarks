@@ -210,6 +210,9 @@ def add_error_annotation(page: Page, more_info=""):
         fill_color=(1, 1, 1)
     )
 
+# (x0, y0, x1, y1, "word", block_no, line_no, word_no)
+WordBoundingBox = tuple[float, float, float, float, str, int, int, int]
+
 def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
     # We first get rid of overlapping highlights, keeping only the largest one.
     # Each highlight has a start, and a length, so we can calculate the end.
@@ -249,10 +252,7 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
     highlights = new_highlights
 
     highlight_quads: List[tuple[Point, Point]] = []
-    # (x0, y0, x1, y1, "word", block_no, line_no, word_no)
-    word_bounding_boxes: List[
-        tuple[float, float, float, float, string, int, int, int]
-    ] = page.get_textpage().extractWORDS()
+    word_bounding_boxes: List[WordBoundingBox] = page.get_textpage().extractWORDS()
     for highlight in highlights:
         highlight_words = highlight.text.split()
         if highlight_words == []:
@@ -276,11 +276,6 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
                 text_p2 = fitz.Point(
                     last_word[2], (last_word[1] + last_word[3]) / 2 * 1.0001
                 )
-                print(last_word)
-                print(
-                    f"Highlighting from {text_p1} to {text_p2} with text {highlight.text}"
-                )
-                # highlight_quads.append(fitz.Rect(text_p1, text_p2))
                 highlight_quads.append((text_p1, text_p2))
                 break
     # Finally, we highlight all the matches
@@ -293,7 +288,7 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
 
 
 def match_highlight(
-    word_bounding_boxes, candidate_idx: int, highlight_words: List[str]
+    word_bounding_boxes: List[WordBoundingBox], candidate_idx: int, highlight_words: List[str]
 ) -> int:
     partial_word_counter = 0
     for i, expected_word in enumerate(highlight_words):
