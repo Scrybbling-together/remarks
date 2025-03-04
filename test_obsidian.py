@@ -1,6 +1,7 @@
 from parsita import lit, reg, rep, Parser, opt, Failure, until
 from returns.result import Success
-import pytest
+
+from tests.notebook_fixtures import *
 
 r"""
  __  __            _       _

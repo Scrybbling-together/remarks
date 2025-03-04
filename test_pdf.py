@@ -1,7 +1,7 @@
 import pytest
 
-from conftest import all_notebooks
-from pdf_test_support import assert_page_renders_without_warnings, assert_warning_exists
+from tests.pdf_test_support import assert_page_renders_without_warnings, assert_warning_exists
+from tests.notebook_fixtures import *
 
 r"""
  _____  _____  ______
