@@ -286,9 +286,10 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
     # Finally, we highlight all the matches
     for start, stop in highlight_quads:
         annot = page.add_highlight_annot(start=start, stop=stop)
-        # We should support colours in the future
-        # annot.set_colors(stroke=(1, 0, 0))
-        # annot.update()
+        # Current colour taken from RMC's highlight colour, we should support more colours in the future.
+        annot.set_colors(stroke=(247 / 255, 232 / 255, 81 / 255))
+        annot.set_opacity(0.3)
+        annot.update()
 
 
 def match_highlight(
