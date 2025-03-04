@@ -8,10 +8,13 @@ import traceback
 import zipfile
 import copy
 
+from typing import List
+
 import fitz  # PyMuPDF
 from fitz import Page
 from rmc.exporters.pdf import svg_to_pdf
 from rmc.exporters.svg import rm_to_svg, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
+from rmscene.scene_items import GlyphRange
 
 from .Document import Document
 from .conversion.parsing import (
@@ -207,12 +210,12 @@ def add_error_annotation(page: Page, more_info=""):
         fill_color=(1, 1, 1)
     )
 
-def apply_smart_highlights(page: Page, highlights):
+def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
     # We first get rid of overlapping highlights, keeping only the largest one.
     # Each highlight has a start, and a length, so we can calculate the end.
     # If they overlap partially, we combine them.
     highlights.sort(key=lambda x: x.start)
-    new_highlights = []
+    new_highlights: List[GlyphRange] = []
     for highlight in highlights:
         if new_highlights == []:
             new_highlights.append(copy.copy(highlight))
@@ -245,16 +248,15 @@ def apply_smart_highlights(page: Page, highlights):
                 new_highlights.append(copy.copy(highlight))
     highlights = new_highlights
     
-    highlight_quads = []
-    # This is a list of tuples like this:
+    highlight_quads: List[Quad] = []
     # (x0, y0, x1, y1, "word", block_no, line_no, word_no)
-    word_bounding_boxes = page.get_textpage().extractWORDS()
+    word_bounding_boxes: List[tuple[float, float, float, float, string, int, int, int]] = page.get_textpage().extractWORDS()
     for highlight in highlights:
         highlight_words = highlight.text.split()
         if highlight_words == []:
             continue
         # We first find all occurrences of the first word in the highlight
-        candidates = []
+        candidates: List[int] = []
         for i, word in enumerate(word_bounding_boxes):
             if word[4] in highlight_words:
                 candidates.append(i)
