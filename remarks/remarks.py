@@ -267,16 +267,37 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
             match_idx = match_highlight(word_bounding_boxes, candidate_idx, highlight_words)
             # If we found a full match, we add the highlight to the list
             if match_idx is not None:
-                first_word = word_bounding_boxes[candidate_idx]
-                last_word = word_bounding_boxes[
-                    candidate_idx + len(highlight_words) + match_idx - 1
-                ]
-                # In order to make sure we don't highlight any text we don't want to highlight, we take the center line of the text. This is a bit of a hack, but it works.
-                text_p1 = fitz.Point(first_word[0], (first_word[1] + first_word[3]) / 2)
-                text_p2 = fitz.Point(
-                    last_word[2], (last_word[1] + last_word[3]) / 2 * 1.0001
-                )
-                highlight_quads.append((text_p1, text_p2))
+                start = (None, None, None, None)
+                length = len(highlight_words) + match_idx
+                previous_word = None
+                # In order to support multi-line smart highlights in multi-column documents, we need to split up the highlights across lines.
+                for i, word in enumerate(
+                    word_bounding_boxes[candidate_idx : candidate_idx + length]
+                ):
+                    print(word, start)
+                    is_at_end = i >= length - 1
+                    
+                    if start[1] == word[1] and not is_at_end:
+                        previous_word = word
+                        continue
+                    if start[0] is None: # We're at the start of a highlight
+                        start = word
+                        previous_word = word
+                        if not is_at_end:
+                            continue
+
+                    # If we get here, we have a start, and we know we've reached the end of the highlight (on this line)
+                    end = is_at_end and word or previous_word
+                    print("start", start, "end", end)
+                    highlight_quads.append(
+                        (
+                            fitz.Point(start[0], (start[1] + start[3]) / 2),
+                            fitz.Point(end[2], (end[1] + end[3]) / 2 * 1.0001),
+                        )
+                    )
+                    
+                    start = word
+                    previous_word = None
                 break
     # Finally, we highlight all the matches
     for start, stop in highlight_quads:
