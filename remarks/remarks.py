@@ -274,7 +274,6 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
                 for i, word in enumerate(
                     word_bounding_boxes[candidate_idx : candidate_idx + length]
                 ):
-                    print(word, start)
                     is_at_end = i >= length - 1
                     
                     if start[1] == word[1] and not is_at_end:
@@ -288,7 +287,6 @@ def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
 
                     # If we get here, we have a start, and we know we've reached the end of the highlight (on this line)
                     end = is_at_end and word or previous_word
-                    print("start", start, "end", end)
                     highlight_quads.append(
                         (
                             fitz.Point(start[0], (start[1] + start[3]) / 2),
