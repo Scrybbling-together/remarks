@@ -9,6 +9,8 @@ import shapely.geometry as geom  # Shapely
 from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock, LwwValue
 from rmscene.scene_items import Line, GlyphRange, Rectangle, ParagraphStyle, END_MARKER
 from rmscene.text import TextDocument
+from rmc.exporters.svg import scale, X_SHIFT, build_anchor_pos, get_bounding_box
+from fitz import Rect
 
 from ..metadata import ReMarkableAnnotationsFileHeaderVersion
 from ..utils import (
@@ -136,8 +138,8 @@ class TTextBlock(TypedDict):
 
 
 class TLayers(TypedDict):
-    layers: List[TLayer]
-    highlights: List[str]
+    glyph_ranges: List[GlyphRange]
+    highlights: List[Rect]
     text: TTextBlock | None
 
 
@@ -150,8 +152,8 @@ class TextStyles(Enum):
 
 def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
     output: TLayers = {
-        "layers": [{"strokes": {}, "rectangles": []}],
         "highlights": [],
+        "glyph_ranges": [],
         "text": None,
     }
 
@@ -173,32 +175,22 @@ def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
                     }
             for el in tree.walk():
                 if isinstance(el, GlyphRange):
-                    layer = output["layers"][0]
+                    translated_rectangles = []
+                    for rectangle in el.rectangles:
+                        x, y, w, h = rectangle.x, rectangle.y, rectangle.w, rectangle.h
+                        translated_rectangles.append({
+                            "x": scale(x) + X_SHIFT,
+                            "y": scale(y),
+                            "w": scale(w),
+                            "h": scale(h)
+                        })
                     highlight: TRemarksRectangle = {
                         "rectangles": el.rectangles,
                         "color": el.color.value,
+                        "translated_rectangles": translated_rectangles
                     }
-                    layer["rectangles"].append(highlight)
-                    output["highlights"].append(el)
-                if isinstance(el, Line):
-                    layer = output["layers"][0]
-
-                    if el.points is None:
-                        break
-                    pen = el.tool.value
-                    color = el.color.value
-                    opacity = 1
-                    stroke_width = el.thickness_scale
-
-                    tool, stroke_width, opacity = process_tool(
-                        pen, dims, stroke_width, opacity
-                    )
-                    segment = create_seg_dict(opacity, stroke_width, color)
-                    points_ = [(f"{p.x:.3f}", f"{p.y:.3f}") for p in el.points]
-                    segment["points"].append(points_)
-                    if tool not in layer["strokes"].keys():
-                        layer["strokes"] = update_stroke_dict(layer["strokes"], tool)
-                    layer["strokes"][tool]["segments"].append(segment)
+                    output["glyph_ranges"].append(el)
+                    output["highlights"].append(highlight)
         except AssertionError:
             print("ReMarkable broken data")
 

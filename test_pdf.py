@@ -50,7 +50,9 @@ def test_smart_highlights(notebook, remarks_document):
     for page_num, page_highlights in enumerate(notebook.smart_highlights):
         page = remarks_document[page_num]
         words_on_page = page.get_textpage().extractWORDS()
-        for i, annotation in enumerate(page.annots()):
+        annots = list(page.annots())
+        for i, annotation in enumerate(annots):
             text = extract_annot(annotation, words_on_page)
             assert text == page_highlights[i]
             # We should implement the colour check as well, once that is ready.
+        assert len(annots) == len(page_highlights)
