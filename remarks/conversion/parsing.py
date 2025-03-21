@@ -1,24 +1,21 @@
 import logging
-from dataclasses import dataclass
-
-import math
 import struct
+from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Any, TypedDict, Tuple
 
+import math
+from rmc.exporters.svg import X_SHIFT, xx, yy
 from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock
 from rmscene.scene_items import Line, GlyphRange, Rectangle
 from rmscene.text import TextDocument
-from rmc.exporters.svg import scale, X_SHIFT
-from fitz import Rect
 
+from ..dimensions import ReMarkableDimensions, REMARKABLE_DOCUMENT
 from ..metadata import ReMarkableAnnotationsFileHeaderVersion
 from ..utils import (
     RM_WIDTH,
     RM_HEIGHT,
 )
-
-from ..dimensions import ReMarkableDimensions, REMARKABLE_DOCUMENT
 
 # reMarkable tools
 # http://web.archive.org/web/20190806120447/https://support.remarkable.com/hc/en-us/articles/115004558545-5-1-Tools-Overview
@@ -142,6 +139,7 @@ class TMetaData(TypedDict):
     glyph_ranges: List[GlyphRange]
     highlights: List[TRemarksRectangle]
     text: TTextBlock | None
+    scene_tree: SceneTree | None
 
 
 class TextStyles(Enum):
@@ -156,12 +154,15 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
         "highlights": [],
         "glyph_ranges": [],
         "text": None,
+        "scene_tree": None
     }
 
     with open(file_path, "rb") as f:
         tree = SceneTree()
         blocks = [b for b in read_blocks(f)]
         build_tree(tree, blocks)
+
+        output["scene_tree"] = tree
 
         try:
             for block in blocks:
@@ -176,10 +177,10 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
                 if isinstance(el, GlyphRange):
                     translated_rectangles = [
                         Rectangle(
-                            x=scale(rectangle.x) + X_SHIFT,
-                            y=scale(rectangle.y),
-                            w=scale(rectangle.w),
-                            h=scale(rectangle.h)
+                            x=xx(rectangle.x) + X_SHIFT,
+                            y=yy(rectangle.y),
+                            w=xx(rectangle.w),
+                            h=yy(rectangle.h)
                         ) for rectangle in el.rectangles]
                     # sort by reading order
                     translated_rectangles.sort(key=lambda h: (h.y, h.x))

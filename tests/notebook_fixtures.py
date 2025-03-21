@@ -101,6 +101,11 @@ def highlights_document():
             "According to my definition, a number is computable",
             "if its decimal can be written down by a machine.",
             "In particular, I show that certain large classes",
+            # This happens to just be a highlight that appears twice on the page
+            # it's not a bug, the highlight is there.
+            # It's just overlapping.
+            # For cleanliness purposes, we could perform a calculation to see if there are any rectangles that
+            # are 100% contained within another rectangle and remove them.
             "of",
             "of numbers are computable.",
             "The computable numbers do not, however, include",

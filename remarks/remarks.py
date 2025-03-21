@@ -1,22 +1,16 @@
 import logging
 import os
 import pathlib
-import re
 import sys
 import tempfile
-import traceback
 import zipfile
-import copy
-
 from typing import List
 
 import fitz  # PyMuPDF
 from fitz import Page, Rect
 from rmc.exporters.pdf import svg_to_pdf
-from rmc.exporters.svg import rm_to_svg, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
-from rmscene import SceneTree
-from rmscene.scene_items import GlyphRange
-from rmc.exporters.svg import scale, X_SHIFT, build_anchor_pos, get_bounding_box
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box
+from rmc.exporters.svg import rm_to_svg, xx, yy
 
 from .Document import Document
 from .conversion.parsing import (
@@ -36,8 +30,6 @@ from .utils import (
     load_json_file,
 )
 from .warnings import scrybble_warning_only_v6_supported
-
-SVG_VIEWBOX_PATTERN = re.compile(r"^<svg .+ viewBox=\"([\-\d.]+) ([\-\d.]+) ([\-\d.]+) ([\-\d.]+)\">$")
 
 
 def run_remarks(
@@ -124,25 +116,16 @@ def process_document(
                     svg_to_pdf(svg_f, pdf_f)
                 svg_pdf = fitz.open(temp_pdf.name)
 
+                # This offset is used for smart highlights
                 highlights_x_translation = 0
 
                 # if the background page is not empty, need to merge svg on top of background page
                 if page.get_contents():
                     w_bg, h_bg = page.cropbox.width, page.cropbox.height
                     # find the (top, right) coordinates of the svg
-                    x_shift, y_shift, w_svg, h_svg = 0, 0, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
-                    with open(temp_svg.name, "r") as f:
-                        svg_content = f.readlines()
-                    found = False
-                    for line in svg_content:
-                        res = SVG_VIEWBOX_PATTERN.match(line)
-                        if res is not None:
-                            x_shift, y_shift = float(res.group(1)), float(res.group(2))
-                            w_svg, h_svg = float(res.group(3)), float(res.group(4))
-                            found = True
-                            break
-                    if not found:
-                        logging.warning(f"Can't find x shift, y shift, width and height for {page_uuid}.")
+                    anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
+                    x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
+                    x_shift, y_shift, w_svg, h_svg = xx(x_min), yy(y_min), xx(x_max - x_min + 1), yy(y_max - y_min + 1)
 
                     # compute the width/height of a blank page that can contain both svg and background pdf
                     width, height = max(w_svg, w_bg), max(h_svg, h_bg)
@@ -229,128 +212,3 @@ def apply_smart_highlights(page: Page, highlights: List[TRemarksRectangle],  x_t
             annot.set_colors(stroke=(247 / 255, 232 / 255, 81 / 255))
             annot.set_opacity(0.3)
             annot.update()
-    
-    
-    # We first get rid of overlapping highlights, keeping only the largest one.
-    # Each highlight has a start, and a length, so we can calculate the end.
-    # If they overlap partially, we combine them.
-#     highlights.sort(key=lambda x: x.start)
-#     new_highlights: List[GlyphRange] = []
-#     for highlight in highlights:
-#         if new_highlights == []:
-#             new_highlights.append(copy.copy(highlight))
-#         else:
-#             last_highlight = new_highlights[-1]
-#             last_end = last_highlight.start + last_highlight.length
-#             current_end = highlight.start + highlight.length
-
-#             # Check if there's an overlap
-#             if highlight.start <= last_end:
-#                 # Calculate the combined range
-#                 combined_end = max(last_end, current_end)
-
-#                 # Merge the text
-#                 # First, keep the text from last_highlight up to the start of the overlap
-#                 merged_text = last_highlight.text
-
-#                 # If the current highlight extends beyond the previous one, append that part
-#                 if current_end > last_end:
-#                     # We take everything after the overlap from this.
-#                     extension_start = max(0, last_end - highlight.start)
-#                     extension_text = highlight.text[extension_start:]
-#                     merged_text += extension_text
-
-#                 # Update the last highlight with the merged information
-#                 last_highlight.text = merged_text
-#                 last_highlight.length = combined_end - last_highlight.start
-#             else:
-#                 # No overlap, just add the new highlight
-#                 new_highlights.append(copy.copy(highlight))
-#     highlights = new_highlights
-
-#     highlight_quads: List[tuple[Point, Point]] = []
-#     word_bounding_boxes: List[WordBoundingBox] = page.get_textpage().extractWORDS()
-#     for highlight in highlights:
-#         highlight_words = highlight.text.split()
-#         if highlight_words == []:
-#             continue
-#         # We first find all occurrences of the first word in the highlight
-#         candidates: List[int] = []
-#         for i, word in enumerate(word_bounding_boxes):
-#             if word[4] in highlight_words:
-#                 candidates.append(i)
-#         # Then we check if the rest of the highlight words are in the right order
-#         for candidate_idx in candidates:
-#             match_idx = match_highlight(word_bounding_boxes, candidate_idx, highlight_words)
-#             # If we found a full match, we add the highlight to the list
-#             if match_idx is not None:
-#                 start = (None, None, None, None)
-#                 length = len(highlight_words) + match_idx
-#                 previous_word = None
-#                 # In order to support multi-line smart highlights in multi-column documents, we need to split up the highlights across lines.
-#                 for i, word in enumerate(
-#                     word_bounding_boxes[candidate_idx : candidate_idx + length]
-#                 ):
-#                     is_at_end = i >= length - 1
-                    
-#                     if start[1] == word[1] and not is_at_end:
-#                         previous_word = word
-#                         continue
-#                     if start[0] is None: # We're at the start of a highlight
-#                         start = word
-#                         previous_word = word
-#                         if not is_at_end:
-#                             continue
-
-#                     # If we get here, we have a start, and we know we've reached the end of the highlight (on this line)
-#                     end = is_at_end and word or previous_word
-#                     highlight_quads.append(
-#                         (
-#                             fitz.Point(start[0], (start[1] + start[3]) / 2),
-#                             fitz.Point(end[2], (end[1] + end[3]) / 2 * 1.0001),
-#                         )
-#                     )
-                    
-#                     start = word
-#                     previous_word = None
-#                 break
-#     # Finally, we highlight all the matches
-#     for start, stop in highlight_quads:
-#         annot = page.add_highlight_annot(start=start, stop=stop)
-#         # Current colour taken from RMC's highlight colour, we should support more colours in the future.
-#         annot.set_colors(stroke=(247 / 255, 232 / 255, 81 / 255))
-#         annot.set_opacity(0.3)
-#         annot.update()
-
-
-# def match_highlight(
-#     word_bounding_boxes: List[WordBoundingBox], candidate_idx: int, highlight_words: List[str]
-# ) -> int:
-#     partial_word_counter = 0
-#     for i, expected_word in enumerate(highlight_words):
-#         current_idx = candidate_idx + i + partial_word_counter
-
-#         if current_idx >= len(word_bounding_boxes):  # Bounds
-#             return None
-
-#         actual_word = word_bounding_boxes[current_idx][4]
-
-#         if actual_word == expected_word:
-#             # Full match
-#             continue
-
-#         # Partial match - actual word is a prefix of the expected word
-#         if expected_word.startswith(actual_word):
-#             if current_idx + 1 >= len(word_bounding_boxes):  # Bounds
-#                 return None
-
-#             # Check if the next word is the rest of the expected word
-#             next_word = word_bounding_boxes[current_idx + 1][4]
-#             if next_word == expected_word[len(actual_word) :]:
-#                 # We've found a match. We can continue, but need to skip the next word as we've already matched it.
-#                 partial_word_counter += 1
-#             else:
-#                 return None
-#         else:
-#             return None
-#     return partial_word_counter
