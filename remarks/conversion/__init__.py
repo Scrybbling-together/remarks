@@ -1,7 +1,6 @@
 from .parsing import (
     parse_rm_file,
     rescale_parsed_data,
-    get_ann_max_bound,
     check_rm_file_version
 )
 

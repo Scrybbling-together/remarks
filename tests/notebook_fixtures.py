@@ -101,6 +101,7 @@ def highlights_document():
             "According to my definition, a number is computable",
             "if its decimal can be written down by a machine.",
             "In particular, I show that certain large classes",
+            "of",
             "of numbers are computable.",
             "The computable numbers do not, however, include",
             "all definable numbers,",

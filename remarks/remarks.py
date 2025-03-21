@@ -14,13 +14,14 @@ import fitz  # PyMuPDF
 from fitz import Page, Rect
 from rmc.exporters.pdf import svg_to_pdf
 from rmc.exporters.svg import rm_to_svg, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
+from rmscene import SceneTree
 from rmscene.scene_items import GlyphRange
 from rmc.exporters.svg import scale, X_SHIFT, build_anchor_pos, get_bounding_box
 
 from .Document import Document
 from .conversion.parsing import (
     parse_rm_file,
-    read_rm_file_version,
+    read_rm_file_version, TRemarksRectangle,
 )
 from .conversion.text import (
     extract_groups_from_smart_hl,
@@ -116,72 +117,76 @@ def process_document(
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
             temp_svg = tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False)
-            # try:
-            # convert the pdf
-            rm_to_svg(rm_annotation_file, temp_svg.name)
-            with open(temp_svg.name, "r") as svg_f, open(temp_pdf.name, "wb") as pdf_f:
-                svg_to_pdf(svg_f, pdf_f)
-            svg_pdf = fitz.open(temp_pdf.name)
+            try:
+                # convert the pdf
+                rm_to_svg(rm_annotation_file, temp_svg.name)
+                with open(temp_svg.name, "r") as svg_f, open(temp_pdf.name, "wb") as pdf_f:
+                    svg_to_pdf(svg_f, pdf_f)
+                svg_pdf = fitz.open(temp_pdf.name)
 
-            # if the background page is not empty, need to merge svg on top of background page
-            if page.get_contents() != []:
-                w_bg, h_bg = page.cropbox.width, page.cropbox.height
-                # find the (top, right) coordinates of the svg
-                x_shift, y_shift, w_svg, h_svg = 0, 0, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
-                with open(temp_svg.name, "r") as f:
-                    svg_content = f.readlines()
-                found = False
-                for line in svg_content:
-                    res = SVG_VIEWBOX_PATTERN.match(line)
-                    if res is not None:
-                        x_shift, y_shift = float(res.group(1)), float(res.group(2))
-                        w_svg, h_svg = float(res.group(3)), float(res.group(4))
-                        found = True
-                        break
-                if not found:
-                    logging.warning(f"Can't find x shift, y shift, width and height for {page_uuid}.")
+                highlights_x_translation = 0
 
-                # compute the width/height of a blank page that can contains both svg and background pdf
-                width, height = max(w_svg, w_bg), max(h_svg, h_bg)
-                # compute position of svg and background in the new_page
-                # it aligns the top-middle of the background and with the (0, 0) of the svg
-                x_svg, y_svg = 0, 0
-                x_bg, y_bg = 0, 0
-                if w_svg > w_bg:
-                    x_bg = width / 2 - w_bg / 2 - (w_svg / 2 + x_shift)
-                elif w_svg < w_bg:
-                    x_svg = width / 2 - w_svg / 2 + (w_svg / 2 + x_shift)
-                if h_svg > h_bg:
-                    y_bg = - y_shift
-                elif h_svg < h_bg:
-                    y_svg = y_shift
+                # if the background page is not empty, need to merge svg on top of background page
+                if page.get_contents():
+                    w_bg, h_bg = page.cropbox.width, page.cropbox.height
+                    # find the (top, right) coordinates of the svg
+                    x_shift, y_shift, w_svg, h_svg = 0, 0, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
+                    with open(temp_svg.name, "r") as f:
+                        svg_content = f.readlines()
+                    found = False
+                    for line in svg_content:
+                        res = SVG_VIEWBOX_PATTERN.match(line)
+                        if res is not None:
+                            x_shift, y_shift = float(res.group(1)), float(res.group(2))
+                            w_svg, h_svg = float(res.group(3)), float(res.group(4))
+                            found = True
+                            break
+                    if not found:
+                        logging.warning(f"Can't find x shift, y shift, width and height for {page_uuid}.")
 
-                # create the merged page in independent document as show_pdf_page can't be done on the same document
-                doc = fitz.open()
-                page = doc.new_page(-1,
-                                    width=width,
-                                    height=height)
-                page.show_pdf_page(fitz.Rect(x_bg, y_bg, x_bg + w_bg, y_bg + h_bg),
-                                    rmc_pdf_src,
-                                    page_idx)
-                page.show_pdf_page(fitz.Rect(x_svg, y_svg, x_svg + w_svg, y_svg + h_svg),
-                                    svg_pdf,
-                                    0)
-                
-                if ann_data and "highlights" in ann_data:
-                    apply_smart_highlights(page, ann_data["highlights"])
-                rmc_pdf_src.insert_pdf(doc, start_at=page_idx)
-            else:
-                rmc_pdf_src.insert_pdf(svg_pdf, start_at=page_idx)
-            rmc_pdf_src.delete_page(page_idx + 1)
+                    # compute the width/height of a blank page that can contain both svg and background pdf
+                    width, height = max(w_svg, w_bg), max(h_svg, h_bg)
+                    # compute position of svg and background in the new_page
+                    # it aligns the top-middle of the background and with the (0, 0) of the svg
+                    x_svg, y_svg = 0, 0
+                    x_bg, y_bg = 0, 0
 
-            # except AttributeError:
-            #     add_error_annotation(page)
-            # finally:
-            #     temp_pdf.close()
-            #     os.remove(temp_pdf.name)
-            #     temp_svg.close()
-            #     os.remove(temp_svg.name)
+                    if w_svg > w_bg:
+                        x_bg = width / 2 - w_bg / 2 - (w_svg / 2 + x_shift)
+                        highlights_x_translation = x_bg
+                    elif w_svg < w_bg:
+                        x_svg = width / 2 - w_svg / 2 + (w_svg / 2 + x_shift)
+                        highlights_x_translation = x_svg
+                    if h_svg > h_bg:
+                        y_bg = - y_shift
+                    elif h_svg < h_bg:
+                        y_svg = y_shift
+
+                    # create the merged page in independent document as show_pdf_page can't be done on the same document
+                    doc = fitz.open()
+                    page = doc.new_page(-1,
+                                        width=width,
+                                        height=height)
+                    page.show_pdf_page(fitz.Rect(x_bg, y_bg, x_bg + w_bg, y_bg + h_bg),
+                                        rmc_pdf_src,
+                                        page_idx)
+                    page.show_pdf_page(fitz.Rect(x_svg, y_svg, x_svg + w_svg, y_svg + h_svg),
+                                        svg_pdf,
+                                        0)
+
+                    if ann_data and "highlights" in ann_data:
+                        apply_smart_highlights(page, ann_data["highlights"], highlights_x_translation)
+                    rmc_pdf_src.insert_pdf(doc, start_at=page_idx)
+                else:
+                    rmc_pdf_src.insert_pdf(svg_pdf, start_at=page_idx)
+                rmc_pdf_src.delete_page(page_idx + 1)
+            except AttributeError:
+                add_error_annotation(page)
+            finally:
+                temp_pdf.close()
+                os.remove(temp_pdf.name)
+                temp_svg.close()
+                os.remove(temp_svg.name)
         else:
             scrybble_warning_only_v6_supported.render_as_annotation(page)
 
@@ -214,22 +219,12 @@ def add_error_annotation(page: Page, more_info=""):
 # (x0, y0, x1, y1, "word", block_no, line_no, word_no)
 WordBoundingBox = tuple[float, float, float, float, str, int, int, int]
 
-def apply_smart_highlights(page: Page, highlights: List[GlyphRange]) -> None:
+def apply_smart_highlights(page: Page, highlights: List[TRemarksRectangle],  x_translation: float) -> None:
     for highlight in highlights:
-        print(highlight)
-        for rectangle in highlight["translated_rectangles"]:
-            print("got here", rectangle)
-            x, y, w, h = rectangle["x"], rectangle["y"], rectangle["w"], rectangle["h"]
-            # anchor_pos = build_anchor_pos(tree.root_text)
-            # x_min, x_max, y_min, y_max = get_bounding_box(tree.root, anchor_pos)
-            # width_pt = scale(x_max - x_min + 1)
-            # w_bg = page.cropbox.width
-            # width = max(width_pt, w_bg)
-            # x_offset = 0
-            # if width_pt < w_bg:
-            #     x_offset = width / 2 - width_pt / 2 + (width_pt / 2 + x_min)
-            # print(x_offset)
-            annot = page.add_highlight_annot(quads=Rect((x,y), (x+w, y+h)))
+        for rectangle in highlight.rectangles:
+            x, y, w, h = rectangle.x, rectangle.y, rectangle.w, rectangle.h
+            # compute the width of a blank page that can contain both svg and background pdf
+            annot = page.add_highlight_annot(quads=Rect((x+x_translation,y), (x+x_translation+w, y+h)))
             # Current colour taken from RMC's highlight colour, we should support more colours in the future.
             annot.set_colors(stroke=(247 / 255, 232 / 255, 81 / 255))
             annot.set_opacity(0.3)

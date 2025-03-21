@@ -1,15 +1,15 @@
 import logging
+from dataclasses import dataclass
+
 import math
 import struct
 from enum import Enum
-from pprint import pprint
 from typing import Dict, List, Any, TypedDict, Tuple
 
-import shapely.geometry as geom  # Shapely
-from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock, LwwValue
-from rmscene.scene_items import Line, GlyphRange, Rectangle, ParagraphStyle, END_MARKER
+from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock
+from rmscene.scene_items import Line, GlyphRange, Rectangle
 from rmscene.text import TextDocument
-from rmc.exporters.svg import scale, X_SHIFT, build_anchor_pos, get_bounding_box
+from rmc.exporters.svg import scale, X_SHIFT
 from fitz import Rect
 
 from ..metadata import ReMarkableAnnotationsFileHeaderVersion
@@ -120,6 +120,7 @@ def update_boundaries_from_point(x, y, boundaries):
     boundaries["y_min"] = min(boundaries["y_min"], y)
 
 
+@dataclass
 class TRemarksRectangle:
     color: int
     rectangles: List[Rectangle]
@@ -137,9 +138,9 @@ class TTextBlock(TypedDict):
     text: TextDocument
 
 
-class TLayers(TypedDict):
+class TMetaData(TypedDict):
     glyph_ranges: List[GlyphRange]
-    highlights: List[Rect]
+    highlights: List[TRemarksRectangle]
     text: TTextBlock | None
 
 
@@ -150,14 +151,12 @@ class TextStyles(Enum):
     ITALIC_CLOSE = 4
 
 
-def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
-    output: TLayers = {
+def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
+    output: TMetaData = {
         "highlights": [],
         "glyph_ranges": [],
         "text": None,
     }
-
-    dims = determine_document_dimensions(file_path)
 
     with open(file_path, "rb") as f:
         tree = SceneTree()
@@ -175,20 +174,18 @@ def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
                     }
             for el in tree.walk():
                 if isinstance(el, GlyphRange):
-                    translated_rectangles = []
-                    for rectangle in el.rectangles:
-                        x, y, w, h = rectangle.x, rectangle.y, rectangle.w, rectangle.h
-                        translated_rectangles.append({
-                            "x": scale(x) + X_SHIFT,
-                            "y": scale(y),
-                            "w": scale(w),
-                            "h": scale(h)
-                        })
-                    highlight: TRemarksRectangle = {
-                        "rectangles": el.rectangles,
-                        "color": el.color.value,
-                        "translated_rectangles": translated_rectangles
-                    }
+                    translated_rectangles = [
+                        Rectangle(
+                            x=scale(rectangle.x) + X_SHIFT,
+                            y=scale(rectangle.y),
+                            w=scale(rectangle.w),
+                            h=scale(rectangle.h)
+                        ) for rectangle in el.rectangles]
+                    # sort by reading order
+                    translated_rectangles.sort(key=lambda h: (h.y, h.x))
+                    highlight: TRemarksRectangle = TRemarksRectangle(
+                        color=el.color.value,
+                        rectangles=translated_rectangles)
                     output["glyph_ranges"].append(el)
                     output["highlights"].append(highlight)
         except AssertionError:
@@ -316,7 +313,7 @@ def check_rm_file_version(file_path):
     return True
 
 
-def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TLayers, bool], str]:
+def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TMetaData, bool], str]:
     if dims is None:
         dims = REMARKABLE_DOCUMENT
     with open(file_path, "rb") as f:
@@ -353,7 +350,7 @@ def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TLayers, bool], str]
 
 
 def parse_v3_to_v5(data, dims: ReMarkableDimensions, is_v3, nlayers, offset):
-    output: TLayers = {"layers": [], "highlights": [], "text": []}
+    output: TMetaData = {"layers": [], "highlights": [], "text": []}
     has_highlighter = False
     for _ in range(nlayers):
         fmt = "<I"
@@ -403,7 +400,7 @@ def parse_v3_to_v5(data, dims: ReMarkableDimensions, is_v3, nlayers, offset):
 
 # TODO: make the rescale part of the parsing (or perhaps drawing?) process
 def rescale_parsed_data(
-    parsed_data: TLayers, scale: float, offset_x: int, offset_y: int
+    parsed_data: TMetaData, scale: float, offset_x: int, offset_y: int
 ):
     for layer in parsed_data["layers"]:
         for _, st_value in layer["strokes"].items():
@@ -437,34 +434,3 @@ def rescale_parsed_data(
 # The line segment will pop up hundreds or thousands of times in notebooks where it is relevant.
 # this flag ensures it will print at most once.
 _line_segment_warning_has_been_shown = False
-
-
-def get_ann_max_bound(parsed_data):
-    global _line_segment_warning_has_been_shown
-    # https://shapely.readthedocs.io/en/stable/manual.html#LineString
-    # https://shapely.readthedocs.io/en/stable/manual.html#MultiLineString
-    # https://shapely.readthedocs.io/en/stable/manual.html#object.bounds
-
-    collection = []
-
-    for strokes in parsed_data["layers"]:
-        for _, st_value in strokes["strokes"].items():
-            for _, sg_value in enumerate(st_value["segments"]):
-                for points in sg_value["points"]:
-                    if len(points) <= 1:
-                        # line needs at least two points, see testcase v2_notebook_complex
-                        if not _line_segment_warning_has_been_shown:
-                            logging.warning(
-                                "- Found a segment with a single point, will ignore it. Please report this "
-                                "issue at: https://github.com/lucasrla/remarks/issues/64 "
-                            )
-                            _line_segment_warning_has_been_shown = True
-                        continue
-                    line = geom.LineString([(float(p[0]), float(p[1])) for p in points])
-                    collection.append(line)
-
-    if len(collection) > 0:
-        (minx, miny, maxx, maxy) = geom.MultiLineString(collection).bounds
-        return (maxx, maxy, minx, miny)
-    else:
-        return (0, 0, 0, 0)
