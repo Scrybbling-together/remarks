@@ -5,7 +5,6 @@ from enum import Enum
 from pprint import pprint
 from typing import Dict, List, Any, TypedDict, Tuple
 
-import shapely.geometry as geom  # Shapely
 from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock, LwwValue
 from rmscene.scene_items import Line, GlyphRange, Rectangle, ParagraphStyle, END_MARKER
 from rmscene.text import TextDocument
@@ -135,8 +134,7 @@ class TTextBlock(TypedDict):
     text: TextDocument
 
 
-class TLayers(TypedDict):
-    layers: List[TLayer]
+class TAnnotation(TypedDict):
     highlights: List[str]
     text: TTextBlock | None
 
@@ -148,14 +146,11 @@ class TextStyles(Enum):
     ITALIC_CLOSE = 4
 
 
-def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
-    output: TLayers = {
-        "layers": [{"strokes": {}, "rectangles": []}],
+def parse_v6(file_path: str) -> Tuple[TAnnotation, bool]:
+    output: TAnnotation = {
         "highlights": [],
         "text": None,
     }
-
-    dims = determine_document_dimensions(file_path)
 
     with open(file_path, "rb") as f:
         tree = SceneTree()
@@ -173,32 +168,7 @@ def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
                     }
             for el in tree.walk():
                 if isinstance(el, GlyphRange):
-                    layer = output["layers"][0]
-                    highlight: TRemarksRectangle = {
-                        "rectangles": el.rectangles,
-                        "color": el.color.value,
-                    }
-                    layer["rectangles"].append(highlight)
                     output["highlights"].append(el)
-                if isinstance(el, Line):
-                    layer = output["layers"][0]
-
-                    if el.points is None:
-                        break
-                    pen = el.tool.value
-                    color = el.color.value
-                    opacity = 1
-                    stroke_width = el.thickness_scale
-
-                    tool, stroke_width, opacity = process_tool(
-                        pen, dims, stroke_width, opacity
-                    )
-                    segment = create_seg_dict(opacity, stroke_width, color)
-                    points_ = [(f"{p.x:.3f}", f"{p.y:.3f}") for p in el.points]
-                    segment["points"].append(points_)
-                    if tool not in layer["strokes"].keys():
-                        layer["strokes"] = update_stroke_dict(layer["strokes"], tool)
-                    layer["strokes"][tool]["segments"].append(segment)
         except AssertionError:
             print("ReMarkable broken data")
 
@@ -324,7 +294,7 @@ def check_rm_file_version(file_path):
     return True
 
 
-def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TLayers, bool], str]:
+def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TAnnotation, bool], str]:
     if dims is None:
         dims = REMARKABLE_DOCUMENT
     with open(file_path, "rb") as f:
@@ -361,7 +331,7 @@ def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TLayers, bool], str]
 
 
 def parse_v3_to_v5(data, dims: ReMarkableDimensions, is_v3, nlayers, offset):
-    output: TLayers = {"layers": [], "highlights": [], "text": []}
+    output: TAnnotation = {"layers": [], "highlights": [], "text": []}
     has_highlighter = False
     for _ in range(nlayers):
         fmt = "<I"
@@ -411,7 +381,7 @@ def parse_v3_to_v5(data, dims: ReMarkableDimensions, is_v3, nlayers, offset):
 
 # TODO: make the rescale part of the parsing (or perhaps drawing?) process
 def rescale_parsed_data(
-    parsed_data: TLayers, scale: float, offset_x: int, offset_y: int
+    parsed_data: TAnnotation, scale: float, offset_x: int, offset_y: int
 ):
     for layer in parsed_data["layers"]:
         for _, st_value in layer["strokes"].items():
@@ -445,34 +415,3 @@ def rescale_parsed_data(
 # The line segment will pop up hundreds or thousands of times in notebooks where it is relevant.
 # this flag ensures it will print at most once.
 _line_segment_warning_has_been_shown = False
-
-
-def get_ann_max_bound(parsed_data):
-    global _line_segment_warning_has_been_shown
-    # https://shapely.readthedocs.io/en/stable/manual.html#LineString
-    # https://shapely.readthedocs.io/en/stable/manual.html#MultiLineString
-    # https://shapely.readthedocs.io/en/stable/manual.html#object.bounds
-
-    collection = []
-
-    for strokes in parsed_data["layers"]:
-        for _, st_value in strokes["strokes"].items():
-            for _, sg_value in enumerate(st_value["segments"]):
-                for points in sg_value["points"]:
-                    if len(points) <= 1:
-                        # line needs at least two points, see testcase v2_notebook_complex
-                        if not _line_segment_warning_has_been_shown:
-                            logging.warning(
-                                "- Found a segment with a single point, will ignore it. Please report this "
-                                "issue at: https://github.com/lucasrla/remarks/issues/64 "
-                            )
-                            _line_segment_warning_has_been_shown = True
-                        continue
-                    line = geom.LineString([(float(p[0]), float(p[1])) for p in points])
-                    collection.append(line)
-
-    if len(collection) > 0:
-        (minx, miny, maxx, maxy) = geom.MultiLineString(collection).bounds
-        return (maxx, maxy, minx, miny)
-    else:
-        return (0, 0, 0, 0)
