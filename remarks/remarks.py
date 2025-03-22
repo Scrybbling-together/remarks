@@ -4,10 +4,8 @@ import pathlib
 import sys
 import tempfile
 import zipfile
-from typing import List
 
 import fitz  # PyMuPDF
-from fitz import Page, Rect
 from rmc.exporters.pdf import svg_to_pdf
 from rmc.exporters.svg import build_anchor_pos, get_bounding_box
 from rmc.exporters.svg import rm_to_svg, xx, yy
@@ -15,19 +13,15 @@ from rmc.exporters.svg import rm_to_svg, xx, yy
 from .Document import Document
 from .conversion.parsing import (
     parse_rm_file,
-    read_rm_file_version, TRemarksRectangle,
-)
-from .conversion.text import (
-    extract_groups_from_smart_hl,
-)
+    read_rm_file_version, )
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
+from .output.PdfFile import apply_smart_highlights, add_error_annotation
 from .utils import (
     is_document,
     get_document_filetype,
     get_visible_name,
     get_ui_path,
-    load_json_file,
 )
 from .warnings import scrybble_warning_only_v6_supported
 
@@ -104,9 +98,9 @@ def process_document(
         print(f"processing page {page_idx}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
         rm_file_version = read_rm_file_version(rm_annotation_file)
-        (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
+            (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
             temp_svg = tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False)
             try:
@@ -170,45 +164,16 @@ def process_document(
                 os.remove(temp_pdf.name)
                 temp_svg.close()
                 os.remove(temp_svg.name)
+            if ann_data:
+                if "text" in ann_data:
+                    obsidian_markdown.add_text(page_idx, ann_data['text'])
+                if "glyph_ranges" in ann_data:
+                    obsidian_markdown.add_highlights(page_idx, ann_data["glyph_ranges"])
         else:
             scrybble_warning_only_v6_supported.render_as_annotation(page)
 
-        if ann_data:
-            if "text" in ann_data:
-                obsidian_markdown.add_text(page_idx, ann_data['text'])
-            if "glyph_ranges" in ann_data:
-                obsidian_markdown.add_highlights(page_idx, ann_data["glyph_ranges"])
-
-        if has_smart_highlights:
-            smart_hl_data = load_json_file(rm_highlights_file)
-            extract_groups_from_smart_hl(smart_hl_data)
-
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
-
     rmc_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
-
     obsidian_markdown.save(out_doc_path_str)
 
 
-def add_error_annotation(page: Page, more_info=""):
-    page.add_freetext_annot(
-        rect=fitz.Rect(10, 10, 300, 30),
-        text="Scrybble error" + more_info,
-        fontsize=11,
-        text_color=(0, 0, 0),
-        fill_color=(1, 1, 1)
-    )
-
-# (x0, y0, x1, y1, "word", block_no, line_no, word_no)
-WordBoundingBox = tuple[float, float, float, float, str, int, int, int]
-
-def apply_smart_highlights(page: Page, highlights: List[TRemarksRectangle],  x_translation: float) -> None:
-    for highlight in highlights:
-        for rectangle in highlight.rectangles:
-            x, y, w, h = rectangle.x, rectangle.y, rectangle.w, rectangle.h
-            # compute the width of a blank page that can contain both svg and background pdf
-            annot = page.add_highlight_annot(quads=Rect((x+x_translation,y), (x+x_translation+w, y+h)))
-            # Current colour taken from RMC's highlight colour, we should support more colours in the future.
-            annot.set_colors(stroke=(247 / 255, 232 / 255, 81 / 255))
-            annot.set_opacity(0.3)
-            annot.update()
