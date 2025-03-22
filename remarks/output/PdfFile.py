@@ -5,10 +5,10 @@ from typing import List
 import fitz
 from fitz import Page, Rect
 
-from remarks.conversion.parsing import TRemarksRectangle
+from remarks.conversion.parsing import RemarksRectangle
 
 
-def apply_smart_highlights(page: Page, highlights: List[TRemarksRectangle],  x_translation: float) -> None:
+def apply_smart_highlights(page: Page, highlights: List[RemarksRectangle], x_translation: float) -> None:
     for highlight in highlights:
         for rectangle in highlight.rectangles:
             x, y, w, h = rectangle.x, rectangle.y, rectangle.w, rectangle.h

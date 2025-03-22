@@ -94,7 +94,6 @@ class Document:
             rm_annotation_file = None
 
             rm_highlights_file = None
-            has_smart_highlights = False
 
             page_idx = self.pages_list.index(f"{page_uuid}")
 
@@ -106,7 +105,6 @@ class Document:
             for f in self.rm_highlight_files:
                 if page_uuid == f.stem:
                     rm_highlights_file = f
-                    has_smart_highlights = True
 
             yield (
                 page_uuid,
@@ -114,5 +112,4 @@ class Document:
                 rm_annotation_file,
                 has_annotations,
                 rm_highlights_file,
-                has_smart_highlights,
             )

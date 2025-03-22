@@ -93,7 +93,6 @@ def process_document(
             rm_annotation_file,
             has_annotations,
             rm_highlights_file,
-            has_smart_highlights,
     ) in document.pages():
         print(f"processing page {page_idx}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
