@@ -85,7 +85,6 @@ def process_document(
     rmc_pdf_src = document.open_source_pdf()
 
     obsidian_markdown = ObsidianMarkdownFile(document)
-    obsidian_markdown.add_document_header()
 
     for (
             page_uuid,
