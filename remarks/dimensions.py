@@ -63,8 +63,6 @@ class PyMuPDFDimensions(Dimensions):
 
 
 # PyMuPDF's A4 default is width=595, height=842
-
-
 a4_dimensions = PaperDimensions(width=210, height=297)
 REMARKABLE_PHYSICAL_SCREEN = PaperDimensions(width=188, height=246)
 REMARKABLE_DOCUMENT = ReMarkableDimensions(width=1404, height=1872)

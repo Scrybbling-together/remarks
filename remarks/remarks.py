@@ -1,37 +1,29 @@
 import logging
 import os
 import pathlib
-import re
 import sys
 import tempfile
-import traceback
 import zipfile
 
 import fitz  # PyMuPDF
-from fitz import Page
 from rmc.exporters.pdf import svg_to_pdf
-from rmc.exporters.svg import rm_to_svg, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box
+from rmc.exporters.svg import rm_to_svg, xx, yy
 
 from .Document import Document
 from .conversion.parsing import (
     parse_rm_file,
-    read_rm_file_version,
-)
-from .conversion.text import (
-    extract_groups_from_smart_hl,
-)
+    read_rm_file_version, )
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
+from .output.PdfFile import apply_smart_highlights, add_error_annotation
 from .utils import (
     is_document,
     get_document_filetype,
     get_visible_name,
     get_ui_path,
-    load_json_file,
 )
 from .warnings import scrybble_warning_only_v6_supported
-
-SVG_VIEWBOX_PATTERN = re.compile(r"^<svg .+ viewBox=\"([\-\d.]+) ([\-\d.]+) ([\-\d.]+) ([\-\d.]+)\">$")
 
 
 def run_remarks(
@@ -101,13 +93,13 @@ def process_document(
             rm_annotation_file,
             has_annotations,
             rm_highlights_file,
-            has_smart_highlights,
     ) in document.pages():
         print(f"processing page {page_idx}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
+            (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
             temp_svg = tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False)
             try:
@@ -117,34 +109,30 @@ def process_document(
                     svg_to_pdf(svg_f, pdf_f)
                 svg_pdf = fitz.open(temp_pdf.name)
 
+                # This offset is used for smart highlights
+                highlights_x_translation = 0
+
                 # if the background page is not empty, need to merge svg on top of background page
-                if page.get_contents() != []:
+                if page.get_contents():
                     w_bg, h_bg = page.cropbox.width, page.cropbox.height
                     # find the (top, right) coordinates of the svg
-                    x_shift, y_shift, w_svg, h_svg = 0, 0, PAGE_WIDTH_PT, PAGE_HEIGHT_PT
-                    with open(temp_svg.name, "r") as f:
-                        svg_content = f.readlines()
-                    found = False
-                    for line in svg_content:
-                        res = SVG_VIEWBOX_PATTERN.match(line)
-                        if res is not None:
-                            x_shift, y_shift = float(res.group(1)), float(res.group(2))
-                            w_svg, h_svg = float(res.group(3)), float(res.group(4))
-                            found = True
-                            break
-                    if not found:
-                        logging.warning(f"Can't find x shift, y shift, width and height for {page_uuid}.")
+                    anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
+                    x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
+                    x_shift, y_shift, w_svg, h_svg = xx(x_min), yy(y_min), xx(x_max - x_min + 1), yy(y_max - y_min + 1)
 
-                    # compute the width/height of a blank page that can contains both svg and background pdf
+                    # compute the width/height of a blank page that can contain both svg and background pdf
                     width, height = max(w_svg, w_bg), max(h_svg, h_bg)
                     # compute position of svg and background in the new_page
                     # it aligns the top-middle of the background and with the (0, 0) of the svg
                     x_svg, y_svg = 0, 0
                     x_bg, y_bg = 0, 0
+
                     if w_svg > w_bg:
                         x_bg = width / 2 - w_bg / 2 - (w_svg / 2 + x_shift)
+                        highlights_x_translation = x_bg
                     elif w_svg < w_bg:
                         x_svg = width / 2 - w_svg / 2 + (w_svg / 2 + x_shift)
+                        highlights_x_translation = x_svg
                     if h_svg > h_bg:
                         y_bg = - y_shift
                     elif h_svg < h_bg:
@@ -156,16 +144,18 @@ def process_document(
                                         width=width,
                                         height=height)
                     page.show_pdf_page(fitz.Rect(x_bg, y_bg, x_bg + w_bg, y_bg + h_bg),
-                                       rmc_pdf_src,
-                                       page_idx)
+                                        rmc_pdf_src,
+                                        page_idx)
                     page.show_pdf_page(fitz.Rect(x_svg, y_svg, x_svg + w_svg, y_svg + h_svg),
-                                       svg_pdf,
-                                       0)
+                                        svg_pdf,
+                                        0)
+
+                    if ann_data and "highlights" in ann_data:
+                        apply_smart_highlights(page, ann_data["highlights"], highlights_x_translation)
                     rmc_pdf_src.insert_pdf(doc, start_at=page_idx)
                 else:
                     rmc_pdf_src.insert_pdf(svg_pdf, start_at=page_idx)
                 rmc_pdf_src.delete_page(page_idx + 1)
-
             except AttributeError:
                 add_error_annotation(page)
             finally:
@@ -173,33 +163,16 @@ def process_document(
                 os.remove(temp_pdf.name)
                 temp_svg.close()
                 os.remove(temp_svg.name)
+            if ann_data:
+                if "text" in ann_data:
+                    obsidian_markdown.add_text(page_idx, ann_data['text'])
+                if "glyph_ranges" in ann_data:
+                    obsidian_markdown.add_highlights(page_idx, ann_data["glyph_ranges"])
         else:
             scrybble_warning_only_v6_supported.render_as_annotation(page)
 
-        (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
-
-        if ann_data:
-            if "text" in ann_data:
-                obsidian_markdown.add_text(page_idx, ann_data['text'])
-            if "highlights" in ann_data:
-                obsidian_markdown.add_highlights(page_idx, ann_data["highlights"])
-
-        if has_smart_highlights:
-            smart_hl_data = load_json_file(rm_highlights_file)
-            extract_groups_from_smart_hl(smart_hl_data)
-
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
-
     rmc_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
-
     obsidian_markdown.save(out_doc_path_str)
 
 
-def add_error_annotation(page: Page, more_info=""):
-    page.add_freetext_annot(
-        rect=fitz.Rect(10, 10, 300, 30),
-        text="Scrybble error" + more_info,
-        fontsize=11,
-        text_color=(0, 0, 0),
-        fill_color=(1, 1, 1)
-    )

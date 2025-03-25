@@ -1,6 +1,5 @@
 from .parsing import (
     parse_rm_file,
-    rescale_parsed_data,
     check_rm_file_version
 )
 

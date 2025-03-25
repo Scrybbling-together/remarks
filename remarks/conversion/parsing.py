@@ -1,21 +1,21 @@
 import logging
-import math
 import struct
+from dataclasses import dataclass
 from enum import Enum
-from pprint import pprint
 from typing import Dict, List, Any, TypedDict, Tuple
 
-from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock, LwwValue
-from rmscene.scene_items import Line, GlyphRange, Rectangle, ParagraphStyle, END_MARKER
+import math
+from rmc.exporters.svg import X_SHIFT, xx, yy
+from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock
+from rmscene.scene_items import Line, GlyphRange, Rectangle
 from rmscene.text import TextDocument
 
+from ..dimensions import ReMarkableDimensions, REMARKABLE_DOCUMENT
 from ..metadata import ReMarkableAnnotationsFileHeaderVersion
 from ..utils import (
     RM_WIDTH,
     RM_HEIGHT,
 )
-
-from ..dimensions import ReMarkableDimensions, REMARKABLE_DOCUMENT
 
 # reMarkable tools
 # http://web.archive.org/web/20190806120447/https://support.remarkable.com/hc/en-us/articles/115004558545-5-1-Tools-Overview
@@ -117,14 +117,10 @@ def update_boundaries_from_point(x, y, boundaries):
     boundaries["y_min"] = min(boundaries["y_min"], y)
 
 
-class TRemarksRectangle:
+@dataclass
+class RemarksRectangle:
     color: int
     rectangles: List[Rectangle]
-
-
-class TLayer(TypedDict):
-    strokes: Dict[str, Any]
-    rectangles: List[TRemarksRectangle]
 
 
 class TTextBlock(TypedDict):
@@ -134,28 +130,28 @@ class TTextBlock(TypedDict):
     text: TextDocument
 
 
-class TAnnotation(TypedDict):
-    highlights: List[str]
+class TMetaData(TypedDict):
+    glyph_ranges: List[GlyphRange]
+    highlights: List[RemarksRectangle]
     text: TTextBlock | None
+    scene_tree: SceneTree | None
 
 
-class TextStyles(Enum):
-    BOLD_OPEN = 1
-    BOLD_CLOSE = 2
-    ITALIC_OPEN = 3
-    ITALIC_CLOSE = 4
 
-
-def parse_v6(file_path: str) -> Tuple[TAnnotation, bool]:
-    output: TAnnotation = {
+def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
+    output: TMetaData = {
         "highlights": [],
+        "glyph_ranges": [],
         "text": None,
+        "scene_tree": None
     }
 
     with open(file_path, "rb") as f:
         tree = SceneTree()
         blocks = [b for b in read_blocks(f)]
         build_tree(tree, blocks)
+
+        output["scene_tree"] = tree
 
         try:
             for block in blocks:
@@ -168,42 +164,24 @@ def parse_v6(file_path: str) -> Tuple[TAnnotation, bool]:
                     }
             for el in tree.walk():
                 if isinstance(el, GlyphRange):
-                    output["highlights"].append(el)
+                    translated_rectangles = [
+                        Rectangle(
+                            x=xx(rectangle.x) + X_SHIFT,
+                            y=yy(rectangle.y),
+                            w=xx(rectangle.w),
+                            h=yy(rectangle.h)
+                        ) for rectangle in el.rectangles]
+                    # sort by reading order
+                    translated_rectangles.sort(key=lambda h: (h.y, h.x))
+                    highlight: RemarksRectangle = RemarksRectangle(
+                        color=el.color.value,
+                        rectangles=translated_rectangles)
+                    output["glyph_ranges"].append(el)
+                    output["highlights"].append(highlight)
         except AssertionError:
             print("ReMarkable broken data")
 
     return output, False
-
-
-class UnexpectedTextStylingException(Exception):
-    pass
-
-
-def style_text(bold: bool, italic: bool, value: int) -> Tuple[bool, bool]:
-    """
-    1 = <b>
-    2 = </b>
-    3 = <i>
-    4 = </i>
-    """
-    if value == TextStyles.BOLD_OPEN.value:
-        return True, italic
-    elif value == TextStyles.BOLD_CLOSE.value:
-        return False, italic
-    elif value == TextStyles.ITALIC_OPEN.value:
-        return bold, True
-    elif value == TextStyles.ITALIC_CLOSE.value:
-        return bold, False
-    else:
-        raise UnexpectedTextStylingException(f"Unexpected text style value: {value}")
-
-
-def roundup(num, increment):
-    return int(math.ceil(num / increment)) * increment
-
-
-def rounddown(num, increment):
-    return int(math.floor(num / increment)) * increment
 
 
 def determine_document_dimensions(file_path) -> ReMarkableDimensions:
@@ -257,9 +235,6 @@ def read_rm_file_version(file_path: str) -> ReMarkableAnnotationsFileHeaderVersi
             return ReMarkableAnnotationsFileHeaderVersion.UNKNOWN
 
 
-
-
-
 def check_rm_file_version(file_path):
     with open(file_path, "rb") as f:
         data = f.read()
@@ -294,7 +269,7 @@ def check_rm_file_version(file_path):
     return True
 
 
-def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TAnnotation, bool], str]:
+def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TMetaData, bool], str]:
     if dims is None:
         dims = REMARKABLE_DOCUMENT
     with open(file_path, "rb") as f:
@@ -319,98 +294,12 @@ def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TAnnotation, bool], 
     is_v5 = header == expected_header_v5
     is_v6 = header == expected_header_v6
 
-    if is_v3 or is_v5:
-        return parse_v3_to_v5(data, dims, is_v3, nlayers, offset), "V5"
-
     if is_v6:
         return parse_v6(file_path), "V6"
 
     raise ValueError(
         f"{file_path} is not a valid .rm file: <header={header}><nlayers={nlayers}>"
     )
-
-
-def parse_v3_to_v5(data, dims: ReMarkableDimensions, is_v3, nlayers, offset):
-    output: TAnnotation = {"layers": [], "highlights": [], "text": []}
-    has_highlighter = False
-    for _ in range(nlayers):
-        fmt = "<I"
-        (nstrokes,) = struct.unpack_from(fmt, data, offset)
-        offset += struct.calcsize(fmt)
-
-        new_layer: TLayer = {"strokes": {}, "rectangles": []}
-
-        for _ in range(nstrokes):
-            if is_v3:
-                fmt = "<IIIfI"
-                # cc for color-code, w for stroke-width
-                pen, cc, _, w, nsegs = struct.unpack_from(fmt, data, offset)
-                offset += struct.calcsize(fmt)
-            else:
-                fmt = "<IIIffI"
-                pen, cc, _, w, _, nsegs = struct.unpack_from(fmt, data, offset)
-                offset += struct.calcsize(fmt)
-
-            opc = 1  # opacity
-
-            tool, stroke_width, opacity = process_tool(pen, dims, w, opc)
-
-            if "Highlighter" in tool:
-                has_highlighter = True
-
-            if tool not in new_layer["strokes"].keys():
-                new_layer["strokes"] = update_stroke_dict(new_layer["strokes"], tool)
-
-            sg = create_seg_dict(opacity, stroke_width, cc)
-            p = []
-
-            for _ in range(nsegs):
-                fmt = "<ffffff"
-                x, y, press, tilt, _, _ = struct.unpack_from(fmt, data, offset)
-                offset += struct.calcsize(fmt)
-
-                xpos, ypos = adjust_xypos_sizes(x, y, dims)
-                p.append((f"{xpos:.3f}", f"{ypos:.3f}"))
-
-            sg["points"].append(p)
-            new_layer["strokes"][tool]["segments"].append(sg)
-
-        output["layers"].append(new_layer)
-    return output, has_highlighter
-
-
-# TODO: make the rescale part of the parsing (or perhaps drawing?) process
-def rescale_parsed_data(
-    parsed_data: TAnnotation, scale: float, offset_x: int, offset_y: int
-):
-    for layer in parsed_data["layers"]:
-        for _, st_value in layer["strokes"].items():
-            for _, sg_value in enumerate(st_value["segments"]):
-                sg_value["style"][
-                    "stroke-width"
-                ] = f"{float(sg_value['style']['stroke-width']):.3f}"
-
-                for i, points in enumerate(sg_value["points"]):
-                    for k, point in enumerate(points):
-                        sg_value["points"][i][k] = (
-                            f"{float(point[0]) * scale + offset_x:.3f}",
-                            f"{float(point[1]) * scale + offset_y:.3f}",
-                        )
-
-    if "text" in parsed_data and parsed_data["text"]:
-        parsed_data["text"]["pos_x"] = parsed_data["text"]["pos_x"] + offset_x
-        parsed_data["text"]["pos_y"] = parsed_data["text"]["pos_y"] + offset_y
-
-    for layer in parsed_data["layers"]:
-        for rmRectangles in layer["rectangles"]:
-            for geomRectangle in rmRectangles["rectangles"]:
-                geomRectangle.x = geomRectangle.x + offset_x
-                geomRectangle.y = geomRectangle.y + offset_y
-                # geomRectangle.w = geomRectangle.w
-                # geomRectangle.h = geomRectangle.h
-
-    return parsed_data
-
 
 # The line segment will pop up hundreds or thousands of times in notebooks where it is relevant.
 # this flag ensures it will print at most once.
