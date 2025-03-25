@@ -22,7 +22,7 @@ class PageMetadata:
 
     typed_text: Optional[str] = None
     """Text written with the Type Folio or with the text tool. Formatted as the equivalent markdown.
-    Note that medium-text has to be formatted as an h4, ie `####`, because there is no "medium text" in Markdown"""
+    Note that headers are rendered as h5 (#####), and medium text is rendered as h6 (######)"""
 
     tags: Optional[List[str]] = None
     """A list of tags associated with the page"""

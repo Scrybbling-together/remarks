@@ -71,8 +71,9 @@ def test_tags_present_on_a_page_are_in_the_markdown(notebook: NotebookMetadata, 
                 assert_parser_succeeds(frontmatter << whatever, obsidian_markdown, [tag])
 
 @pytest.mark.markdown
-@pytest.mark.parametrize("notebook", ["highlights_document"], indirect=True)
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_highlights_are_available_in_markdown(notebook: NotebookMetadata, remarks_document: Document, obsidian_markdown: str | None):
+    # TODO: This test is not entirely reliable because it doesn't assert the sequence of the highlights
     for page in notebook.pages:
         if page.smart_highlights:
             for highlight in page.smart_highlights:
@@ -91,3 +92,11 @@ def test_markdown_file_is_generated_only_if_relevant(notebook: NotebookMetadata,
             assert type(obsidian_markdown) is str
             return
     assert obsidian_markdown is None
+
+@pytest.mark.markdown
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
+def test_typed_text_is_present_in_markdown(notebook: NotebookMetadata, remarks_document: Document, obsidian_markdown: str | None):
+    for page in notebook.pages:
+        if page.typed_text:
+            assert page.typed_text in obsidian_markdown
+
