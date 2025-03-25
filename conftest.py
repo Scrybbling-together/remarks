@@ -67,8 +67,12 @@ def notebook(request):
 
 @pytest.fixture
 def obsidian_markdown(notebook):
-    with open(f"tests/out/{notebook.notebook_name} _obsidian.md") as f:
-        return f.read()
+    name = f"tests/out/{notebook.notebook_name} _obsidian.md"
+    if os.path.isfile(name):
+        with open(name) as f:
+            return f.read()
+    else:
+        return None
 
 @pytest.fixture
 def remarks_document(notebook):

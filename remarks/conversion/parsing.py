@@ -17,99 +17,6 @@ from ..utils import (
     RM_HEIGHT,
 )
 
-# reMarkable tools
-# http://web.archive.org/web/20190806120447/https://support.remarkable.com/hc/en-us/articles/115004558545-5-1-Tools-Overview
-RM_TOOLS = {
-    0: "Brush",
-    12: "Brush",
-    2: "Ballpoint",
-    15: "Ballpoint",
-    4: "Fineliner",
-    17: "Fineliner",
-    3: "Marker",
-    16: "Marker",
-    6: "Eraser",
-    8: "EraseArea",
-    7: "SharpPencil",
-    13: "SharpPencil",
-    1: "TiltPencil",
-    14: "TiltPencil",
-    5: "Highlighter",
-    18: "Highlighter",
-    21: "CalligraphyPen",
-}
-
-
-# TODO: My parsing & drawing is such a mess... Refactor it someday
-
-# TODO: Review stroke-width and opacity for all tools
-
-# TODO: Add support for pressure and tilting as well
-# for e.g. Paintbrush (Brush), CalligraphyPen, TiltPencil, etc
-
-
-def process_tool(pen, dims, w, opc):
-    tool = RM_TOOLS[pen]
-
-    if tool == "Brush" or tool == "CalligraphyPen":
-        pass
-    elif tool == "Ballpoint" or tool == "Fineliner":
-        pass
-    elif tool == "Marker":
-        w = (64 * w - 112) / 2
-        opc = 0.9
-    elif tool == "Highlighter":
-        w = 30
-        opc = 0.6
-        # cc = 3
-    elif tool == "Eraser":
-        w = w * 18 * 2.3
-        # cc = 2
-    elif tool == "SharpPencil" or tool == "TiltPencil":
-        w = 16 * w - 27
-        opc = 0.9
-    elif tool == "EraseArea":
-        opc = 0.0
-    else:
-        raise ValueError(f"Found an unknown tool: {pen}")
-
-    w /= 2.3  # Adjust to A4
-
-    name_code = f"{tool}_{pen}"
-
-    # Shorthands: w for stroke-width, opc for opacity
-    return name_code, w, opc
-
-
-def adjust_xypos_sizes(xpos, ypos, dims: ReMarkableDimensions):
-    ratio = (dims.height / dims.height) / (RM_HEIGHT / RM_WIDTH)
-
-    if ratio > 1:
-        xpos = ratio * ((xpos * dims.height) / RM_WIDTH)
-        ypos = (ypos * dims.height) / RM_HEIGHT
-    else:
-        xpos = (xpos * dims.height) / RM_WIDTH
-        ypos = (1 / ratio) * (ypos * dims.height) / RM_HEIGHT
-
-    return xpos, ypos
-
-
-def update_stroke_dict(st, tool):
-    st[tool] = {}
-    st[tool]["segments"] = []
-    return st
-
-
-def create_seg_dict(opacity, stroke_width, cc):
-    sg = {}
-    sg["style"] = {}
-    sg["style"]["opacity"] = f"{opacity:.3f}"
-    sg["style"]["stroke-width"] = f"{stroke_width:.3f}"
-    sg["style"]["color-code"] = cc
-    sg["points"] = []
-    return sg
-
-
 def update_boundaries_from_point(x, y, boundaries):
     boundaries["x_max"] = max(boundaries["x_max"], x)
     boundaries["y_max"] = max(boundaries["y_max"], y)
@@ -135,7 +42,6 @@ class TMetaData(TypedDict):
     highlights: List[RemarksRectangle]
     text: TTextBlock | None
     scene_tree: SceneTree | None
-
 
 
 def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
@@ -216,6 +122,7 @@ def determine_document_dimensions(file_path) -> ReMarkableDimensions:
 
 
 def read_rm_file_version(file_path: str) -> ReMarkableAnnotationsFileHeaderVersion:
+    print(file_path)
     with open(file_path, "rb") as f:
         src_header = f.readline()
 
@@ -256,9 +163,6 @@ def check_rm_file_version(file_path):
 
     if is_v6:
         return True
-        # logging.error(
-        #     f"- Found a v6 .rm file ({file_path}) created with reMarkable software >= 3.0. Unfortunately we do not support this version yet. More info: https://github.com/lucasrla/remarks/issues/58"
-        # )
 
     if (not is_v3 and not is_v5) or nlayers < 1:
         logging.error(
@@ -269,9 +173,7 @@ def check_rm_file_version(file_path):
     return True
 
 
-def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TMetaData, bool], str]:
-    if dims is None:
-        dims = REMARKABLE_DOCUMENT
+def parse_rm_file(file_path: str) -> Tuple[Tuple[TMetaData, bool], str]:
     with open(file_path, "rb") as f:
         data = f.read()
 

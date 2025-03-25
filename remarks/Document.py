@@ -9,7 +9,6 @@ from remarks.dimensions import REMARKABLE_DOCUMENT, ReMarkableDimensions
 from remarks.utils import (
     get_document_filetype,
     get_document_tags,
-    list_hl_json_files,
     is_inserted_page,
     get_pages_data,
     list_ann_rm_files,
@@ -27,7 +26,6 @@ class Document:
         # annotations
         self.rm_tags = list(get_document_tags(metadata_path))
         self.rm_annotation_files = list_ann_rm_files(metadata_path)
-        self.rm_highlight_files = list_hl_json_files(metadata_path)
 
     def open_source_pdf(self) -> fitz.Document:
         if self.doc_type in ["pdf", "epub"]:
@@ -80,36 +78,22 @@ class Document:
 
         return pdf_src
 
-    def pages_magnitude(self):
-        return math.floor(math.log10(len(self.pages_list))) + 1
-
     def pages(self):
         page_uuids = set(
             [f.stem for f in self.rm_annotation_files]
-            + [f.stem for f in self.rm_highlight_files]
         )
 
         for page_uuid in page_uuids:
-            has_annotations = False
             rm_annotation_file = None
-
-            rm_highlights_file = None
 
             page_idx = self.pages_list.index(f"{page_uuid}")
 
             for f in self.rm_annotation_files:
                 if page_uuid == f.stem and check_rm_file_version(f):
                     rm_annotation_file = f
-                    has_annotations = True
-
-            for f in self.rm_highlight_files:
-                if page_uuid == f.stem:
-                    rm_highlights_file = f
 
             yield (
                 page_uuid,
                 page_idx,
                 rm_annotation_file,
-                has_annotations,
-                rm_highlights_file,
             )
