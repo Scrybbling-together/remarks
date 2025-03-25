@@ -245,6 +245,26 @@ def colored_document():
         smart_highlights=[],
     )
 
+@pytest.fixture
+def shader_notebook():
+    return NotebookMetadata(
+        notebook_name="Interviews",
+        notebook_type=ReMarkableNotebookType.NOTEBOOK,
+        description="A single page with 3 hand-drawn headings. Includes drawn icons, shaded with the shader tool.",
+        rmn_source="tests/in/rmpp - shader tool.rmn",
+        pdf_pages=1,
+        rm_files=[
+            {
+                ".rm_file_version": ReMarkableAnnotationsFileHeaderVersion.V6,
+                "output_document_position": 0
+            }
+        ],
+        export_properties={
+            "merged_pages": 1
+        },
+        smart_highlights=[]
+    )
+
 all_notebooks = [
     "markdown_tags_document",
     "gosper_notebook",
@@ -252,5 +272,6 @@ all_notebooks = [
     "highlights_multiline_document",
     "colored_document",
     "v5_document",
-    "black_and_white"
+    "black_and_white",
+    "shader_notebook"
 ]
