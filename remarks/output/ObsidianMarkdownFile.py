@@ -11,6 +11,56 @@ class RMPage:
         self.tags = []
 
 
+def _merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int):
+    """
+    Merge the text of two highlights based on their relative positions.
+
+    Args:
+        h1: The first highlight (comes earlier in the text)
+        h2: The second highlight
+        distance: The calculated distance between the highlights
+
+    Returns:
+        str: The merged text
+    """
+    text = ""
+
+    # Case 1: B starts after A ends (positive distance)
+    if distance > 0:
+        # We need to add the gap characters
+        # Since we don't have access to the original text, use placeholder for the gap
+        gap = " " * distance  # Using spaces as placeholder for the gap
+        text = h1.text + gap + h2.text
+
+    # Case 2: B starts before A ends (overlap)
+    else:
+        # Calculate the overlap amount
+        overlap = -distance
+
+        # The first part is all of A's text
+        merged_first_part = h1.text
+
+        # For the second part, we need to skip the overlapped characters from B
+        # This assumes the overlapped text is identical in both highlights
+        merged_second_part = h2.text[overlap:] if overlap < len(h2.text) else ""
+
+        text = merged_first_part + merged_second_part
+
+    return " ".join(text.split())
+
+
+def calculate_highlight_distance(h1, h2):
+    if h1.start > h2.start:
+        h1, h2 = h2, h1
+    end_of_h1 = h1.start + h1.length
+    distance = h2.start - end_of_h1
+
+    if h1.color != h2.color:
+        return float('inf')
+
+    return distance, end_of_h1, h1, h2
+
+
 class ObsidianMarkdownFile:
     def __init__(self, document: Document):
         self.pages: Dict[int, RMPage] = {}
@@ -55,46 +105,76 @@ class ObsidianMarkdownFile:
     def add_highlights(
         self, page_idx: int, highlights: List[GlyphRange]
     ):
-        doc = self.document
+        if not highlights:
+            return
+
+        # Define the maximum gap threshold for merging
+        max_gap_threshold = 3  # Adjust this based on your data
+
+        # Start with all highlights as separate items
+        merged_highlights = highlights.copy()
+
+        # Continue until no more changes
+        while True:
+            # Sort by starting position
+            merged_highlights.sort(key=lambda h: h.start)
+
+            # Flag to track if any merges happened
+            merged_any = False
+
+            # Check all pairs for possible merges
+            i = 0
+            while i < len(merged_highlights) - 1:
+                j = i + 1
+                while j < len(merged_highlights):
+                    h1 = merged_highlights[i]
+                    h2 = merged_highlights[j]
+
+                    # Calculate distance (ensuring A comes before B)
+                    distance, end_of_h1, h1, h2 = calculate_highlight_distance(h1, h2)
+
+                    # If they should be merged
+                    if distance <= max_gap_threshold:
+                        # Create merged highlight
+                        new_start = min(h1.start, h2.start)
+                        new_end = max(end_of_h1, h2.start + h2.length)
+                        new_length = new_end - new_start
+
+                        # Merge text
+                        new_text =_merge_highlight_texts(h1, h2, distance)
+
+                        # Create new highlight
+                        merged_highlight = GlyphRange(
+                            start=new_start,
+                            length=new_length,
+                            text=new_text,
+                            color=h1.color,
+                            rectangles=h1.rectangles + h2.rectangles
+                        )
+
+                        # Replace A with merged highlight and remove B
+                        merged_highlights[i] = merged_highlight
+                        merged_highlights.pop(j)
+
+                        merged_any = True
+                        # Don't increment j since we removed an element
+                    else:
+                        j += 1
+
+                i += 1
+
+            # If no merges happened, we're done
+            if not merged_any:
+                break
+
         page_idx += 1
-        highlight_content = ""
-        joined_highlights = []
-        highlights = sorted(
-            [highlight for highlight in highlights if highlight.start is not None],
-            key=lambda h: h.start,
-        )
-        if len(highlights) > 0:
-            if len(highlights) == 1:
-                highlight_content += f"""### [[{doc.name}.pdf#page={page_idx}|{doc.name}, page {page_idx}]]
-
-> {highlights[0].text}
-
+        text = f"""### [[{self.document.name}.pdf#page={page_idx}|{self.document.name}, page {page_idx}]]
 """
-            else:
-                # first, highlights may be disjointed. We want to join highlights that belong together
-                paired_highlights = [
-                    (highlights[i], highlights[i + 1])
-                    for i, _ in enumerate(highlights[:-1])
-                ]
-                assert len(paired_highlights) > 0
-                joined_highlight = []
-                for current, next in paired_highlights:
-                    distance = next.start - (current.start + current.length)
-                    joined_highlight.append(current.text)
-                    if distance > 2:
-                        joined_highlights.append(joined_highlight)
-                        joined_highlight = []
 
-                highlight_content += f"### [[{doc.name}.pdf#page={page_idx}|{doc.name}, page {page_idx}]]\n"
+        for highlight in merged_highlights:
+            text += f"\n> {highlight.text}\n"
 
-                for joined_highlight in joined_highlights:
-                    highlight_text = " ".join(joined_highlight)
-                    highlight_content += f"\n> {highlight_text}\n"
-
-                highlight_content += "\n"
-
-        if highlight_content:
-            self.page_content[page_idx] = highlight_content
+        self.page_content[page_idx] = text
 
     def add_text(self, page_idx: int, text):
         if not text:

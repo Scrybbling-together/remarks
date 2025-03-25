@@ -14,7 +14,7 @@ class ScrybbleWarning:
         pdf_page.add_freetext_annot(
             rect=fitz.Rect(10, 10, 300, 30),
             text=str(self),
-            fontsize=11,
+            fontsize=9,
             text_color=(0, 0, 0),
             fill_color=(1, 1, 1)
         )
@@ -24,3 +24,5 @@ class ScrybbleWarning:
 
 
 scrybble_warning_only_v6_supported = ScrybbleWarning("This page is not V6")
+
+scrybble_warning_typed_text_highlighting_not_supported = ScrybbleWarning("Highlights on typed text is currently not supported")
