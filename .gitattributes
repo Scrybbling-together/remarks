@@ -1,1 +1,2 @@
-* text eol=lf
+*.py,*.md text eol=lf
+*.rmn binary
