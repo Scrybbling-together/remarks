@@ -80,14 +80,14 @@ def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int):
     return " ".join(text.split())
 
 
-def calculate_highlight_distance(h1, h2):
+def calculate_highlight_distance(h1: GlyphRange, h2: GlyphRange):
     if h1.start > h2.start:
         h1, h2 = h2, h1
     end_of_h1 = h1.start + h1.length
     distance = h2.start - end_of_h1
 
     if h1.color != h2.color:
-        return float('inf')
+        return float('inf'), end_of_h1, h1, h2
 
     return distance, end_of_h1, h1, h2
 
@@ -107,28 +107,21 @@ class ObsidianMarkdownFile:
         return page
 
     def save(self, location: str):
-        # Skip saving if there's no content
         if not self.document.rm_tags and not self.pages:
             return
 
         frontmatter = {"tags": [f"#remarkable/{tag}" for tag in self.document.rm_tags]}
 
-        env = Environment(
-            loader=FileSystemLoader(os.path.dirname(__file__))
-
-        )
+        env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)))
         template = env.get_template('obsidian_markdown.md.jinja')
 
-        # Prepare the template context
-        context = {
+        content = template.render(**{
             'document': self.document,
             'frontmatter': yaml.dump(frontmatter, indent=2) if frontmatter["tags"] else None,
             'pages': self.pages,
             'sorted_pages': sorted(self.pages.items()),
             'render_paragraph': render_paragraph
-        }
-
-        content = template.render(**context)
+        })
 
         with open(f"{location} _obsidian.md", "w") as f:
             f.write(content)
@@ -139,11 +132,8 @@ class ObsidianMarkdownFile:
         if not highlights:
             return
 
-        # Define the maximum gap threshold for merging
-        max_gap_threshold = 3  # Adjust this based on your data
-
-        # Start with all highlights as separate items
-        merged_highlights = highlights.copy()
+        max_gap_threshold = 3
+        merged_highlights = list(filter(lambda h: h is not None, highlights.copy()))
 
         # Continue until no more changes
         while True:
