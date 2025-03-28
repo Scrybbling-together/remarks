@@ -7,17 +7,30 @@ from rmscene.text import Paragraph
 from remarks.Document import Document
 
 
-def render(paragraph: Paragraph):
-    text = ""
+def render_paragraph(paragraph: Paragraph):
+    paragraph_content = ""
     for st in paragraph.contents:
         st_text = str(st)
         if st.properties['font-weight'] == "bold":
             st_text = f"**{st_text}**"
         if st.properties['font-style'] == "italic":
             st_text = f"_{st_text}_"
-        text += st_text
+        paragraph_content += st_text
 
-    return text
+    if paragraph.style.value == ParagraphStyle.PLAIN:
+        return f"\n{paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.BOLD:
+        return f"\n###### {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.HEADING:
+        return f"\n##### {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.BULLET or paragraph.style.value == ParagraphStyle.BULLET2:
+        return f"- {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.CHECKBOX:
+        return f"- [ ] {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.CHECKBOX_CHECKED:
+        return f"- [x] {paragraph_content}\n"
+
+    return paragraph_content
 
 
 class RMPage:
@@ -27,7 +40,7 @@ class RMPage:
         self.text: None | list[Paragraph] = None
 
 
-def _merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int):
+def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int):
     """
     Merge the text of two highlights based on their relative positions.
 
@@ -134,19 +147,7 @@ class ObsidianMarkdownFile:
 #### Typed text
 """
                     for paragraph in page.text:
-                        paragraph_content = render(paragraph)
-                        if paragraph.style.value == ParagraphStyle.PLAIN:
-                            content += f"\n{paragraph_content}\n"
-                        elif paragraph.style.value == ParagraphStyle.BOLD:
-                            content += f"\n###### {paragraph_content}\n"
-                        elif paragraph.style.value == ParagraphStyle.HEADING:
-                            content += f"\n##### {paragraph_content}\n"
-                        elif paragraph.style.value == ParagraphStyle.BULLET or paragraph.style.value == ParagraphStyle.BULLET2:
-                            content += f"- {paragraph_content}\n"
-                        elif paragraph.style.value == ParagraphStyle.CHECKBOX:
-                            content += f"- [ ] {paragraph_content}\n"
-                        elif paragraph.style.value == ParagraphStyle.CHECKBOX_CHECKED:
-                            content += f"- [x] {paragraph_content}\n"
+                        content += render_paragraph(paragraph)
 
         # don't write if the file is empty
         if self.document.rm_tags or self.pages:
@@ -192,7 +193,7 @@ class ObsidianMarkdownFile:
                         new_length = new_end - new_start
 
                         # Merge text
-                        new_text =_merge_highlight_texts(h1, h2, distance)
+                        new_text = merge_highlight_texts(h1, h2, distance)
 
                         # Create new highlight
                         merged_highlight = GlyphRange(
