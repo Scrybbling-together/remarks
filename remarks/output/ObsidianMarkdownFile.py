@@ -82,6 +82,15 @@ class ObsidianMarkdownFile:
         self.pages: Dict[int, RMPage] = {}
         self.document = document
 
+    def retrieve_page(self, index: int):
+        if not index in self.pages:
+            page = RMPage()
+            self.pages[index] = page
+        else:
+            page = self.pages[index]
+
+        return page
+
     def save(self, location: str):
         frontmatter = {}
         content = ""
@@ -209,20 +218,9 @@ class ObsidianMarkdownFile:
             if not merged_any:
                 break
 
-        if page_idx not in self.pages:
-            page = RMPage()
-            self.pages[page_idx] = page
-        else:
-            page = self.pages[page_idx]
-        page.highlights = merged_highlights
+        self.retrieve_page(page_idx).highlights = merged_highlights
 
     def add_text(self, page_idx: int, text):
         if not text:
             return
-        if page_idx not in self.pages:
-            page = RMPage()
-            self.pages[page_idx] = page
-        else:
-            page = self.pages[page_idx]
-
-        page.text = text["text"].contents
+        self.retrieve_page(page_idx).text = text["text"].contents
