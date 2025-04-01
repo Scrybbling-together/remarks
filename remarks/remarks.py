@@ -91,7 +91,7 @@ def process_document(
             page_idx,
             rm_annotation_file,
     ) in document.pages():
-        print(f"processing page {page_idx}, {page_uuid}")
+        print(f"processing page {page_idx + 1}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
         rm_file_version = read_rm_file_version(rm_annotation_file)
 

@@ -92,6 +92,65 @@ def calculate_highlight_distance(h1: GlyphRange, h2: GlyphRange):
     return distance, end_of_h1, h1, h2
 
 
+def merge_highlights(highlights: List[GlyphRange]):
+    max_gap_threshold = 3
+    merged_highlights = list(filter(lambda h: h is not None and type(h.start) is int, highlights.copy()))
+    # Continue until no more changes
+    while True:
+        print(merged_highlights)
+        # Sort by starting position
+        merged_highlights.sort(key=lambda h: h.start)
+
+        # Flag to track if any merges happened
+        merged_any = False
+
+        # Check all pairs for possible merges
+        i = 0
+        while i < len(merged_highlights) - 1:
+            j = i + 1
+            while j < len(merged_highlights):
+                h1 = merged_highlights[i]
+                h2 = merged_highlights[j]
+
+                # Calculate distance (ensuring A comes before B)
+                distance, end_of_h1, h1, h2 = calculate_highlight_distance(h1, h2)
+
+                # If they should be merged
+                if distance <= max_gap_threshold:
+                    # Create merged highlight
+                    new_start = min(h1.start, h2.start)
+                    new_end = max(end_of_h1, h2.start + h2.length)
+                    new_length = new_end - new_start
+
+                    # Merge text
+                    new_text = merge_highlight_texts(h1, h2, distance)
+
+                    # Create new highlight
+                    merged_highlight = GlyphRange(
+                        start=new_start,
+                        length=new_length,
+                        text=new_text,
+                        color=h1.color,
+                        rectangles=h1.rectangles + h2.rectangles
+                    )
+
+                    # Replace A with merged highlight and remove B
+                    merged_highlights[i] = merged_highlight
+                    merged_highlights.pop(j)
+
+                    merged_any = True
+                    # Don't increment j since we removed an element
+                else:
+                    j += 1
+
+            i += 1
+
+        # If no merges happened, we're done
+        if not merged_any:
+            break
+    return merged_highlights
+
+
 class ObsidianMarkdownFile:
     def __init__(self, document: Document):
         self.pages: Dict[int, RMPage] = {}
@@ -132,63 +191,7 @@ class ObsidianMarkdownFile:
         if not highlights:
             return
 
-        max_gap_threshold = 3
-        merged_highlights = list(filter(lambda h: h is not None, highlights.copy()))
-
-        # Continue until no more changes
-        while True:
-            # Sort by starting position
-            merged_highlights.sort(key=lambda h: h.start)
-
-            # Flag to track if any merges happened
-            merged_any = False
-
-            # Check all pairs for possible merges
-            i = 0
-            while i < len(merged_highlights) - 1:
-                j = i + 1
-                while j < len(merged_highlights):
-                    h1 = merged_highlights[i]
-                    h2 = merged_highlights[j]
-
-                    # Calculate distance (ensuring A comes before B)
-                    distance, end_of_h1, h1, h2 = calculate_highlight_distance(h1, h2)
-
-                    # If they should be merged
-                    if distance <= max_gap_threshold:
-                        # Create merged highlight
-                        new_start = min(h1.start, h2.start)
-                        new_end = max(end_of_h1, h2.start + h2.length)
-                        new_length = new_end - new_start
-
-                        # Merge text
-                        new_text = merge_highlight_texts(h1, h2, distance)
-
-                        # Create new highlight
-                        merged_highlight = GlyphRange(
-                            start=new_start,
-                            length=new_length,
-                            text=new_text,
-                            color=h1.color,
-                            rectangles=h1.rectangles + h2.rectangles
-                        )
-
-                        # Replace A with merged highlight and remove B
-                        merged_highlights[i] = merged_highlight
-                        merged_highlights.pop(j)
-
-                        merged_any = True
-                        # Don't increment j since we removed an element
-                    else:
-                        j += 1
-
-                i += 1
-
-            # If no merges happened, we're done
-            if not merged_any:
-                break
-
-        self.retrieve_page(page_idx).highlights = merged_highlights
+        self.retrieve_page(page_idx).highlights = merge_highlights(highlights)
 
     def add_text(self, page_idx: int, text):
         if not text:
