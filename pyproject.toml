@@ -48,5 +48,6 @@ build-backend = "poetry.core.masonry.api"
 markers = [
     "markdown",
     "pdf",
-    "visual"
+    "visual",
+    "unfinished_feature"
 ]

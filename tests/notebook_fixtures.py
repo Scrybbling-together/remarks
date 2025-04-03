@@ -293,6 +293,55 @@ _THis is the end paragra_ph""", # The typo is copied as-is from the document. Do
         ]
     )
 
+@pytest.fixture()
+def typed_test_real_world_document():
+    # The text is copied and pasted on both pages.
+    typed_text = """##### Scrybble update
+
+#newsletter #scrybble
+
+Today I'll be writing the update newsletter.
+
+
+- [ ] Write the newsletter
+- [x] Make promotional material for the new features
+
+
+
+###### What's new?
+
+**Improvements to smart highlights**
+
+Highlights are a core part of studying, researching and learning. This is why I want to focus on improving Scrybble Sync integration with highlights where I can.
+
+This update brings
+- Smart highlights are now included in the PDF export :)
+- There was a bug where the last smart highlight was missing in the Markdown export. This is no longer the case, highlight away!
+
+**Support for Type Folio & typed text**
+
+The ReMarkable is excellent for distraction-free focus. Since the release of the Type Folio, you can even use it for serious drafting and writing tasks.
+
+This update brings your typed text to the PDF export as well as to your Obsidian vault. Write on your ReMarkable, and use Obsidian to manage and publish your writing.
+- Your typed text is exported to an Obsidian Markdown file
+- It is also rendered on the PDF export
+- Tip! You can use Obsidian Markdown, such as #tags and [[links]] in your written content!"""
+
+    return NotebookMetadata(
+        notebook_type=ReMarkableNotebookType.NOTEBOOK,
+        notebook_name="Newsletter",
+        pdf_pages=2,
+        rmn_source="tests/in/rmpp - typed text long.rmn",
+        description="A document with real-world typed text, contains a newsletter for a Scrybble update",
+        pages=[
+            # The first page has text with the "wide" column setting
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=1, typed_text=typed_text),
+            # The second page has text with the "narrow" column setting
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=1, typed_text=typed_text),
+        ]
+    )
+
+
 all_notebooks = [
     "markdown_tags_document",
     "gosper_notebook",
@@ -302,5 +351,6 @@ all_notebooks = [
     "v5_document",
     "black_and_white",
     "shader_notebook",
-    "typed_text_notebook"
+    "typed_text_notebook",
+    "typed_test_real_world_document"
 ]
