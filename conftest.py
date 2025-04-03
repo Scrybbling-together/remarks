@@ -4,8 +4,6 @@ from dataclasses import dataclass
 
 import pytest
 import fitz
-import shutil
-from fitz import Document
 
 import remarks
 from tests.NotebookMetadata import NotebookMetadata
@@ -49,14 +47,14 @@ class PageMetadata:
     visual_description: str
 
 
-@pytest.fixture
-def visual_inspection(notebook: NotebookMetadata, remarks_document: Document, Page: PageMetadata, question: str):
-    for file in notebook.rm_files:
-        if "photo" in file:
-            position = file["output_document_position"]
-            img_output = remarks_document[position].get_pixmap()
-            img_output.save(f"tests/out/{notebook.notebook_name} - {position} - Remarks.jpg")
-            shutil.copy(file["photo"], f"tests/out/{notebook.notebook_name} - {position} - ReMarkable.jpg")
+# @pytest.fixture
+# def visual_inspection(notebook: NotebookMetadata, remarks_document: Document, Page: PageMetadata, question: str):
+#     for file in notebook.rm_files:
+#         if "photo" in file:
+#             position = file["output_document_position"]
+#             img_output = remarks_document[position].get_pixmap()
+#             img_output.save(f"tests/out/{notebook.notebook_name} - {position} - Remarks.jpg")
+#             shutil.copy(file["photo"], f"tests/out/{notebook.notebook_name} - {position} - ReMarkable.jpg")
 
 
 @pytest.fixture
@@ -67,8 +65,12 @@ def notebook(request):
 
 @pytest.fixture
 def obsidian_markdown(notebook):
-    with open(f"tests/out/{notebook.notebook_name} _obsidian.md") as f:
-        return f.read()
+    name = f"tests/out/{notebook.notebook_name} _obsidian.md"
+    if os.path.isfile(name):
+        with open(name) as f:
+            return f.read()
+    else:
+        return None
 
 @pytest.fixture
 def remarks_document(notebook):

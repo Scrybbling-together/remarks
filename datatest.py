@@ -12,6 +12,8 @@ import atexit
 
 class ProcessingLogger:
     def __init__(self, db_path="processing_log.db"):
+        self.current_run_id = None
+        self.conn = None
         self.db_path = db_path
         self.setup_database()
         atexit.register(self.close)
@@ -95,13 +97,13 @@ def process_file(file_path):
             }
         )
         duration = time.time() - start_time
-        return True, file_path, result.stdout, result.stderr, None, duration
+        return "success", file_path, result.stdout, result.stderr, None, duration
     except subprocess.TimeoutExpired as e:
         duration = time.time() - start_time
-        return False, file_path, e.stdout, e.stderr, str(e), duration
+        return "timeout", file_path, e.stdout, e.stderr, str(e), duration
     except subprocess.CalledProcessError as e:
         duration = time.time() - start_time
-        return False, file_path, e.stdout, e.stderr, str(e), duration
+        return "failed", file_path, e.stdout, e.stderr, str(e), duration
 
 def main():
     # Create output directory
@@ -137,12 +139,12 @@ def main():
                 # Process as they complete with progress bar
             with tqdm(total=total_files, desc="Processing files") as pbar:
                 for future in as_completed(future_to_file):
-                    success, file_path, stdout, stderr, error, duration = future.result()
+                    status, file_path, stdout, stderr, error, duration = future.result()
                     
                     # Log the result
                     logger.log_file(
                         file_path,
-                        "success" if success else "failed",
+                        status,
                         stdout,
                         stderr,
                         error,
@@ -150,18 +152,18 @@ def main():
                     )
                     
                     # If there's any stderr output, print it even for successful runs
-                    if not success:
+                    if status != "success":
                         tqdm.write(f"\nError processing {file_path}:")
                         tqdm.write(f"Error: {error}")
                     elif stderr:
                         tqdm.write(f"\nWarning in {file_path}:")
                         tqdm.write(stderr)
 
-                    if success:
+                    if status == "success":
                         successful += 1
                     else:
                         failed += 1
-                    
+
                     pbar.update(1)
     except KeyboardInterrupt:
         print("Bye! :)")

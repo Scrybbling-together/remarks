@@ -1,3 +1,4 @@
+from fitz import Document
 from parsita import lit, reg, rep, Parser, opt, Failure, until
 from returns.result import Success
 
@@ -62,26 +63,40 @@ h5_tag = lit("##### ")
 h6_tag = lit("###### ")
 
 @pytest.mark.markdown
-@pytest.mark.parametrize("notebook", ["markdown_tags_document"], indirect=True)
-def test_yaml_frontmatter_is_valid(notebook, remarks_document, obsidian_markdown):
-    assert_parser_succeeds(frontmatter << whatever, obsidian_markdown, ["#remarkable/obsidian"])
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
+def test_tags_present_on_a_page_are_in_the_markdown(notebook: NotebookMetadata, remarks_document: Document, obsidian_markdown: str | None):
+    for page in notebook.pages:
+        if page.tags:
+            for tag in page.tags:
+                assert_parser_succeeds(frontmatter << whatever, obsidian_markdown, [tag])
 
 @pytest.mark.markdown
-@pytest.mark.parametrize("notebook", ["highlights_document"], indirect=True)
-def test_highlights_are_available_in_markdown(notebook, remarks_document, obsidian_markdown):
-    # yellow marker
-    smart_highlight_one = "numbers may be described briefly as the real numbers whose expressions as a decimal are calculable by finite means"
-    # blue marker
-    smart_highlight_two = "theory of functions"
-    # green marker
-    smart_highlight_three = "According to my definition, a number is computable if its decimal can be written down by a machine."
-    # pink marker
-    smart_highlight_four = "In particular, I show that certain large classes of of numbers are computable."
-    # grey marker
-    # smart_highlight_five = "Although the class of computable numbers is so great, and in many ways similar to the class of real numbers, it is nevertheless enumerable."
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
+def test_highlights_are_available_in_markdown(notebook: NotebookMetadata, remarks_document: Document, obsidian_markdown: str | None):
+    # TODO: This test is not entirely reliable because it doesn't assert the sequence of the highlights
+    for page in notebook.pages:
+        if page.smart_highlights:
+            for highlight in page.smart_highlights:
+                assert_parser_succeeds(until(highlight) >> highlight << whatever, obsidian_markdown, highlight)
 
-    assert_parser_succeeds(until(smart_highlight_one) >> smart_highlight_one << whatever, obsidian_markdown, smart_highlight_one)
-    assert_parser_succeeds(until(smart_highlight_two) >> smart_highlight_two << whatever, obsidian_markdown, smart_highlight_two)
-    assert_parser_succeeds(until(smart_highlight_three) >> smart_highlight_three << whatever, obsidian_markdown, smart_highlight_three)
-    assert_parser_succeeds(until(smart_highlight_four) >> smart_highlight_four << whatever, obsidian_markdown, smart_highlight_four)
-    # assert_parser_succeeds(until(smart_highlight_five) >> smart_highlight_four << whatever, obsidian_markdown, smart_highlight_five)
+@pytest.mark.markdown
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
+def test_markdown_file_is_generated_only_if_relevant(notebook: NotebookMetadata, remarks_document, obsidian_markdown: None | str):
+    """A markdown file is only generated iff it has:
+       1. Typed text with the type folio or text tool
+       2. Smart highlights
+       3. Tags on the page
+       Otherwise there will be no Markdown file"""
+    for page in notebook.pages:
+        if page.smart_highlights or page.typed_text or page.tags:
+            assert type(obsidian_markdown) is str
+            return
+    assert obsidian_markdown is None
+
+@pytest.mark.markdown
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
+def test_typed_text_is_present_in_markdown(notebook: NotebookMetadata, remarks_document: Document, obsidian_markdown: str | None):
+    for page in notebook.pages:
+        if page.typed_text:
+            assert page.typed_text in obsidian_markdown
+

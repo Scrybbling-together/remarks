@@ -16,7 +16,7 @@ from .conversion.parsing import (
     read_rm_file_version, )
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
-from .output.PdfFile import apply_smart_highlights, add_error_annotation
+from .output.PdfFile import apply_smart_highlight, add_error_annotation
 from .utils import (
     is_document,
     get_document_filetype,
@@ -85,16 +85,13 @@ def process_document(
     rmc_pdf_src = document.open_source_pdf()
 
     obsidian_markdown = ObsidianMarkdownFile(document)
-    obsidian_markdown.add_document_header()
 
     for (
             page_uuid,
             page_idx,
             rm_annotation_file,
-            has_annotations,
-            rm_highlights_file,
     ) in document.pages():
-        print(f"processing page {page_idx}, {page_uuid}")
+        print(f"processing page {page_idx + 1}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
@@ -102,15 +99,15 @@ def process_document(
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
             temp_svg = tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False)
+
+            # This offset is used for smart highlights
+            highlights_x_translation = 0
             try:
                 # convert the pdf
                 rm_to_svg(rm_annotation_file, temp_svg.name)
                 with open(temp_svg.name, "r") as svg_f, open(temp_pdf.name, "wb") as pdf_f:
                     svg_to_pdf(svg_f, pdf_f)
                 svg_pdf = fitz.open(temp_pdf.name)
-
-                # This offset is used for smart highlights
-                highlights_x_translation = 0
 
                 # if the background page is not empty, need to merge svg on top of background page
                 if page.get_contents():
@@ -150,8 +147,6 @@ def process_document(
                                         svg_pdf,
                                         0)
 
-                    if ann_data and "highlights" in ann_data:
-                        apply_smart_highlights(page, ann_data["highlights"], highlights_x_translation)
                     rmc_pdf_src.insert_pdf(doc, start_at=page_idx)
                 else:
                     rmc_pdf_src.insert_pdf(svg_pdf, start_at=page_idx)
@@ -168,6 +163,9 @@ def process_document(
                     obsidian_markdown.add_text(page_idx, ann_data['text'])
                 if "glyph_ranges" in ann_data:
                     obsidian_markdown.add_highlights(page_idx, ann_data["glyph_ranges"])
+                if ann_data["highlights"]:
+                    for highlight in ann_data["highlights"]:
+                        apply_smart_highlight(rmc_pdf_src[page_idx], highlight, highlights_x_translation)
         else:
             scrybble_warning_only_v6_supported.render_as_annotation(page)
 

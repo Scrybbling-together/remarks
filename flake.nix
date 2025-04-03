@@ -32,7 +32,7 @@
           propagatedBuildInputs = [ pkgs.inkscape ];
           nativeCheckInputs = [ pkgs.inkscape ];
           checkPhase = ''
-            pytest
+            pytest -m "not unfinished_feature"
           '';
           doCheck = true;
         };

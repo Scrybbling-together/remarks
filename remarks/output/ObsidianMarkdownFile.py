@@ -1,122 +1,199 @@
+import os
 from typing import List, Dict
 
 import yaml
-from rmscene.scene_items import GlyphRange
+from jinja2 import Environment, BaseLoader, FileSystemLoader
+from rmscene.scene_items import GlyphRange, ParagraphStyle
+from rmscene.text import Paragraph
 
 from remarks.Document import Document
 
+
+def render_paragraph(paragraph: Paragraph):
+    paragraph_content = ""
+    for st in paragraph.contents:
+        st_text = str(st)
+        if st.properties['font-weight'] == "bold":
+            st_text = f"**{st_text}**"
+        if st.properties['font-style'] == "italic":
+            st_text = f"_{st_text}_"
+        paragraph_content += st_text
+
+    if paragraph.style.value == ParagraphStyle.PLAIN:
+        return f"\n{paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.BOLD:
+        return f"\n###### {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.HEADING:
+        return f"\n##### {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.BULLET or paragraph.style.value == ParagraphStyle.BULLET2:
+        return f"- {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.CHECKBOX:
+        return f"- [ ] {paragraph_content}\n"
+    elif paragraph.style.value == ParagraphStyle.CHECKBOX_CHECKED:
+        return f"- [x] {paragraph_content}\n"
+
+    return paragraph_content
+
+
 class RMPage:
-    def __init__(self, index: int):
-        self.highlights = []
-        self.tags = []
+    def __init__(self):
+        self.highlights: List[GlyphRange] = []
+        self.tags: List[str] = []
+        self.text: None | list[Paragraph] = None
+
+
+def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int):
+    """
+    Merge the text of two highlights based on their relative positions.
+
+    Args:
+        h1: The first highlight (comes earlier in the text)
+        h2: The second highlight
+        distance: The calculated distance between the highlights
+
+    Returns:
+        str: The merged text
+    """
+    text = ""
+
+    # Case 1: B starts after A ends (positive distance)
+    if distance > 0:
+        # We need to add the gap characters
+        # Since we don't have access to the original text, use placeholder for the gap
+        gap = " " * distance  # Using spaces as placeholder for the gap
+        text = h1.text + gap + h2.text
+
+    # Case 2: B starts before A ends (overlap)
+    else:
+        # Calculate the overlap amount
+        overlap = -distance
+
+        # The first part is all of A's text
+        merged_first_part = h1.text
+
+        # For the second part, we need to skip the overlapped characters from B
+        # This assumes the overlapped text is identical in both highlights
+        merged_second_part = h2.text[overlap:] if overlap < len(h2.text) else ""
+
+        text = merged_first_part + merged_second_part
+
+    return " ".join(text.split())
+
+
+def calculate_highlight_distance(h1: GlyphRange, h2: GlyphRange):
+    if h1.start > h2.start:
+        h1, h2 = h2, h1
+    end_of_h1 = h1.start + h1.length
+    distance = h2.start - end_of_h1
+
+    if h1.color != h2.color:
+        return float('inf'), end_of_h1, h1, h2
+
+    return distance, end_of_h1, h1, h2
+
+
+def merge_highlights(highlights: List[GlyphRange]):
+    max_gap_threshold = 3
+    merged_highlights = list(filter(lambda h: h is not None and type(h.start) is int, highlights.copy()))
+    # Continue until no more changes
+    while True:
+        print(merged_highlights)
+        # Sort by starting position
+        merged_highlights.sort(key=lambda h: h.start)
+
+        # Flag to track if any merges happened
+        merged_any = False
+
+        # Check all pairs for possible merges
+        i = 0
+        while i < len(merged_highlights) - 1:
+            j = i + 1
+            while j < len(merged_highlights):
+                h1 = merged_highlights[i]
+                h2 = merged_highlights[j]
+
+                # Calculate distance (ensuring A comes before B)
+                distance, end_of_h1, h1, h2 = calculate_highlight_distance(h1, h2)
+
+                # If they should be merged
+                if distance <= max_gap_threshold:
+                    # Create merged highlight
+                    new_start = min(h1.start, h2.start)
+                    new_end = max(end_of_h1, h2.start + h2.length)
+                    new_length = new_end - new_start
+
+                    # Merge text
+                    new_text = merge_highlight_texts(h1, h2, distance)
+
+                    # Create new highlight
+                    merged_highlight = GlyphRange(
+                        start=new_start,
+                        length=new_length,
+                        text=new_text,
+                        color=h1.color,
+                        rectangles=h1.rectangles + h2.rectangles
+                    )
+
+                    # Replace A with merged highlight and remove B
+                    merged_highlights[i] = merged_highlight
+                    merged_highlights.pop(j)
+
+                    merged_any = True
+                    # Don't increment j since we removed an element
+                else:
+                    j += 1
+
+            i += 1
+
+        # If no merges happened, we're done
+        if not merged_any:
+            break
+    return merged_highlights
 
 
 class ObsidianMarkdownFile:
     def __init__(self, document: Document):
         self.pages: Dict[int, RMPage] = {}
-        self.content = ""
-        self.page_content = {}
         self.document = document
 
-    def add_document_header(self):
-        frontmatter = {}
-        if self.document.rm_tags:
-            frontmatter["tags"] = list(
-                map(lambda tag: f"#remarkable/{tag}", self.document.rm_tags)
-            )
+    def retrieve_page(self, index: int):
+        if not index in self.pages:
+            page = RMPage()
+            self.pages[index] = page
+        else:
+            page = self.pages[index]
 
-        if len(frontmatter) > 0:
-            frontmatter_md = f"""---
-{yaml.dump(frontmatter, indent=2)}
----
-
-"""
-            self.content += frontmatter_md
-
-        self.content += f"""# {self.document.name}
-
-> [!WARNING] **Do not modify** this file
-> This file is automatically generated by Scrybble and will be overwritten whenever this file in synchronized.
-> Treat it as a reference.
-"""
+        return page
 
     def save(self, location: str):
-        if len(self.page_content):
-            self.content += "## Pages\n\n"
+        if not self.document.rm_tags and not self.pages:
+            return
 
-            for page_idx in sorted(self.page_content.keys()):
-                self.content += self.page_content[page_idx]
+        frontmatter = {"tags": [f"#remarkable/{tag}" for tag in self.document.rm_tags]}
 
-        # don't write if the file is empty
-        if len(self.document.rm_tags) or len(self.page_content):
-            with open(f"{location} _obsidian.md", "w") as f:
-                f.write(self.content)
+        env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)))
+        template = env.get_template('obsidian_markdown.md.jinja')
+
+        content = template.render(**{
+            'document': self.document,
+            'frontmatter': yaml.dump(frontmatter, indent=2) if frontmatter["tags"] else None,
+            'pages': self.pages,
+            'sorted_pages': sorted(self.pages.items()),
+            'render_paragraph': render_paragraph
+        })
+
+        with open(f"{location} _obsidian.md", "w") as f:
+            f.write(content)
 
     def add_highlights(
         self, page_idx: int, highlights: List[GlyphRange]
     ):
-        doc = self.document
-        page_idx += 1
-        highlight_content = ""
-        joined_highlights = []
-        highlights = sorted(
-            [highlight for highlight in highlights if highlight.start is not None],
-            key=lambda h: h.start,
-        )
-        if len(highlights) > 0:
-            if len(highlights) == 1:
-                highlight_content += f"""### [[{doc.name}.pdf#page={page_idx}|{doc.name}, page {page_idx}]]
+        if not highlights:
+            return
 
-> {highlights[0].text}
-
-"""
-            else:
-                # first, highlights may be disjointed. We want to join highlights that belong together
-                paired_highlights = [
-                    (highlights[i], highlights[i + 1])
-                    for i, _ in enumerate(highlights[:-1])
-                ]
-                assert len(paired_highlights) > 0
-                joined_highlight = []
-                for current, next in paired_highlights:
-                    distance = next.start - (current.start + current.length)
-                    joined_highlight.append(current.text)
-                    if distance > 2:
-                        joined_highlights.append(joined_highlight)
-                        joined_highlight = []
-
-                highlight_content += f"### [[{doc.name}.pdf#page={page_idx}|{doc.name}, page {page_idx}]]\n"
-
-                for joined_highlight in joined_highlights:
-                    highlight_text = " ".join(joined_highlight)
-                    highlight_content += f"\n> {highlight_text}\n"
-
-                highlight_content += "\n"
-
-        if highlight_content:
-            self.page_content[page_idx] = highlight_content
+        self.retrieve_page(page_idx).highlights = merge_highlights(highlights)
 
     def add_text(self, page_idx: int, text):
         if not text:
             return
-        if page_idx not in self.pages:
-            page = RMPage(page_idx)
-            self.pages[page_idx] = page
-        else:
-            page = self.pages[page_idx]
-
-        print(text.keys())
-
-        for paragraph in text['text'].contents:
-            print(paragraph)
-        # page.add_user_written_paragraph(text)
-        # page.highlights.append(GlyphRange(text))
-
-#         page_idx += 1
-#         if not text:
-#             return
-#
-#         for paragraph in text['text'].contents:
-#             self.page_content[page_idx] += f"""
-# {paragraph}
-# """
+        self.retrieve_page(page_idx).text = text["text"].contents
