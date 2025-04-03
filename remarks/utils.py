@@ -133,7 +133,6 @@ def get_pages_data(path: str) -> Tuple[List[str], List[int]]:
 
 def list_ann_rm_files(path):
     content_dir = pathlib.Path(f"{path.parents[0]}/{path.stem}/")
-    # print("content_dir", content_dir, not content_dir.is_dir())
     if not content_dir.is_dir():
         return []
     return list(content_dir.glob("*.rm"))

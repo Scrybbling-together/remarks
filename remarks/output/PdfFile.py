@@ -1,9 +1,8 @@
 # TODO: Refactor into standalone file that handles
 #       all PDF rendering logic
-from typing import List
 
 import fitz
-from fitz import Page, Rect, PDF_ANNOT_HIGHLIGHT, Annot, Quad
+from fitz import Page, Rect, Annot, Quad
 
 from remarks.conversion.parsing import RemarksRectangle
 from remarks.warnings import scrybble_warning_typed_text_highlighting_not_supported
@@ -27,12 +26,10 @@ def apply_smart_highlight(page: Page, highlight: RemarksRectangle, x_translation
             scrybble_warning_typed_text_highlighting_not_supported.render_as_annotation(page)
 
 def add_error_annotation(page: Page, more_info=""):
-    page.add_freetext_annot(
-        rect=fitz.Rect(10, 10, 300, 30),
+    page.add_text_annot(
         text="Scrybble error" + more_info,
-        fontsize=11,
-        text_color=(0, 0, 0),
-        fill_color=(1, 1, 1)
+        icon="Note",
+        point=(10, 10)
     )
 
 

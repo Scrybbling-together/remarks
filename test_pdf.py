@@ -30,7 +30,6 @@ def test_correct_output_page_count(notebook: NotebookMetadata, remarks_document:
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_warnings_match_specification(notebook: NotebookMetadata, remarks_document: Document):
     for page in notebook.pages:
-        print(page.warnings)
         if page.warnings:
             for warning in page.warnings:
                 assert_warning_exists(remarks_document, page.pdf_document_index, warning)

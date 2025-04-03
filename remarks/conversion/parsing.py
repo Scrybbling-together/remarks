@@ -122,7 +122,6 @@ def determine_document_dimensions(file_path) -> ReMarkableDimensions:
 
 
 def read_rm_file_version(file_path: str) -> ReMarkableAnnotationsFileHeaderVersion:
-    print(file_path)
     with open(file_path, "rb") as f:
         src_header = f.readline()
 

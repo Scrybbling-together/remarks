@@ -1,4 +1,4 @@
-from fitz import Document, PDF_ANNOT_FREE_TEXT
+from fitz import Document, PDF_ANNOT_FREE_TEXT, PDF_ANNOT_TEXT
 
 from remarks.warnings import ScrybbleWarning
 
@@ -18,8 +18,8 @@ def assert_warning_exists(document: Document, page_number: int, warning: Scrybbl
     @return:
     """
     page = document[page_number]
-    for annotation in page.annots(PDF_ANNOT_FREE_TEXT):
-        assert warning.exists_in_pdf_annotation(annotation)
+    for annotation in page.annots(PDF_ANNOT_TEXT):
+        assert str(warning) in annotation.info['content']
         return
 
     assert False, f"No Scrybble warning found on page {page_number}"
