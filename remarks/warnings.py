@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from fitz.fitz import Page, PDF_ANNOT_FREE_TEXT, PDF_ANNOT_TEXT
-import fitz
+
+from fitz.fitz import Page, PDF_ANNOT_TEXT
 
 
 @dataclass

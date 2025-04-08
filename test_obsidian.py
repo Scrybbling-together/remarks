@@ -1,10 +1,8 @@
 from dataclasses import dataclass
-from pprint import pprint
 from typing import List
 
 from fitz import Document
-from parsita import lit, reg, rep, Parser, opt, Failure, until, success, eof, ParserContext
-from parsita.util import constant
+from parsita import lit, reg, rep, Parser, opt, Failure, until, eof, ParserContext
 from returns.result import Success
 
 from tests.notebook_fixtures import *

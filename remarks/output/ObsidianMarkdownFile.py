@@ -2,7 +2,7 @@ import os
 from typing import List, Dict
 
 import yaml
-from jinja2 import Environment, BaseLoader, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 from rmscene.scene_items import GlyphRange, ParagraphStyle
 from rmscene.text import Paragraph
 

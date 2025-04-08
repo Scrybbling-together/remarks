@@ -1,7 +1,7 @@
 import json
 import pathlib
 from functools import cache
-from typing import Tuple, List, Generator
+from typing import Tuple, List
 
 # reMarkable's device dimensions
 RM_WIDTH = 1404

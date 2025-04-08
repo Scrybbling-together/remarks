@@ -1,6 +1,9 @@
+import os
+import os.path
+
 from flask import Flask, request
+
 import remarks
-import os, os.path
 
 app = Flask("Remarks http server")
 
