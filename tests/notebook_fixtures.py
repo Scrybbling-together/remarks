@@ -65,7 +65,7 @@ def highlights_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=0,
-                smart_highlights=[
+                raw_highlights=[
                     "numbers may be described briefly as the real",
                     "numbers whose expressions as a decimal are calculable by finite means.",
                     "theory of functions",
@@ -78,6 +78,14 @@ def highlights_document():
                     "all definable numbers,",
                     "Although the class of computable numbers is so great, and in many",
                     "Avays similar to the class of real numbers, it is nevertheless enumerable.",
+                ],
+                merged_highlights=[
+                    "numbers may be described briefly as the real numbers whose expressions as a decimal are calculable by finite means.",
+                    "theory of functions",
+                    "According to my definition, a number is computable if its decimal can be written down by a machine.",
+                    "In particular, I show that certain large classes of numbers are computable.",
+                    "The computable numbers do not, however, include all definable numbers,",
+                    "Although the class of computable numbers is so great, and in many Avays similar to the class of real numbers, it is nevertheless enumerable.",
                 ],
                 photo={ReMarkableDevice.reMarkablePaperPro: "tests/in/on computable numbers - RMPP - highlighter tool v6 - page 1.jpeg"}
             ),
@@ -103,7 +111,17 @@ def highlights_multiline_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=0,
-                smart_highlights=[
+                merged_highlights= [
+                    "suddenly there came a tapping,",
+                    # TODO: These spelling mistakes come from either rmscene or from ReMarkable itself.
+                    #       worth investigating!
+                    "Eagerly I wished the morrow;—vainly Ihad sought to borrow",
+                    "Let my heart be still a moment and this",
+                    # TODO: These spelling mistakes come from either rmscene or from ReMarkable itself.
+                    #       worth investigating!
+                    "But, with mien of lord or lady, perchedabove my chamber door—"
+                ],
+                raw_highlights=[
                     "suddenly there came a tapping,",
                     "Eagerly I wished the morrow;—vainly I",
                     "had sought to borrow",
@@ -132,13 +150,13 @@ def v5_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V5,
                 pdf_document_index=1,
-                smart_highlights=[],
+                raw_highlights=[],
                 warnings=[scrybble_warning_only_v6_supported],
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V5,
                 pdf_document_index=27,
-                smart_highlights=[],
+                raw_highlights=[],
                 warnings=[scrybble_warning_only_v6_supported],
             )
         ]
@@ -222,7 +240,7 @@ def typed_text_notebook():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=0,
-                smart_highlights=[],
+                raw_highlights=[],
                 typed_text="""### [[Text formatting.pdf#page=1|Text formatting, page 1]]
 
 #### Typed text
@@ -260,22 +278,23 @@ _**This is regular bold italic**_
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=1,
-                smart_highlights=[],
+                raw_highlights=[],
                 typed_text="""#### Text with corner dots""",
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=2,
-                smart_highlights=[],
+                raw_highlights=[],
                 typed_text="""##### Text with drawn underlining""",
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=3,
-                smart_highlights=[
+                raw_highlights=[
                     # Note, this highlight is present on text that is typed on the ReMarkable itself,
                     # not on the original PDF.
-                    " with highlight"
+                    # TODO: We don't support extracting it yet. Don't know if this is important at all.
+                    # " with highlight"
                 ],
                 warnings=[scrybble_warning_typed_text_highlighting_not_supported],
                 typed_text="""##### Text with highlight""",
@@ -283,7 +302,7 @@ _**This is regular bold italic**_
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=4,
-                smart_highlights=[],
+                raw_highlights=[],
                 typed_text="""##### Three _paragraphs with italic in one selection_
 
 _p_

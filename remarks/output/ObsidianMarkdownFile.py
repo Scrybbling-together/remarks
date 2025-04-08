@@ -42,7 +42,7 @@ class RMPage:
         self.text: None | list[Paragraph] = None
 
 
-def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int):
+def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int) -> str:
     """
     Merge the text of two highlights based on their relative positions.
 
@@ -54,8 +54,6 @@ def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int):
     Returns:
         str: The merged text
     """
-    text = ""
-
     # Case 1: B starts after A ends (positive distance)
     if distance > 0:
         # We need to add the gap characters
@@ -97,7 +95,6 @@ def merge_highlights(highlights: List[GlyphRange]):
     merged_highlights = list(filter(lambda h: h is not None and type(h.start) is int, highlights.copy()))
     # Continue until no more changes
     while True:
-        print(merged_highlights)
         # Sort by starting position
         merged_highlights.sort(key=lambda h: h.start)
 
@@ -122,14 +119,11 @@ def merge_highlights(highlights: List[GlyphRange]):
                     new_end = max(end_of_h1, h2.start + h2.length)
                     new_length = new_end - new_start
 
-                    # Merge text
-                    new_text = merge_highlight_texts(h1, h2, distance)
-
                     # Create new highlight
                     merged_highlight = GlyphRange(
                         start=new_start,
                         length=new_length,
-                        text=new_text,
+                        text=merge_highlight_texts(h1, h2, distance),
                         color=h1.color,
                         rectangles=h1.rectangles + h2.rectangles
                     )
@@ -148,6 +142,7 @@ def merge_highlights(highlights: List[GlyphRange]):
         # If no merges happened, we're done
         if not merged_any:
             break
+    print(merged_highlights)
     return merged_highlights
 
 

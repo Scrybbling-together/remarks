@@ -1,7 +1,9 @@
 import re
+from pprint import pprint
 
 from fitz import Document
 
+from remarks.output.ObsidianMarkdownFile import merge_highlights
 from remarks.output.PdfFile import extract_annot
 from tests.notebook_fixtures import *
 from tests.pdf_test_support import assert_page_renders_without_warnings, assert_warning_exists
@@ -42,7 +44,7 @@ def test_warnings_match_specification(notebook: NotebookMetadata, remarks_docume
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_smart_highlights(notebook: NotebookMetadata, remarks_document: Document):
     for page_metadata in notebook.pages:
-        if page_metadata.smart_highlights:
+        if page_metadata.raw_highlights:
             if scrybble_warning_typed_text_highlighting_not_supported in page_metadata.warnings:
                 continue
             document_page = remarks_document[page_metadata.pdf_document_index]
@@ -51,10 +53,10 @@ def test_smart_highlights(notebook: NotebookMetadata, remarks_document: Document
 
             # sort by reading-order
             annots.sort(key=lambda a: (a.rect.y0, a.rect.x0))
-            assert len(annots) == len(page_metadata.smart_highlights)
+            assert len(annots) == len(page_metadata.raw_highlights)
             for i, annotation in enumerate(annots):
                 text = extract_annot(annotation, words_on_page)
-                assert text == page_metadata.smart_highlights[i]
+                assert text == page_metadata.raw_highlights[i]
                 # TODO: We should implement the colour check as well, once that is ready.
 
 
