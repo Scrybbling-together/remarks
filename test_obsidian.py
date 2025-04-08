@@ -175,7 +175,6 @@ def test_highlights_are_available_in_markdown(notebook: NotebookMetadata, remark
         for page in notebook.pages:
             if page.merged_highlights:
                 corresponding_page = result.pages[page.pdf_document_index]
-                print(corresponding_page)
 
                 len1 = len(corresponding_page.highlights)
                 len2 = len(page.merged_highlights)
