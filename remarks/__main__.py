@@ -50,7 +50,7 @@ def main():
     log_level = args_dict.pop("log_level")
     logging.basicConfig(
         format="%(message)s",
-        level=log_level,
+        level=log_level
     )
 
     if not pathlib.Path(input_dir).exists():
@@ -59,7 +59,7 @@ def main():
     if not pathlib.Path(output_dir).is_dir():
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-    run_remarks(input_dir, output_dir, **args_dict)
+    run_remarks(input_dir, output_dir)
 
 
 if __name__ == "__main__":
