@@ -1,6 +1,6 @@
+import argparse
 import logging
 import pathlib
-import argparse
 
 from remarks import run_remarks
 

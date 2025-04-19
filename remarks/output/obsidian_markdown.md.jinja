@@ -13,7 +13,8 @@
 
 #### Highlights
 {% for highlight in page.highlights %}
-> {{ highlight.text }}{% endfor %}{% endif %}
+> {{ highlight.text }}
+{% endfor %}{% endif %}
 {% if page.text %}
 #### Typed text
 {% for paragraph in page.text %}{{ render_paragraph(paragraph) }}{% endfor %}

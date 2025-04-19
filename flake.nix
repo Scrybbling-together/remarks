@@ -75,7 +75,7 @@
 
             echo ""
             echo "To test remarks:"
-            echo "pytest"
+            echo "pytest -m \"not unfinished_feature\""
           '';
         };
 

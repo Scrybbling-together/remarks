@@ -3,8 +3,8 @@ import os.path
 from io import StringIO
 
 from flask import Flask, request
+
 import remarks
-import os, os.path
 
 app = Flask("Remarks http server")
 

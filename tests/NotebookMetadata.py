@@ -17,8 +17,11 @@ class PageMetadata:
     """What page number this .rm page has in a rendered PDF.
     Note, page numbers are 0-indexed, even though PDFs are 1-indexed when read with a reader program."""
 
-    smart_highlights: Optional[List[str]] = None
-    """a list of expected highlights. Each highlight is a string of text."""
+    raw_highlights: Optional[List[str]] = None
+    """a list of highlights as they appear on the page. Each highlight is a string of text."""
+
+    merged_highlights: Optional[List[str]] = None
+    """A list of highlights as they should show in Markdown, merged with a sensible algorithm."""
 
     typed_text: Optional[str] = None
     """Text written with the Type Folio or with the text tool. Formatted as the equivalent markdown.

@@ -1,21 +1,20 @@
 import logging
 import struct
 from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, List, Any, TypedDict, Tuple
+from typing import List, TypedDict, Tuple
 
-import math
 from rmc.exporters.svg import X_SHIFT, xx, yy
 from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock
 from rmscene.scene_items import Line, GlyphRange, Rectangle
 from rmscene.text import TextDocument
 
-from ..dimensions import ReMarkableDimensions, REMARKABLE_DOCUMENT
+from ..dimensions import ReMarkableDimensions
 from ..metadata import ReMarkableAnnotationsFileHeaderVersion
 from ..utils import (
     RM_WIDTH,
     RM_HEIGHT,
 )
+
 
 def update_boundaries_from_point(x, y, boundaries):
     boundaries["x_max"] = max(boundaries["x_max"], x)

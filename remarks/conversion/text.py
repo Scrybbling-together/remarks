@@ -1,5 +1,5 @@
-from itertools import groupby
 import operator
+from itertools import groupby
 
 import fitz
 
