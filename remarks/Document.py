@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 import fitz
@@ -20,7 +21,7 @@ class Document:
         self.metadata_path = metadata_path
         self.pages_list, self.pages_map = get_pages_data(metadata_path)
         self.doc_type = get_document_filetype(metadata_path)
-        self.name = get_visible_name(metadata_path)
+        self.name = sanitize_filename(get_visible_name(metadata_path))
 
         # annotations
         self.rm_tags = list(get_document_tags(metadata_path))
@@ -96,3 +97,8 @@ class Document:
                 page_idx,
                 rm_annotation_file,
             )
+
+
+def sanitize_filename(filename: str) -> str:
+    # Replace any character that isn't alphanumeric, period, hyphen, or underscore
+    return re.sub(r'[^\w\-. ]', '_', filename)

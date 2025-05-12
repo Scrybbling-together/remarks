@@ -1,4 +1,5 @@
 import os
+import time
 from typing import List, Dict
 
 import yaml
@@ -7,7 +8,6 @@ from rmscene.scene_items import GlyphRange, ParagraphStyle
 from rmscene.text import Paragraph
 
 from remarks.Document import Document
-
 
 def render_paragraph(paragraph: Paragraph):
     paragraph_content = ""
@@ -142,7 +142,6 @@ def merge_highlights(highlights: List[GlyphRange]):
         # If no merges happened, we're done
         if not merged_any:
             break
-    print(merged_highlights)
     return merged_highlights
 
 
@@ -161,17 +160,16 @@ class ObsidianMarkdownFile:
         return page
 
     def save(self, location: str):
-        if not self.document.rm_tags and not self.pages:
-            return
-
-        frontmatter = {"tags": [f"#remarkable/{tag}" for tag in self.document.rm_tags]}
+        frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.name}
+        if self.document.rm_tags:
+            frontmatter["tags"] = [f"#remarkable/{tag}" for tag in self.document.rm_tags]
 
         env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)))
         template = env.get_template('obsidian_markdown.md.jinja')
 
         content = template.render(**{
             'document': self.document,
-            'frontmatter': yaml.dump(frontmatter, indent=2) if frontmatter["tags"] else None,
+            'frontmatter': yaml.dump(frontmatter, indent=3, width=360),
             'pages': self.pages,
             'sorted_pages': sorted(self.pages.items()),
             'render_paragraph': render_paragraph
@@ -192,3 +190,4 @@ class ObsidianMarkdownFile:
         if not text:
             return
         self.retrieve_page(page_idx).text = text["text"].contents
+
