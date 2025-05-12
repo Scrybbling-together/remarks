@@ -15,7 +15,7 @@
           mkPoetryEnv mkPoetryApplication defaultPoetryOverrides;
 
           poetryArgs = {
-            python = pkgs.python310;
+            python = pkgs.python311;
             projectDir = ./.;
             preferWheels = true;
             overrides = defaultPoetryOverrides.extend (final: prev: {
