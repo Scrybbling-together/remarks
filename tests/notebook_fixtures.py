@@ -229,6 +229,23 @@ def shader_notebook():
     )
 
 @pytest.fixture
+def file_with_annoying_name():
+    return NotebookMetadata(
+        notebook_name="$dollar name",
+        notebook_type=ReMarkableNotebookType.NOTEBOOK,
+        description="A notebook with a dollar in the name. This has special meaning in a lot of software",
+        rmn_source="tests/in/annoying filename.rmn",
+        pdf_pages=1,
+        pages=[
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                      pdf_document_index=0,
+                      raw_highlights=[],
+                      tags=["obsidian"]
+            )
+        ]
+    )
+
+@pytest.fixture
 def typed_text_notebook():
     return NotebookMetadata(
         notebook_name="Text formatting",
@@ -371,5 +388,6 @@ all_notebooks = [
     "black_and_white",
     "shader_notebook",
     "typed_text_notebook",
-    "typed_test_real_world_document"
+    "typed_test_real_world_document",
+    "file_with_annoying_name"
 ]

@@ -12,21 +12,25 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; })
-          mkPoetryApplication defaultPoetryOverrides;
-        pythonEnv = pkgs.python310.withPackages (ps: [ ]);
+          mkPoetryEnv mkPoetryApplication defaultPoetryOverrides;
 
-        remarksBin = mkPoetryApplication {
-          projectDir = ./.;
-          python = pkgs.python310;
-          preferWheels = true;
-          overrides = defaultPoetryOverrides.extend (final: prev: {
-            click = prev.click.overridePythonAttrs (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ [ prev.flit-scm ];
+          poetryArgs = {
+            python = pkgs.python310;
+            projectDir = ./.;
+            preferWheels = true;
+            overrides = defaultPoetryOverrides.extend (final: prev: {
+              click = prev.click.overridePythonAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ [ prev.flit-scm ];
+              });
+              rmc = prev.rmc.overridePythonAttrs (old: {
+                buildInputs = (old.buildInputs or [ ]) ++ [ prev.poetry-core ];
+              });
             });
-            rmc = prev.rmc.overridePythonAttrs (old: {
-              buildInputs = (old.buildInputs or [ ]) ++ [ prev.poetry-core ];
-            });
-          });
+          };
+
+          pythonEnv = mkPoetryEnv (poetryArgs);
+
+        remarksBin = mkPoetryApplication (poetryArgs // {
           extras = [ "server" ];
 
           propagatedBuildInputs = [ pkgs.inkscape ];
@@ -35,40 +39,23 @@
             pytest -m "not unfinished_feature"
           '';
           doCheck = true;
-        };
+        });
 
         environment = pkgs.mkShell {
           buildInputs = [
             pythonEnv
-            pkgs.poetry
-            pkgs.zlib
-            pkgs.gnumake
-            pkgs.libgcc.lib
             pkgs.poppler_utils
             pkgs.inotify-tools
             pkgs.inkscape
           ];
 
           shellHook = ''
-            export LD_LIBRARY_PATH="${
-              pkgs.lib.makeLibraryPath [ pkgs.libgcc.lib pkgs.zlib ]
-            }:$LD_LIBRARY_PATH"
-
             if ! [[ -f .githooks/pre-commit ]]; then
               git config core.hooksPath .githooks
             fi
 
-            if ! [[ -d .venv ]]; then
-              ${pythonEnv}/bin/python -m venv .venv
-              source .venv/bin/activate
-            else
-              source .venv/bin/activate
-            fi
-
-            poetry install
-
             echo "🔍 Remarks Development Environment"
-            echo "Nix set-up poetry for you, configured git hooks and activated the python environment :)"
+            echo "Nix configured git hooks and activated the python environment for you :)"
 
             echo "To run remarks:"
             echo "python -m remarks {IN_FILE.rmn} {OUTPUT_LOCATION}"
