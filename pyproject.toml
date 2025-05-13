@@ -22,7 +22,7 @@ rmscene = { git = "https://github.com/ricklupton/rmscene.git", branch = "main" }
 pyyaml = "^6.0.1"
 parsita = "^2.1.1"
 numpy = "^2.2.1"
-flask = "^3.1.0"
+flask = "^3.1.1"
 rmc = { git = "https://github.com/scrybbling-together/rmc.git", branch = "updated-dependencies" }
 
 [tool.poetry.extras]
