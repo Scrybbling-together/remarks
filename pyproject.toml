@@ -16,8 +16,8 @@ classifiers = [
 
 # https://python-poetry.org/docs/dependency-specification/
 [tool.poetry.dependencies]
-python = "^3.11"
-PyMuPDF = "^1.22.5"
+python = "^3.12"
+PyMuPDF = "^1.23.5"
 rmscene = { git = "https://github.com/ricklupton/rmscene.git", branch = "main" }
 pyyaml = "^6.0.1"
 parsita = "^2.1.1"
