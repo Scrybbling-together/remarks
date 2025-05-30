@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from fitz.fitz import Page, PDF_ANNOT_TEXT
+from pymupdf import Page
+from pymupdf.mupdf import PDF_ANNOT_TEXT
 
 
 @dataclass
