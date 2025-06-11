@@ -14,6 +14,7 @@ if not sentry_dsn:
     logging.warning("Sentry DSN is missing. Error reporting will be disabled.")
 else:
     sentry_sdk.init(dsn=sentry_dsn)
+    logging.info("Initialized Sentry")
 
 @app.post("/process")
 def process():
@@ -45,6 +46,7 @@ def process():
         remarks.run_remarks(in_path, out_dir)
     except Exception as e:
         logging.error(e)
+        sentry_sdk.capture_exception(e)
         return e
 
     return "OK"

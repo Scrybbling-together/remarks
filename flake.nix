@@ -43,6 +43,7 @@
             pkgs.poppler_utils
             pkgs.inotify-tools
             pkgs.inkscape
+            pkgs.gum
           ];
 
           shellHook = ''
