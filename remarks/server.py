@@ -53,6 +53,7 @@ def process():
     try:
         parent_dir = in_path
         out_dir = os.path.join(parent_dir, "out")
+        os.makedirs(out_dir, exist_ok=True)
 
         remarks.run_remarks(in_path, out_dir)
         return {"status": "success"}, 200
