@@ -1,19 +1,23 @@
 import logging
 import os.path
-from io import StringIO
 
 from flask import Flask, request
 
 import remarks
+import sentry_sdk
 
 app = Flask("Remarks http server")
+
+# Initialize Sentry
+sentry_dsn = os.getenv('SENTRY_DSN')
+if not sentry_dsn:
+    logging.warning("Sentry DSN is missing. Error reporting will be disabled.")
+else:
+    sentry_sdk.init(dsn=sentry_dsn)
 
 @app.post("/process")
 def process():
     params = request.get_json()
-
-    log_stream = StringIO()
-    logging.basicConfig(stream=log_stream, level=logging.DEBUG)
 
     if 'in_path' not in params:
         logging.error("Missing parameter: in_path")
@@ -41,8 +45,9 @@ def process():
         remarks.run_remarks(in_path, out_dir)
     except Exception as e:
         logging.error(e)
+        return e
 
-    return log_stream.getvalue()
+    return "OK"
 
 def main():
     app.run(host="0.0.0.0", port=5000)
