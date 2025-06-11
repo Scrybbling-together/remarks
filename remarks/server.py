@@ -42,16 +42,12 @@ def process():
         return {"error": "Missing required parameters"}, 400
 
     in_path = params['in_path']
-    out_path = params['out_path']
-
 
     if not os.path.exists(in_path):
         return {"error": f"Input path does not exist: {in_path}"}, 400
-    if not os.path.exists(out_path):
-        return {"error": f"Output path does not exist: {out_path}"}, 400
 
     try:
-        parent_dir = in_path
+        parent_dir = os.path.dirname(in_path)
         out_dir = os.path.join(parent_dir, "out")
         os.makedirs(out_dir, exist_ok=True)
 
