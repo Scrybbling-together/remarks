@@ -79,7 +79,7 @@
           dockerBin = dockerBinary;
         };
 
-        checks.default = remarksBin;  # Disabled to avoid sphinx issues
+        checks.default = remarksBin;
 
         apps.default = {
           type = "app";
