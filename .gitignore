@@ -12,3 +12,7 @@ tests/in/data-tests/
 
 tests/out/*
 .pytest_cache/
+
+dist/
+processing_log.db
+result
