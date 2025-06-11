@@ -44,13 +44,17 @@ def process():
     in_path = params['in_path']
     out_path = params['out_path']
 
+
     if not os.path.exists(in_path):
         return {"error": f"Input path does not exist: {in_path}"}, 400
     if not os.path.exists(out_path):
         return {"error": f"Output path does not exist: {out_path}"}, 400
 
     try:
-        remarks.run_remarks(in_path, out_path)
+        parent_dir = in_path
+        out_dir = os.path.join(parent_dir, "out")
+
+        remarks.run_remarks(in_path, out_dir)
         return {"status": "success"}, 200
     except Exception as e:
         logging.error(f"Processing failed: {e}")
