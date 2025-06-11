@@ -113,7 +113,7 @@ def main():
     logger = ProcessingLogger()
     
     # Find all .rm files
-    files = glob.glob("tests/data-tests/*.rmn")
+    files = glob.glob("tests/in/data-tests/*.rmn")
     total_files = len(files)
     print(f"Found {total_files} files to process")
     
