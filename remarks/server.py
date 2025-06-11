@@ -8,19 +8,16 @@ import sentry_sdk
 
 app = Flask("Remarks http server")
 
-# Initialize Sentry
-sentry_dsn = os.getenv('SENTRY_DSN')
-if not sentry_dsn:
-    logging.warning("Sentry DSN is missing. Error reporting will be disabled.")
-else:
-    sentry_sdk.init(dsn=sentry_dsn)
-    logging.info("Initialized Sentry")
-
-
 def main_prod():
     """Production entry point using Gunicorn"""
     import gunicorn.app.wsgiapp as wsgi
     import sys
+    sentry_dsn = os.getenv('SENTRY_DSN')
+    if not sentry_dsn:
+        logging.warning("Sentry DSN is missing. Error reporting will be disabled.")
+    else:
+        sentry_sdk.init(dsn=sentry_dsn)
+        logging.info("Initialized Sentry")
 
     # Gunicorn configuration
     sys.argv = [
