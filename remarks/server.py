@@ -16,7 +16,7 @@ def main_prod():
     if not sentry_dsn:
         logging.warning("Sentry DSN is missing. Error reporting will be disabled.")
     else:
-        sentry_sdk.init(dsn=sentry_dsn)
+        sentry_sdk.init(dsn=sentry_dsn, send_default_pii=True)
         logging.info("Initialized Sentry")
 
     # Gunicorn configuration
