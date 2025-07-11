@@ -43,6 +43,7 @@
             pkgs.poppler_utils
             pkgs.inotify-tools
             pkgs.inkscape
+            pkgs.gum
           ];
 
           shellHook = ''
@@ -78,7 +79,7 @@
           dockerBin = dockerBinary;
         };
 
-        checks.default = remarksBin;  # Disabled to avoid sphinx issues
+        checks.default = remarksBin;
 
         apps.default = {
           type = "app";

@@ -137,7 +137,7 @@ def highlights_multiline_document():
 def v5_document():
     return NotebookMetadata(
         notebook_name="1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing",
-        description="Alan Turing's \"On Computable Numbers\" with annotations from xochitl v5",  # No description provided; set it as an empty string
+        description="Alan Turing's \"On Computable Numbers\" with annotations from xochitl v5",
         rmn_source="tests/in/on computable numbers - v5.rmn",
         notebook_type=ReMarkableNotebookType.PDF,
         pdf_pages=36,
