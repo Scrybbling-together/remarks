@@ -100,6 +100,13 @@ class Document:
 
 
 def sanitize_filename(filename: str) -> str:
-    # There are five characters that are not allowed in Obsidian filenames
-    # when it comes to linking to them
-    return re.sub(r'[#[\]^|]', '_', filename)
+    """
+    Sanitizes filenames for smooth usage within Obsidian
+    Obsidian filenames cannot contain the following special tokens:
+    :/\
+    Additionally, Obsidian recommends you not to use these characters in filenames
+    because they will break links:
+    #[]^|
+    Within remarks, we replace these characters with a _
+    """
+    return re.sub(r'[#[\]^|:/\\]', '_', filename)

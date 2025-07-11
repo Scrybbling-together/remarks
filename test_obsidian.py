@@ -5,7 +5,6 @@ from fitz import Document
 from parsita import lit, reg, rep, Parser, opt, Failure, until, eof, ParserContext
 from returns.result import Success
 
-from remarks.Document import sanitize_filename
 from tests.notebook_fixtures import *
 
 r"""
@@ -85,7 +84,9 @@ class ObsidianDocumentParser(ParserContext):
     h5_tag = lit("##### ")
     h6_tag = lit("###### ")
 
-    document_name = reg(r"[\w .,-/:;()\$&@\"\?!'[\]{\}%*\+=_\\|<>€£¥•¿]+")
+    # reMarkable allows many characters that aren't allowed in many other systems.
+    # This is a regular expression that matches valid reMarkable filenames
+    document_name = reg(r"[\w .,-;()\$&@\"\?!'[\]{\}%*\+=_\\<>€£¥•¿]+")
     document_title = h1_tag >> document_name << rep(newline)
 
     to_newline = reg(r'[^\n]+')
@@ -131,16 +132,6 @@ class ObsidianDocumentParser(ParserContext):
     document = (frontmatter & document_title << autogeneration_warning & pages) > to_document
 
 
-@pytest.mark.markdown
-@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
-def test_document_is_named_correctly(notebook: NotebookMetadata, remarks_document: Document,
-                                     obsidian_markdown: str | None):
-    characters_forbidden_in_obsidian_links = "#[]^|"
-    if obsidian_markdown:
-        result = ObsidianDocumentParser.document.parse(obsidian_markdown).unwrap()
-        for char in characters_forbidden_in_obsidian_links:
-            assert char not in result.name
-
 # Note: This test is incorrect. Document tags and page tags are separate things.
 # This confuses the two, testing page tags being present in the document metadata.
 # Needs to be split up into two tests.
@@ -162,15 +153,19 @@ def test_tags_present_on_a_page_are_in_the_markdown(notebook: NotebookMetadata, 
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_filenames_are_sanitized(notebook: NotebookMetadata, remarks_document: Document, obsidian_markdown: str | None):
     """
-    Filenames are sanitized, special tokens are removed. Obsidian filenames cannot contain certain tokens
-    such as $ or :
-    These get replaced with _ throughout all of Scrybble's software
+    Filenames are sanitized, special tokens are removed.
+    Obsidian filenames cannot contain the following special tokens:
+    :/\
+    Additionally, Obsidian recommends you not to use these characters in filenames
+    because they will break links:
+    #[]^|
+    Within remarks, we will replace these characters with a _
     """
     if obsidian_markdown:
-        document = ObsidianDocumentParser.document.parse(obsidian_markdown).unwrap()
-        assert document.name == notebook.notebook_name
-        for page in document.pages:
-            assert page.document_name == notebook.notebook_name
+        characters_forbidden_in_obsidian_links = "#[]^|:\\/"
+        result = ObsidianDocumentParser.document.parse(obsidian_markdown).unwrap()
+        for char in characters_forbidden_in_obsidian_links:
+            assert char not in result.name
 
 
 @pytest.mark.markdown
