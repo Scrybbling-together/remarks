@@ -100,5 +100,6 @@ class Document:
 
 
 def sanitize_filename(filename: str) -> str:
-    # Replace any character that isn't alphanumeric, period, hyphen, or underscore
-    return re.sub(r'[^\w\-. ]', '_', filename)
+    # There are five characters that are not allowed in Obsidian filenames
+    # when it comes to linking to them
+    return re.sub(r'[#[\]^|]', '_', filename)

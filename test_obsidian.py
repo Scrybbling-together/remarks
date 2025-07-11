@@ -85,7 +85,7 @@ class ObsidianDocumentParser(ParserContext):
     h5_tag = lit("##### ")
     h6_tag = lit("###### ")
 
-    document_name = reg(r"[\w \.,-]+")
+    document_name = reg(r"[\w .,-/:;()\$&@\"\?!'[\]{\}%*\+=_\\|<>€£¥•¿]+")
     document_title = h1_tag >> document_name << rep(newline)
 
     to_newline = reg(r'[^\n]+')
@@ -135,10 +135,11 @@ class ObsidianDocumentParser(ParserContext):
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_document_is_named_correctly(notebook: NotebookMetadata, remarks_document: Document,
                                      obsidian_markdown: str | None):
+    characters_forbidden_in_obsidian_links = "#[]^|"
     if obsidian_markdown:
         result = ObsidianDocumentParser.document.parse(obsidian_markdown).unwrap()
-        assert sanitize_filename(result.name) == sanitize_filename(notebook.notebook_name)
-
+        for char in characters_forbidden_in_obsidian_links:
+            assert char not in result.name
 
 # Note: This test is incorrect. Document tags and page tags are separate things.
 # This confuses the two, testing page tags being present in the document metadata.
@@ -167,9 +168,9 @@ def test_filenames_are_sanitized(notebook: NotebookMetadata, remarks_document: D
     """
     if obsidian_markdown:
         document = ObsidianDocumentParser.document.parse(obsidian_markdown).unwrap()
-        assert document.name == sanitize_filename(notebook.notebook_name)
+        assert document.name == notebook.notebook_name
         for page in document.pages:
-            assert page.document_name == sanitize_filename(notebook.notebook_name)
+            assert page.document_name == notebook.notebook_name
 
 
 @pytest.mark.markdown
