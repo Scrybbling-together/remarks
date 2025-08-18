@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .devbox/
 .vscode/
+.direnv/
 
 _/
 TODOs.md
