@@ -71,7 +71,7 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
                 if isinstance(el, GlyphRange):
                     translated_rectangles = [
                         Rectangle(
-                            x=xx(rectangle.x) + X_SHIFT,
+                            x=xx(rectangle.x),
                             y=yy(rectangle.y),
                             w=xx(rectangle.w),
                             h=yy(rectangle.h)
