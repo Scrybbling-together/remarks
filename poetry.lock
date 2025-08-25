@@ -743,14 +743,15 @@ files = []
 develop = false
 
 [package.dependencies]
+cairosvg = "^2.8.2"
 click = "^8.0"
 rmscene = "0.7.0"
 
 [package.source]
 type = "git"
 url = "https://github.com/scrybbling-together/rmc.git"
-reference = "updated-dependencies"
-resolved_reference = "5598f5a1603fd58e3013e07b6bad4faa66b012b7"
+reference = "main"
+resolved_reference = "7e8d3430359fdf61df1e1f839668bc91491e3047"
 
 [[package]]
 name = "rmscene"
@@ -938,4 +939,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "3fa9eb8b64f00c67e43c9148c5decc1bff8abf1b82a7c296510c3308db1d724b"
+content-hash = "658562823d854cfffbeb3a5989dfa058156b0b984cd430b98cc08d7114a53d50"

@@ -6,9 +6,8 @@ import tempfile
 import time
 import zipfile
 
-import cairosvg
 import fitz  # PyMuPDF
-from rmc.exporters.pdf import svg_to_pdf
+from rmc.exporters.pdf import rm_to_pdf
 from rmc.exporters.svg import build_anchor_pos, get_bounding_box
 from rmc.exporters.svg import rm_to_svg, xx, yy
 
@@ -89,9 +88,6 @@ def process_document(
 
     obsidian_markdown = ObsidianMarkdownFile(document)
 
-    rm_to_svg_time = 0
-    svg_to_pdf_time = 0
-
     for (
             page_uuid,
             page_idx,
@@ -104,14 +100,12 @@ def process_document(
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
-            temp_svg = tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False)
 
             # This offset is used for smart highlights
             highlights_x_translation = 0
             try:
                 # convert the pdf
-                rm_to_svg(rm_annotation_file, temp_svg.name)
-                cairosvg.svg2pdf(url=temp_svg.name, write_to=temp_pdf.name)
+                rm_to_pdf(rm_annotation_file, temp_pdf.name)
 
                 svg_pdf = fitz.open(temp_pdf.name)
 
@@ -162,8 +156,6 @@ def process_document(
             finally:
                 temp_pdf.close()
                 os.remove(temp_pdf.name)
-                temp_svg.close()
-                os.remove(temp_svg.name)
             if ann_data:
                 if "text" in ann_data:
                     obsidian_markdown.add_text(page_idx, ann_data['text'])
@@ -174,8 +166,6 @@ def process_document(
                         apply_smart_highlight(rmc_pdf_src[page_idx], highlight, highlights_x_translation)
         else:
             scrybble_warning_only_v6_supported.render_as_annotation(page)
-
-    print(f"svg_to_pdf took {svg_to_pdf_time * 1000}ms")
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
     rmc_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")

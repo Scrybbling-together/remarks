@@ -23,10 +23,9 @@ pyyaml = "^6.0.1"
 parsita = "^2.1.1"
 numpy = "^2.2.1"
 flask = "^3.1.0"
-rmc = { git = "https://github.com/scrybbling-together/rmc.git", branch = "updated-dependencies" }
+rmc = { git = "https://github.com/scrybbling-together/rmc.git", branch = "main" }
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
-cairosvg = "^2.8.2"
 
 [tool.poetry.extras]
 server = ["flask"]
