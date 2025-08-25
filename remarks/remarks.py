@@ -3,10 +3,11 @@ import os
 import pathlib
 import sys
 import tempfile
+import time
 import zipfile
 
 import fitz  # PyMuPDF
-from rmc.exporters.pdf import svg_to_pdf
+from rmc.exporters.pdf import rm_to_pdf
 from rmc.exporters.svg import build_anchor_pos, get_bounding_box
 from rmc.exporters.svg import rm_to_svg, xx, yy
 
@@ -26,10 +27,11 @@ from .utils import (
 from .warnings import scrybble_warning_only_v6_supported
 
 
+
 def run_remarks(
         input_dir, output_dir
 ):
-    if input_dir.endswith(".rmn"):
+    if input_dir.endswith(".rmn") or input_dir.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
         with zipfile.ZipFile(input_dir, 'r') as zip_ref:
             zip_ref.extractall(temp_dir)
@@ -98,15 +100,13 @@ def process_document(
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
-            temp_svg = tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False)
 
             # This offset is used for smart highlights
             highlights_x_translation = 0
             try:
                 # convert the pdf
-                rm_to_svg(rm_annotation_file, temp_svg.name)
-                with open(temp_svg.name, "r") as svg_f, open(temp_pdf.name, "wb") as pdf_f:
-                    svg_to_pdf(svg_f, pdf_f)
+                rm_to_pdf(rm_annotation_file, temp_pdf.name)
+
                 svg_pdf = fitz.open(temp_pdf.name)
 
                 # if the background page is not empty, need to merge svg on top of background page
@@ -156,8 +156,6 @@ def process_document(
             finally:
                 temp_pdf.close()
                 os.remove(temp_pdf.name)
-                temp_svg.close()
-                os.remove(temp_svg.name)
             if ann_data:
                 if "text" in ann_data:
                     obsidian_markdown.add_text(page_idx, ann_data['text'])
