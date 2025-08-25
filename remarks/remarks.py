@@ -120,16 +120,19 @@ def process_document(
                     # compute the width/height of a blank page that can contain both svg and background pdf
                     width, height = max(w_svg, w_bg), max(h_svg, h_bg)
                     # compute position of svg and background in the new_page
-                    # it aligns the top-middle of the background and with the (0, 0) of the svg
+                    # reMarkable (0,0) is at center-top of PDF page
+                    # SVG coordinates need to be positioned relative to this center-top origin
                     x_svg, y_svg = 0, 0
                     x_bg, y_bg = 0, 0
 
                     if w_svg > w_bg:
                         x_bg = width / 2 - w_bg / 2 - (w_svg / 2 + x_shift)
-                        highlights_x_translation = x_bg
+                        # Highlights need to account for reMarkable's center-top origin: PDF center = w_bg/2
+                        highlights_x_translation = x_bg + w_bg / 2
                     elif w_svg < w_bg:
                         x_svg = width / 2 - w_svg / 2 + (w_svg / 2 + x_shift)
-                        highlights_x_translation = x_svg
+                        # When SVG is smaller, PDF spans full width, so center is at w_bg/2
+                        highlights_x_translation = w_bg / 2
                     if h_svg > h_bg:
                         y_bg = - y_shift
                     elif h_svg < h_bg:
