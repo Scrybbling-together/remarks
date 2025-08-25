@@ -32,18 +32,16 @@
 
         remarksBin = mkPoetryApplication (poetryArgs // {
           extras = [ "server" ];
-
-          propagatedBuildInputs = [ pkgs.inkscape ];
-          nativeCheckInputs = [ pkgs.inkscape ];
         });
 
         environment = pkgs.mkShell {
           buildInputs = [
             pythonEnv
+            pkgs.zotero
             pkgs.poppler_utils
             pkgs.inotify-tools
-            pkgs.inkscape
             pkgs.gum
+            pkgs.poetry
           ];
 
           shellHook = ''
