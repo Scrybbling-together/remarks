@@ -3,8 +3,10 @@ import os
 import pathlib
 import sys
 import tempfile
+import time
 import zipfile
 
+import cairosvg
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import svg_to_pdf
 from rmc.exporters.svg import build_anchor_pos, get_bounding_box
@@ -26,10 +28,11 @@ from .utils import (
 from .warnings import scrybble_warning_only_v6_supported
 
 
+
 def run_remarks(
         input_dir, output_dir
 ):
-    if input_dir.endswith(".rmn"):
+    if input_dir.endswith(".rmn") or input_dir.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
         with zipfile.ZipFile(input_dir, 'r') as zip_ref:
             zip_ref.extractall(temp_dir)
@@ -86,6 +89,9 @@ def process_document(
 
     obsidian_markdown = ObsidianMarkdownFile(document)
 
+    rm_to_svg_time = 0
+    svg_to_pdf_time = 0
+
     for (
             page_uuid,
             page_idx,
@@ -105,8 +111,8 @@ def process_document(
             try:
                 # convert the pdf
                 rm_to_svg(rm_annotation_file, temp_svg.name)
-                with open(temp_svg.name, "r") as svg_f, open(temp_pdf.name, "wb") as pdf_f:
-                    svg_to_pdf(svg_f, pdf_f)
+                cairosvg.svg2pdf(url=temp_svg.name, write_to=temp_pdf.name)
+
                 svg_pdf = fitz.open(temp_pdf.name)
 
                 # if the background page is not empty, need to merge svg on top of background page
@@ -168,6 +174,8 @@ def process_document(
                         apply_smart_highlight(rmc_pdf_src[page_idx], highlight, highlights_x_translation)
         else:
             scrybble_warning_only_v6_supported.render_as_annotation(page)
+
+    print(f"svg_to_pdf took {svg_to_pdf_time * 1000}ms")
 
     out_doc_path_str = f"{out_path.parent}/{out_path.name}"
     rmc_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")

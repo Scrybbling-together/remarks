@@ -26,6 +26,7 @@ flask = "^3.1.0"
 rmc = { git = "https://github.com/scrybbling-together/rmc.git", branch = "updated-dependencies" }
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
+cairosvg = "^2.8.2"
 
 [tool.poetry.extras]
 server = ["flask"]
