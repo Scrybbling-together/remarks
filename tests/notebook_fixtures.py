@@ -313,7 +313,7 @@ _**This is regular bold italic**_
                     # TODO: We don't support extracting it yet. Don't know if this is important at all.
                     # " with highlight"
                 ],
-                warnings=[scrybble_warning_typed_text_highlighting_not_supported],
+                warnings=[],
                 typed_text="""##### Text with highlight""",
             ),
             PageMetadata(

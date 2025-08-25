@@ -18,12 +18,6 @@ def apply_smart_highlight(page: Page, highlight: RemarksRectangle, x_translation
         annot.set_opacity(0.3)
         annot.update()
 
-        words_on_page = page.get_textpage().extractWORDS()
-        highlighted_text = extract_annot(annot, words_on_page)
-
-        if not highlighted_text:
-            page.delete_annot(annot)
-            scrybble_warning_typed_text_highlighting_not_supported.render_as_annotation(page)
 
 def add_error_annotation(page: Page, more_info=""):
     page.add_text_annot(
