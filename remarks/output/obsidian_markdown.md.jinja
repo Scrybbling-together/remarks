@@ -11,9 +11,7 @@
 
 {% for index, page in sorted_pages %}### [[{{ document.name }}.pdf#page={{ index + 1 }}|{{ document.name }}, page {{ index + 1 }}]]
 {%- if page.tags %}
-
 {% for tag in page.tags %}#{{ tag }} {% endfor %}{% endif %}{% if page.highlights %}
-
 #### Highlights
 {% for highlight in page.highlights %}
 > {{ highlight.text }}
