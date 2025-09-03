@@ -122,6 +122,17 @@ def get_document_tags(path: str):
         for tag in content['tags']:
             yield tag['name']
 
+def get_page_tags(path: str, page_id: str) -> List[str]:
+    """Extract tags for a specific page from the content file"""
+    content = read_meta_file(path, suffix=".content")
+    if "pageTags" in content:
+        page_tags = []
+        for tag_entry in content["pageTags"]:
+            if tag_entry["pageId"] == page_id:
+                page_tags.append(tag_entry["name"])
+        return page_tags
+    return []
+
 def get_pages_data(path: str) -> Tuple[List[str], List[int]]:
     content = read_meta_file(path, suffix=".content")
     redirection_map = construct_redirection_map(content)

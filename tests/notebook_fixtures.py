@@ -13,11 +13,16 @@ def markdown_tags_document():
         rmn_source="tests/in/v3 markdown tags.rmn",
         pdf_pages=2,
         notebook_type=ReMarkableNotebookType.NOTEBOOK,
+        tags=["#remarkable/obsidian"],
         pages=[
             PageMetadata(
-                tags=["#remarkable/obsidian"],
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=0,
+            ),
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
+                pdf_document_index=1,
+                tags=['star']
             )
         ]
     )
@@ -240,7 +245,6 @@ def file_with_annoying_name():
             PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                       pdf_document_index=0,
                       raw_highlights=[],
-                      tags=["obsidian"]
             )
         ]
     )

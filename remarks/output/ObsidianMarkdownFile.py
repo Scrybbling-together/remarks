@@ -191,3 +191,8 @@ class ObsidianMarkdownFile:
             return
         self.retrieve_page(page_idx).text = text["text"].contents
 
+    def add_page_tags(self, page_idx: int, tags: List[str]):
+        if not tags:
+            return
+        self.retrieve_page(page_idx).tags = tags
+
