@@ -1,5 +1,6 @@
 import json
 import pathlib
+import re
 from functools import cache
 from typing import Tuple, List
 
@@ -120,7 +121,69 @@ def get_document_tags(path: str):
     content = read_meta_file(path, suffix=".content")
     if "tags" in content:
         for tag in content['tags']:
-            yield tag['name']
+            yield sanitize_obsidian_tag(tag['name'])
+
+def sanitize_obsidian_tag(tag: str) -> str:
+    """
+    Sanitize a reMarkable page tag for use in Obsidian.
+    
+    Based on testing, Obsidian tags:
+    - Must start with a letter (not number)
+    - Work well with letters, numbers, dashes, underscores
+    - Break with angle brackets < >
+    - Have issues with most special characters
+    - Need single # at start (remove multiple #)
+    """
+    if not tag:
+        return ""
+    
+    # Remove leading # characters
+    while tag.startswith("#"):
+        tag = tag[1:]
+    
+    # If tag was only # characters, mark as invalid
+    if not tag:
+        return "invalid-tag"
+    
+    # Replace angle brackets (they break Obsidian parsing completely)
+    tag = tag.replace("<", "-").replace(">", "-")
+    
+    # Replace other problematic characters with dashes
+    # Keep: letters (including accented), numbers, dashes, underscores, forward slashes
+    # Also keep some Unicode that seems to work: ¿€£¥
+    # Use \w to include accented characters, but exclude specific problematic ones
+    tag = re.sub(r'[^\w\-_/¿€£¥]', '-', tag, flags=re.UNICODE)
+    
+    # Collapse multiple consecutive dashes
+    tag = re.sub(r'-+', '-', tag)
+    
+    # Remove leading/trailing dashes
+    tag = tag.strip('-')
+    
+    # If tag is empty after cleanup, it was all invalid characters
+    if not tag:
+        return "invalid-tag"
+    
+    # Ensure it starts with a letter (Obsidian requirement)
+    if not tag[0].isalpha():
+        # If it starts with number or other, prefix with 'tag'
+        tag = f"tag-{tag}"
+    
+    return tag
+
+
+def get_page_tags(path: str, page_id: str) -> List[str]:
+    """Extract tags for a specific page from the content file"""
+    content = read_meta_file(path, suffix=".content")
+    if "pageTags" in content:
+        page_tags = []
+        for tag_entry in content["pageTags"]:
+            if tag_entry["pageId"] == page_id:
+                sanitized_tag = sanitize_obsidian_tag(tag_entry["name"])
+                if sanitized_tag:  # Only add non-empty tags
+                    page_tags.append(sanitized_tag)
+        return page_tags
+    return []
 
 def get_pages_data(path: str) -> Tuple[List[str], List[int]]:
     content = read_meta_file(path, suffix=".content")

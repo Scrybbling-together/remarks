@@ -88,6 +88,12 @@ def process_document(
 
     obsidian_markdown = ObsidianMarkdownFile(document)
 
+    # First, add page tags for ALL pages (including those without .rm files)
+    for page_idx, page_uuid in enumerate(document.pages_list):
+        page_tags = document.get_page_tags_for_page(page_uuid)
+        if page_tags:
+            obsidian_markdown.add_page_tags(page_idx, page_tags)
+    
     for (
             page_uuid,
             page_idx,
@@ -95,6 +101,7 @@ def process_document(
     ) in document.pages():
         print(f"processing page {page_idx + 1}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
+        
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:

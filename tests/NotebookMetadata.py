@@ -60,6 +60,9 @@ class NotebookMetadata:
     pdf_pages: int
     """How many pages the PDF has in total when viewed on a ReMarkable tablet."""
 
+    tags: List[str] = field(default_factory=list)
+    """The tags associated directly with the document"""
+
     def get_page_by_pdf_page_number(self, pdf_page_number: int) -> Optional[PageMetadata]:
         """
         Retrieve a PageMetadata object by its pdf_document_index.

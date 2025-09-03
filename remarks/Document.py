@@ -9,6 +9,7 @@ from remarks.dimensions import REMARKABLE_DOCUMENT, ReMarkableDimensions
 from remarks.utils import (
     get_document_filetype,
     get_document_tags,
+    get_page_tags,
     is_inserted_page,
     get_pages_data,
     list_ann_rm_files,
@@ -97,6 +98,10 @@ class Document:
                 page_idx,
                 rm_annotation_file,
             )
+    
+    def get_page_tags_for_page(self, page_uuid: str) -> List[str]:
+        """Get tags for a specific page"""
+        return get_page_tags(self.metadata_path, page_uuid)
 
 
 def sanitize_filename(filename: str) -> str:

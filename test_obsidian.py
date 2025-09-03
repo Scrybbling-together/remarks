@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 from fitz import Document
@@ -37,6 +37,7 @@ class Page:
     document_name: str
     highlights: List[str]
     typed_text: str
+    tags: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -51,8 +52,8 @@ class Document:
 
 
 def to_page(page_content: List) -> Page:
-    [document_name, page_number], highlights, typed_text = page_content
-    return Page(page_number, document_name, highlights[0] if highlights else [], typed_text)
+    [document_name, page_number], page_tags, highlights, typed_text = page_content
+    return Page(page_number, document_name, highlights[0] if highlights else [], typed_text, page_tags[0] if page_tags else [])
 
 def to_document(a) -> Document:
     tags, name, pages_list = a
@@ -122,9 +123,15 @@ class ObsidianDocumentParser(ParserContext):
     highlight = (lit("> ") >> until("\n\n"))
     highlights = highlights_title >> rep(rep(newline) >> highlight) << rep(newline)
     typed_texts = typed_text_title >> rep(newline) >> until((newline >> h3_tag) | (newline >> h4_tag) | eof) << rep(newline)
+    
+    # Page tags parser - expects tags like "#tag1 #tag2 " on a line after the page link
+    page_tag = lit("#") >> reg(r"[a-zA-Z][a-zA-Z0-9_]*")
+    page_tags_line = rep(page_tag << lit(" ")) << rep(newline)
+    page_tags = opt(rep(newline) >> page_tags_line)
     pages = opt(page_title >> rep(newline) >>
                 rep(
                     (pdf_link & rep(newline) >>
+                      page_tags &
                       opt(highlights << rep(newline)) &
                       opt(typed_texts << rep(newline))
                     ) > to_page))
@@ -136,17 +143,18 @@ class ObsidianDocumentParser(ParserContext):
 # This confuses the two, testing page tags being present in the document metadata.
 # Needs to be split up into two tests.
 # One for page tags, and one for document tags.
-@pytest.mark.unfinished_feature
 @pytest.mark.markdown
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_tags_present_on_a_page_are_in_the_markdown(notebook: NotebookMetadata, remarks_document: Document,
                                                     obsidian_markdown: str | None):
     if obsidian_markdown:
+        if notebook.tags:
+            for tag in notebook.tags:
+                assert tag in obsidian_markdown
         for page in notebook.pages:
             if page.tags:
-                document = ObsidianDocumentParser.document.parse(obsidian_markdown).unwrap()
                 for tag in page.tags:
-                    assert tag in document.tags
+                    assert tag in obsidian_markdown
 
 
 @pytest.mark.markdown
