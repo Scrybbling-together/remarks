@@ -121,7 +121,7 @@ def get_document_tags(path: str):
     content = read_meta_file(path, suffix=".content")
     if "tags" in content:
         for tag in content['tags']:
-            yield tag['name']
+            yield sanitize_obsidian_tag(tag['name'])
 
 def sanitize_obsidian_tag(tag: str) -> str:
     """
@@ -136,8 +136,6 @@ def sanitize_obsidian_tag(tag: str) -> str:
     """
     if not tag:
         return ""
-    
-    original_tag = tag  # Keep original for better invalid-tag handling
     
     # Remove leading # characters
     while tag.startswith("#"):
