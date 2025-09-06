@@ -358,7 +358,7 @@ This update brings
 - Smart highlights are now included in the PDF export :)
 - There was a bug where the last smart highlight was missing in the Markdown export. This is no longer the case, highlight away!
 
-**Support for Type Folio typed text**
+**Support for Type Folio & typed text**
 
 The ReMarkable is excellent for distraction-free focus. Since the release of the Type Folio, you can even use it for serious drafting and writing tasks.
 
