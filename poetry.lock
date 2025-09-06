@@ -764,13 +764,13 @@ develop = false
 [package.dependencies]
 cairosvg = "^2.8.2"
 click = "^8.0"
-rmscene = {git = "https://github.com/scrybbling-together/rmscene.git", branch = "GlyphRange-colors"}
+rmscene = {git = "https://github.com/scrybbling-together/rmscene.git", branch = "main"}
 
 [package.source]
 type = "git"
 url = "https://github.com/scrybbling-together/rmc.git"
-reference = "GlyphRange-colors"
-resolved_reference = "59254a01f7bed6e683c56781e14cfb9fb85fd428"
+reference = "main"
+resolved_reference = "c140ca2957b0af3d4941b3b9f254ba9503cb5b56"
 
 [[package]]
 name = "rmscene"
@@ -788,8 +788,8 @@ packaging = "^23.0"
 [package.source]
 type = "git"
 url = "https://github.com/scrybbling-together/rmscene.git"
-reference = "GlyphRange-colors"
-resolved_reference = "229aa5e82006f11ec03b2d1925f077273b22af35"
+reference = "main"
+resolved_reference = "6d063ab8d23c3ad61862c20bfd166bb96655567d"
 
 [[package]]
 name = "sentry-sdk"
@@ -959,4 +959,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "22c1dd061a400179e9695d2018844cafdaa0e2d2f49c01740f27396fb8ae3803"
+content-hash = "bbab0143c8392ace306dc9a5ba96c30a27777fe6b7d0e657e4d28a0d5b0d368e"
