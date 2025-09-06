@@ -6,16 +6,45 @@ from fitz import Page, Rect, Annot, Quad
 
 from remarks.conversion.parsing import RemarksRectangle
 from remarks.warnings import scrybble_warning_typed_text_highlighting_not_supported
+from rmscene.scene_items import PenColor, HARDCODED_COLORMAP
+
+
+def get_highlight_color(pen_color: int) -> tuple[float, float, float]:
+    """Convert PenColor enum value to RGB tuple for PDF annotations.
+    
+    Args:
+        pen_color: PenColor enum value from rmscene
+        
+    Returns:
+        RGB tuple with values normalized to 0-1 range for PyMuPDF
+    """
+    # Create reverse mapping from PenColor to RGBA
+    color_to_rgba = {v: k for k, v in HARDCODED_COLORMAP.items()}
+    
+    # Try to convert to PenColor enum, fall back to raw integer lookup
+    try:
+        pen_color_enum = PenColor(pen_color)
+        rgba = color_to_rgba.get(pen_color_enum, (255, 237, 117, 255))
+    except ValueError:
+        # If the color value is not a valid PenColor enum, use fallback
+        rgba = (255, 237, 117, 255)
+    
+    # Convert to RGB (ignore alpha) and normalize to 0-1 range
+    r, g, b, _ = rgba
+    return (r / 255, g / 255, b / 255)
 
 
 def apply_smart_highlight(page: Page, highlight: RemarksRectangle, x_translation: float) -> None:
+    # Get the color for this highlight based on its PenColor value
+    highlight_color = get_highlight_color(highlight.color)
+
     for rectangle in highlight.rectangles:
         x, y, w, h = rectangle.x, rectangle.y, rectangle.w, rectangle.h
         # Highlight rectangles are already in PDF coordinate space via xx/yy transformation
         # x_translation positions them correctly relative to reMarkable's (0,0) at center-top of PDF
         annot: Annot = page.add_highlight_annot(quads=Rect((x+x_translation,y), (x+x_translation+w, y+h)))
-        # Current colour taken from RMC's highlight colour, we should support more colours in the future.
-        annot.set_colors(stroke=(247 / 255, 232 / 255, 81 / 255))
+        # Use the dynamic color based on the highlight's actual color from the reMarkable file
+        annot.set_colors(stroke=highlight_color)
         annot.set_opacity(0.3)
         annot.update()
 
