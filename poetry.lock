@@ -770,7 +770,7 @@ rmscene = {git = "https://github.com/scrybbling-together/rmscene.git", branch = 
 type = "git"
 url = "https://github.com/scrybbling-together/rmc.git"
 reference = "main"
-resolved_reference = "7c339c6a89c244964d0c9270771f1a546ecb2d70"
+resolved_reference = "feaaac05c397d56dddd4b0f0c22b8b3939f907f6"
 
 [[package]]
 name = "rmscene"
