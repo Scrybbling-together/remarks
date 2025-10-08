@@ -1,6 +1,6 @@
 from rmscene.scene_items import GlyphRange, Rectangle, PenColor
 
-from remarks.output.ObsidianMarkdownFile import merge_highlights
+from remarks.output.obsidian_markdown import merge_highlights
 
 
 def test_merge_highlights_where_start_is_missing():

@@ -3,8 +3,8 @@ from pprint import pprint
 
 from fitz import Document
 
-from remarks.output.ObsidianMarkdownFile import merge_highlights
-from remarks.output.PdfFile import extract_annot
+from remarks.output.obsidian_markdown import merge_highlights
+from remarks.output.pdf import extract_annot
 from tests.notebook_fixtures import *
 from tests.pdf_test_support import assert_page_renders_without_warnings, assert_warning_exists
 

@@ -16,8 +16,8 @@ from .conversion.parsing import (
     parse_rm_file,
     read_rm_file_version, )
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
-from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
-from .output.PdfFile import apply_smart_highlight, add_error_annotation
+from .output.obsidian_markdown import ObsidianMarkdownFile
+from .output.pdf import apply_smart_highlight, add_error_annotation
 from .utils import (
     is_document,
     get_document_filetype,
