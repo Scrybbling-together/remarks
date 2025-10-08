@@ -1,4 +1,4 @@
-import os
+import pathlib
 import time
 from typing import List, Dict
 
@@ -164,7 +164,7 @@ class ObsidianMarkdownFile:
         if self.document.rm_tags:
             frontmatter["tags"] = [f"#remarkable/{tag}" for tag in self.document.rm_tags]
 
-        env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)))
+        env = Environment(loader=FileSystemLoader(pathlib.Path(__file__).parent))
         template = env.get_template('obsidian_markdown.md.jinja')
 
         content = template.render(**{
@@ -195,4 +195,3 @@ class ObsidianMarkdownFile:
         if not tags:
             return
         self.retrieve_page(page_idx).tags = tags
-

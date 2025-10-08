@@ -1,5 +1,5 @@
 import logging
-import os.path
+import pathlib
 
 from flask import Flask, request
 
@@ -41,15 +41,15 @@ def process():
     if not params or 'in_path' not in params or 'out_path' not in params:
         return {"error": "Missing required parameters"}, 400
 
-    in_path = params['in_path']
+    in_path = pathlib.Path(params['in_path'])
 
-    if not os.path.exists(in_path):
+    if not in_path.exists():
         return {"error": f"Input path does not exist: {in_path}"}, 400
 
     try:
         parent_dir = os.path.dirname(in_path)
-        out_dir = os.path.join(parent_dir, "out")
-        os.makedirs(out_dir, exist_ok=True)
+        out_dir = in_path.parent/"out"
+        out_dir.mkdir(parent=True, exist_ok=True)
 
         remarks.run_remarks(in_path, out_dir)
         return {"status": "success"}, 200
