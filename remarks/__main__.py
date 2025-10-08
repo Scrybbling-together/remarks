@@ -22,6 +22,12 @@ def main():
         metavar="OUTPUT_DIRECTORY",
     )
     parser.add_argument(
+        "-m",
+        "--export_markdown",
+        action="store_true",
+        help="Export the obsidian markdown"
+    )
+    parser.add_argument(
         "-o",
         "--override",
         action="store_true",
@@ -65,7 +71,7 @@ def main():
     if not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    run_remarks(input_dir, output_dir, override=args.override)
+    run_remarks(input_dir, output_dir, override=args.override, export_markdown=args.export_markdown)
 
 
 if __name__ == "__main__":

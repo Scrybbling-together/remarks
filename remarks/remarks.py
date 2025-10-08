@@ -29,7 +29,7 @@ from .warnings import scrybble_warning_only_v6_supported
 
 
 def run_remarks(
-        input_dir: pathlib.Path, output_dir: pathlib.Path, override:bool=False
+        input_dir: pathlib.Path, output_dir: pathlib.Path, override:bool=False, export_markdown:bool=False
 ):
     if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
@@ -68,7 +68,7 @@ def run_remarks(
             in_device_dir = get_ui_path(metadata_path)
             relative_doc_path = pathlib.Path(f"{in_device_dir}/{doc_name}")
 
-            process_document(metadata_path, relative_doc_path, output_dir, override)
+            process_document(metadata_path, relative_doc_path, output_dir, override, export_markdown)
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -83,18 +83,20 @@ def process_document(
         metadata_path: pathlib.Path,
         relative_doc_path: str,
         output_dir: pathlib.Path,
-        override: bool=False
+        override: bool=False,
+        export_markdown: bool=False
 ):
 
     document = Document(metadata_path)
     rmc_pdf_src = document.open_source_pdf()
 
-    obsidian_markdown = ObsidianMarkdownFile(document)
+    if export_markdown:
+        obsidian_markdown = ObsidianMarkdownFile(document)
 
     # First, add page tags for ALL pages (including those without .rm files)
     for page_idx, page_uuid in enumerate(document.pages_list):
         page_tags = document.get_page_tags_for_page(page_uuid)
-        if page_tags:
+        if page_tags and export_markdown:
             obsidian_markdown.add_page_tags(page_idx, page_tags)
 
     for (
@@ -171,9 +173,9 @@ def process_document(
                 os.remove(temp_pdf.name)
 
             if ann_data:
-                if "text" in ann_data:
+                if ("text" in ann_data) and export_markdown:
                     obsidian_markdown.add_text(page_idx, ann_data['text'])
-                if "glyph_ranges" in ann_data:
+                if ("glyph_ranges" in ann_data) and export_markdown:
                     obsidian_markdown.add_highlights(page_idx, ann_data["glyph_ranges"])
                 if ann_data["highlights"]:
                     for highlight in ann_data["highlights"]:
@@ -192,4 +194,5 @@ def process_document(
         rmc_pdf_src.save(output_path)
     else:
         rmc_pdf_src.save(f"{output_path.resolve()}.pdf")
-    obsidian_markdown.save(output_path.with_suffix(""))
+    if export_markdown:
+        obsidian_markdown.save(output_path.with_suffix(".md"))

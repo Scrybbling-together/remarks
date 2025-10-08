@@ -1,4 +1,4 @@
-import os
+import pathlib
 import time
 from typing import List, Dict
 
@@ -159,12 +159,12 @@ class ObsidianMarkdownFile:
 
         return page
 
-    def save(self, location: str):
+    def save(self, output_file: pathlib.Path):
         frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.name}
         if self.document.rm_tags:
             frontmatter["tags"] = [f"#remarkable/{tag}" for tag in self.document.rm_tags]
 
-        env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)))
+        env = Environment(loader=FileSystemLoader(pathlib.Path(__file__).parent))
         template = env.get_template('obsidian_markdown.md.jinja')
 
         content = template.render(**{
@@ -175,7 +175,7 @@ class ObsidianMarkdownFile:
             'render_paragraph': render_paragraph
         })
 
-        with open(f"{location} _obsidian.md", "w") as f:
+        with open(output_file, "w") as f:
             f.write(content)
 
     def add_highlights(
@@ -195,4 +195,3 @@ class ObsidianMarkdownFile:
         if not tags:
             return
         self.retrieve_page(page_idx).tags = tags
-
