@@ -1,0 +1,39 @@
+* {{ document.name.replace(".pdf", "") }}
+:PROPERTIES:
+:NOTER_DOCUMENT: {{ document.name }}
+:END:
+
+{%- if pages %}
+
+{%- for index, page in sorted_pages %}
+** page {{ index + 1 }}
+:PROPERTIES:
+:NOTER_PAGE: {{ index + 1 }}
+:END:
+
+{%- if page.tags %}
+*** Tags
+{%- for tag in page.tags %}
+  - {{ tag }}
+{%- endfor %}
+{%- endif %}
+
+{%- if page.highlights %}
+
+*** Highlights
+{% for highlight in page.highlights %}
+  - {{ highlight.text }}
+{%- endfor %}
+
+{%- endif %}
+
+{%- if page.text %}
+
+*** Typed text
+{%- for paragraph in page.text %}
+{{ render_paragraph(paragraph) }}
+{% endfor %}
+{%- endif %}
+
+{% endfor %}
+{%- endif %}

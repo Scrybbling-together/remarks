@@ -29,6 +29,12 @@ def main():
     )
     parser.add_argument(
         "-o",
+        "--export_org",
+        action="store_true",
+        help="Export the org-mode file"
+    )
+    parser.add_argument(
+        "-O",
         "--override",
         action="store_true",
         help="Override existing files (/!\\ use at your own risk!)"
@@ -71,7 +77,7 @@ def main():
     if not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    run_remarks(input_dir, output_dir, override=args.override, export_markdown=args.export_markdown)
+    run_remarks(input_dir, output_dir, override=args.override, export_markdown=args.export_markdown, export_org=args.export_org)
 
 
 if __name__ == "__main__":
