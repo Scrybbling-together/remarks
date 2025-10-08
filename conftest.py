@@ -1,5 +1,4 @@
-import glob
-import os
+import pathlib
 from dataclasses import dataclass
 
 import pytest
@@ -10,9 +9,10 @@ from tests.NotebookMetadata import NotebookMetadata
 
 def cleanup_output_folder():
     """Remove all .md and .pdf files from the tests/out folder."""
-    for file_pattern in ['tests/out/*.md', 'tests/out/*.pdf']:
-        for file in glob.glob(file_pattern):
-            os.remove(file)
+    output_root_dir = pathlib.Path("tests/out/")
+    for file_pattern in ['*.md', '*.pdf']:
+        for file in output_root_dir.glob(file_pattern):
+            file.unlink()
 
 def pytest_sessionstart(session):
     cleanup_output_folder()
@@ -30,14 +30,17 @@ def pytest_addoption(parser):
 def with_remarks(metadata: NotebookMetadata):
     input_name = metadata.rmn_source
 
-    input_dir = input_name
-    output_dir = "tests/out"
+    input_dir = pathlib.Path(input_name)
+    output_dir = pathlib.Path("tests/out")
 
     if not getattr(with_remarks, f"run_{input_name}", False):
-        remarks.run_remarks(input_dir, output_dir)
+        remarks.run_remarks(input_dir, output_dir, override=True)
         setattr(with_remarks, f"run_{input_name}", True)
 
-    return fitz.open(f"tests/out/{metadata.notebook_name} _remarks.pdf")
+    if metadata.notebook_name.endswith(".pdf"):
+        return fitz.open(output_dir/f"{metadata.notebook_name}")
+    else:
+        return fitz.open(output_dir/f"{metadata.notebook_name}.pdf")
 
 
 @dataclass
@@ -65,9 +68,9 @@ def notebook(request):
 
 @pytest.fixture
 def obsidian_markdown(notebook):
-    name = f"tests/out/{notebook.notebook_name} _obsidian.md"
-    if os.path.isfile(name):
-        with open(name) as f:
+    output_markdown_file = pathlib.Path(f"tests/out/{notebook.notebook_name}.md")
+    if output_markdown_file.is_file():
+        with open(output_markdown_file) as f:
             return f.read()
     else:
         return None
