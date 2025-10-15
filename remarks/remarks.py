@@ -3,7 +3,6 @@ import os
 import pathlib
 import sys
 import tempfile
-import time
 import zipfile
 
 import fitz  # PyMuPDF
@@ -81,7 +80,7 @@ def run_remarks(
 
 def process_document(
         metadata_path: pathlib.Path,
-        relative_doc_path: str,
+        relative_doc_path: pathlib.Path,
         output_dir: pathlib.Path
 ):
 

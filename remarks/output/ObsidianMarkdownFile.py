@@ -159,7 +159,7 @@ class ObsidianMarkdownFile:
 
         return page
 
-    def save(self, location: str):
+    def save(self, location: pathlib.Path):
         frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.name}
         if self.document.rm_tags:
             frontmatter["tags"] = [f"#remarkable/{tag}" for tag in self.document.rm_tags]
