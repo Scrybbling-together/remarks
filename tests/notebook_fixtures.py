@@ -375,12 +375,31 @@ This update brings your typed text to the PDF export as well as to your Obsidian
         description="A document with real-world typed text, contains a newsletter for a Scrybble update",
         pages=[
             # The first page has text with the "wide" column setting
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=1, typed_text=typed_text),
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0, typed_text=typed_text),
             # The second page has text with the "narrow" column setting
             PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=1, typed_text=typed_text),
         ]
     )
 
+@pytest.fixture()
+def duplicated_pdf_pages():
+    return NotebookMetadata(
+        notebook_type=ReMarkableNotebookType.PDF,
+        notebook_name="Copies of different pages",
+        pdf_pages=4,
+        rmn_source="tests/in/copies of different pages.rmdoc",
+        description="A source PDF with one page having various copied pages",
+        pages=[
+            # The first page is from the original PDF
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
+            # The second page is a duplicate of the first page, with additional annotations
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=1),
+            # The third page is an inserted page
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=2),
+            # The fourth page is a duplicate of page 3
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=3),
+        ]
+    )
 
 all_notebooks = [
     "markdown_tags_document",
@@ -393,5 +412,6 @@ all_notebooks = [
     "shader_notebook",
     "typed_text_notebook",
     "typed_test_real_world_document",
-    "file_with_annoying_name"
+    "file_with_annoying_name",
+    "duplicated_pdf_pages"
 ]

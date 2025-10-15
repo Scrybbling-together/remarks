@@ -10,7 +10,7 @@ from remarks.warnings import ScrybbleWarning
 @dataclass
 class PageMetadata:
     """A single page in a ReMarkable notebook"""
-    rm_file_version: ReMarkableAnnotationsFileHeaderVersion
+    rm_file_version: str
     """The .rm file version"""
 
     pdf_document_index: int
