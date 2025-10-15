@@ -44,8 +44,8 @@ def main():
     args = parser.parse_args()
     args_dict = vars(args)
 
-    input_dir = args_dict.pop("input_dir")
-    output_dir = args_dict.pop("output_dir")
+    input_dir = pathlib.Path(args_dict.pop("input_dir"))
+    output_dir = pathlib.Path(args_dict.pop("output_dir"))
 
     log_level = args_dict.pop("log_level")
     logging.basicConfig(
@@ -53,11 +53,11 @@ def main():
         level=log_level
     )
 
-    if not pathlib.Path(input_dir).exists():
+    if not input_dir.exists():
         parser.error(f'Directory "{input_dir}" does not exist')
 
-    if not pathlib.Path(output_dir).is_dir():
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     run_remarks(input_dir, output_dir)
 

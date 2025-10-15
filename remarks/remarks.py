@@ -29,15 +29,15 @@ from .warnings import scrybble_warning_only_v6_supported
 
 
 def run_remarks(
-        input_dir, output_dir
+        input_dir: pathlib.Path, output_dir: pathlib.Path
 ):
-    if input_dir.endswith(".rmn") or input_dir.endswith(".rmdoc"):
+    if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
         with zipfile.ZipFile(input_dir, 'r') as zip_ref:
             zip_ref.extractall(temp_dir)
-        input_dir = temp_dir
+        input_dir = pathlib.Path(temp_dir)
 
-    num_docs = sum(1 for _ in pathlib.Path(f"{input_dir}/").glob("*.metadata"))
+    num_docs = sum(1 for _ in input_dir.glob("*.metadata"))
 
     if num_docs == 0:
         logging.warning(
@@ -49,7 +49,7 @@ def run_remarks(
         f'\nFound {num_docs} documents in "{input_dir}", will process them now',
     )
 
-    for metadata_path in pathlib.Path(f"{input_dir}/").glob("*.metadata"):
+    for metadata_path in input_dir.glob("*.metadata"):
         if not is_document(metadata_path):
             continue
 
@@ -63,12 +63,12 @@ def run_remarks(
             continue
 
         if doc_type in supported_types:
-            logging.info(f'\nFile: "{doc_name}.{doc_type}" ({metadata_path.stem})')
+            logging.info(f'\nFile: "{doc_name} [type={doc_type}]" ({metadata_path.stem})')
 
             in_device_dir = get_ui_path(metadata_path)
-            out_path = pathlib.Path(f"{output_dir}/{in_device_dir}/{doc_name}/")
+            relative_doc_path = pathlib.Path(f"{in_device_dir}/{doc_name}")
 
-            process_document(metadata_path, out_path)
+            process_document(metadata_path, relative_doc_path, output_dir)
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -80,9 +80,11 @@ def run_remarks(
 
 
 def process_document(
-        metadata_path,
-        out_path,
+        metadata_path: pathlib.Path,
+        relative_doc_path: str,
+        output_dir: pathlib.Path
 ):
+
     document = Document(metadata_path)
     rmc_pdf_src = document.open_source_pdf()
 
@@ -93,15 +95,15 @@ def process_document(
         page_tags = document.get_page_tags_for_page(page_uuid)
         if page_tags:
             obsidian_markdown.add_page_tags(page_idx, page_tags)
-    
+
     for (
             page_uuid,
             page_idx,
             rm_annotation_file,
     ) in document.pages():
-        print(f"processing page {page_idx + 1}, {page_uuid}")
+        logging.info(f"processing page {page_idx + 1}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
-        
+
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
@@ -166,6 +168,7 @@ def process_document(
             finally:
                 temp_pdf.close()
                 os.remove(temp_pdf.name)
+
             if ann_data:
                 if "text" in ann_data:
                     obsidian_markdown.add_text(page_idx, ann_data['text'])
@@ -177,8 +180,9 @@ def process_document(
         else:
             scrybble_warning_only_v6_supported.render_as_annotation(page)
 
-    out_doc_path_str = f"{out_path.parent}/{out_path.name}"
-    rmc_pdf_src.save(f"{out_doc_path_str} _remarks.pdf")
-    obsidian_markdown.save(out_doc_path_str)
+    output_pdf_path = output_dir/f"{relative_doc_path} _remarks.pdf"
+    output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    rmc_pdf_src.save(output_pdf_path)
 
-
+    output_obsidian_path = output_dir/f"{relative_doc_path}"
+    obsidian_markdown.save(output_obsidian_path)
