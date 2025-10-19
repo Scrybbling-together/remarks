@@ -33,7 +33,7 @@ class PageMetadata:
     warnings: List[ScrybbleWarning] = field(default_factory=list)
     """Warnings related to the page."""
 
-    photo: Optional[Dict[ReMarkableDevice, str]] = None
+    photo: Optional[Dict[str, str]] = None
     """A photograph of the page as rendered on a real ReMarkable device"""
 
 
