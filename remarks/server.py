@@ -48,9 +48,8 @@ def process():
         return {"error": f"Input path does not exist: {in_path}"}, 400
 
     try:
-        parent_dir = os.path.dirname(in_path)
         out_dir = in_path.parent/"out"
-        out_dir.mkdir(parent=True, exist_ok=True)
+        out_dir.mkdir(parents=True, exist_ok=True)
 
         remarks.run_remarks(in_path, out_dir)
         return {"status": "success"}, 200
