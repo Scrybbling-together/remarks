@@ -2,6 +2,7 @@
 #       all PDF rendering logic
 
 import fitz
+import logging
 from fitz import Page, Rect, Annot, Quad
 
 from remarks.conversion.parsing import RemarksRectangle
@@ -42,11 +43,15 @@ def apply_smart_highlight(page: Page, highlight: RemarksRectangle, x_translation
         x, y, w, h = rectangle.x, rectangle.y, rectangle.w, rectangle.h
         # Highlight rectangles are already in PDF coordinate space via xx/yy transformation
         # x_translation positions them correctly relative to reMarkable's (0,0) at center-top of PDF
-        annot: Annot = page.add_highlight_annot(quads=Rect((x+x_translation,y), (x+x_translation+w, y+h)))
-        # Use the dynamic color based on the highlight's actual color from the reMarkable file
-        annot.set_colors(stroke=highlight_color)
-        annot.set_opacity(0.3)
-        annot.update()
+        rect = Rect((x + x_translation, y), (x + x_translation + w, y + h))
+        try:
+            annot: Annot = page.add_highlight_annot(quads=rect)
+            # Use the dynamic color based on the highlight's actual color from the reMarkable file
+            annot.set_colors(stroke=highlight_color)
+            annot.set_opacity(0.3)
+            annot.update()
+        except ValueError:
+            logging.warning(f"Bad quads entry {rect}")
 
 
 def add_error_annotation(page: Page, more_info=""):
