@@ -13,7 +13,7 @@ from remarks.utils import (
     is_inserted_page,
     get_pages_data,
     list_ann_rm_files,
-    get_visible_name,
+    get_visible_name, is_duplicate_page,
 )
 
 
@@ -32,14 +32,27 @@ class Document:
         if self.doc_type in ["pdf", "epub"]:
             f = self.metadata_path.with_name(f"{self.metadata_path.stem}.pdf")
             pdf_src = fitz.open(f)
+            source_pdf_page_count = pdf_src.page_count
 
             for i, page_idx in enumerate(self.pages_map):
                 if is_inserted_page(page_idx):
+                    # This is when a blank/notebook page is inserted.
+                    # These can have templates of course
                     pdf_src.new_page(
                         width=REMARKABLE_DOCUMENT.to_mm().to_mu().width,
                         height=REMARKABLE_DOCUMENT.to_mm().to_mu().height,
                         pno=i,
                     )
+                elif is_duplicate_page(page_idx) and i >= source_pdf_page_count:
+                    # When you duplicate a page on the reMarkable in the case of a PDF
+                    # You need to find the page in the source PDF and copy it
+                    pdf_src.fullcopy_page(pno=page_idx)
+                else:
+                    # Sometimes a page is technically marked as a duplicate, but it is already in the source PDF.
+                    # That is why there is an "and i >= source_pdf_page_count" check above.
+                    # print(f"Doing nothing, page {i} already exists in source document")
+                    pass
+
 
         # Thanks to @apoorvkh
         # - https://github.com/lucasrla/remarks/issues/11#issuecomment-1287175782

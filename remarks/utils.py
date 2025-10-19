@@ -116,6 +116,8 @@ def construct_redirection_map(content: dict) -> List[int]:
 def is_inserted_page(idx: int) -> bool:
     return idx == INSERTED_PAGE
 
+def is_duplicate_page(idx: int) -> bool:
+    return idx >= 0
 
 def get_document_tags(path: str):
     content = read_meta_file(path, suffix=".content")

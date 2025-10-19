@@ -10,7 +10,7 @@ from remarks.warnings import ScrybbleWarning
 @dataclass
 class PageMetadata:
     """A single page in a ReMarkable notebook"""
-    rm_file_version: ReMarkableAnnotationsFileHeaderVersion
+    rm_file_version: str
     """The .rm file version"""
 
     pdf_document_index: int
@@ -33,7 +33,7 @@ class PageMetadata:
     warnings: List[ScrybbleWarning] = field(default_factory=list)
     """Warnings related to the page."""
 
-    photo: Optional[Dict[ReMarkableDevice, str]] = None
+    photo: Optional[Dict[str, str]] = None
     """A photograph of the page as rendered on a real ReMarkable device"""
 
 
