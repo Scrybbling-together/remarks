@@ -34,7 +34,7 @@ server = ["flask"]
 remarks = 'remarks.__main__:main'
 remarks-server = "remarks.server:main_prod"
 
-[tool.poetry.dev-dependencies]
+[poetry.gorup.dev.dependencies]
 pytest = {version = "^7.2.0", extras = []}
 tqdm = "^4.67.1"
 
