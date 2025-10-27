@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  remarks:
+    build: .
+    image: remarks:latest
+    container_name: remarks-converter
+    volumes:
+      # Mount your ReMarkable backup directory (xochitl)
+      - ${INPUT_DIR:-./input}:/input:ro
+      # Mount output directory
+      - ${OUTPUT_DIR:-./output}:/output
+    command: /input /output
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Optional: uncomment to see more detailed logs
+    # command: /input /output --log_level DEBUG
