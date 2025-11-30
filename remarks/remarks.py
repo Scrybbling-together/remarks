@@ -119,7 +119,11 @@ def process_document(
 
                 # if the background page is not empty, need to merge svg on top of background page
                 if page.get_contents():
+                    page_rotation = page.rotation
+                    page.set_rotation(0)
                     w_bg, h_bg = page.cropbox.width, page.cropbox.height
+                    if int(page_rotation) in [90, 270]:
+                        w_bg, h_bg = h_bg, w_bg
                     # find the (top, right) coordinates of the svg
                     anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
                     x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
@@ -153,7 +157,8 @@ def process_document(
                                         height=height)
                     page.show_pdf_page(fitz.Rect(x_bg, y_bg, x_bg + w_bg, y_bg + h_bg),
                                         rmc_pdf_src,
-                                        page_idx)
+                                        page_idx,
+                                       rotate=-page_rotation)
                     page.show_pdf_page(fitz.Rect(x_svg, y_svg, x_svg + w_svg, y_svg + h_svg),
                                         svg_pdf,
                                         0)
