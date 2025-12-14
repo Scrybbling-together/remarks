@@ -38,10 +38,15 @@
           buildInputs = [
             pythonEnv
             pkgs.zotero
-            pkgs.poppler_utils
             pkgs.inotify-tools
             pkgs.gum
             pkgs.poetry
+
+            # PDF utility tools
+            # poppler's `pdfinfo` is great for reading pdf metadata
+            pkgs.poppler_utils
+            # qpdf is useful to modify pdf metadata
+            pkgs.qpdf
           ];
 
           shellHook = ''

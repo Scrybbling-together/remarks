@@ -401,6 +401,62 @@ def duplicated_pdf_pages():
         ]
     )
 
+@pytest.fixture()
+def rotated_0_document():
+    return NotebookMetadata(
+        notebook_type=ReMarkableNotebookType.PDF,
+        notebook_name="rotation-0",
+        pdf_pages=1,
+        rmn_source="tests/in/rotated/rotated-0.rmn",
+        description="A PDF with 0 degree rotation and handwritten 'hello' annotation",
+        pages=[
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
+        ]
+    )
+
+
+@pytest.fixture()
+def rotated_90_document():
+    return NotebookMetadata(
+        notebook_type=ReMarkableNotebookType.PDF,
+        notebook_name="rotation-90",
+        pdf_pages=1,
+        rmn_source="tests/in/rotated/rotated-90.rmn",
+        description="A PDF with 90 degree rotation and handwritten 'hello' annotation",
+        pages=[
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
+        ]
+    )
+
+
+@pytest.fixture()
+def rotated_180_document():
+    return NotebookMetadata(
+        notebook_type=ReMarkableNotebookType.PDF,
+        notebook_name="rotation-180",
+        pdf_pages=1,
+        rmn_source="tests/in/rotated/rotated-180.rmn",
+        description="A PDF with 180 degree rotation and handwritten 'hello' annotation",
+        pages=[
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
+        ]
+    )
+
+
+@pytest.fixture()
+def rotated_270_document():
+    return NotebookMetadata(
+        notebook_type=ReMarkableNotebookType.PDF,
+        notebook_name="rotation-270",
+        pdf_pages=1,
+        rmn_source="tests/in/rotated/rotated-270.rmn",
+        description="A PDF with 270 degree rotation and handwritten 'hello' annotation",
+        pages=[
+            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
+        ]
+    )
+
+
 all_notebooks = [
     "markdown_tags_document",
     "gosper_notebook",
@@ -413,5 +469,9 @@ all_notebooks = [
     "typed_text_notebook",
     "typed_test_real_world_document",
     "file_with_annoying_name",
-    "duplicated_pdf_pages"
+    "duplicated_pdf_pages",
+    "rotated_0_document",
+    "rotated_90_document",
+    "rotated_180_document",
+    "rotated_270_document",
 ]

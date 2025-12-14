@@ -116,3 +116,70 @@ def test_typed_text_is_readable(notebook: NotebookMetadata, remarks_document: Do
             plaintext = demarkdown(page.typed_text)
             for line in document_page.get_textpage().extractText().splitlines():
                 assert line in plaintext
+
+
+r"""
+ _____   ____ _______    _______ _____ ____  _   _
+|  __ \ / __ \__   __|/\|__   __|_   _/ __ \| \ | |
+| |__) | |  | | | |  /  \  | |    | || |  | |  \| |
+|  _  /| |  | | | | / /\ \ | |    | || |  | | . ` |
+| | \ \| |__| | | |/ ____ \| |   _| || |__| | |\  |
+|_|  \_\\____/  |_/_/    \_\_|  |_____\____/|_| \_|
+"""
+
+
+@pytest.mark.pdf
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
+def test_output_pdf_has_no_rotation_metadata(notebook: NotebookMetadata, remarks_document: Document):
+    """Verify that all pages in output PDFs have rotation=0.
+
+    After processing by remarks, all rotation should be "baked in" to the page content,
+    meaning the PDF rotation metadata should always be 0.
+    """
+    for page_idx in range(remarks_document.page_count):
+        page = remarks_document[page_idx]
+        assert page.rotation == 0, f"Page {page_idx} has rotation {page.rotation}, expected 0"
+
+
+@pytest.mark.pdf
+@pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
+def test_output_pdf_has_correct_dimensions(notebook: NotebookMetadata, remarks_document: Document):
+    """Verify that output PDFs have correctly transformed dimensions.
+
+    For documents with a source PDF:
+    - 90/270 degree rotations should swap width and height
+    - 0/180 degree rotations should preserve dimensions
+
+    This test ensures remarks correctly handles PDF rotation metadata across all input documents.
+    """
+    source_pdf = notebook.get_source_pdf()
+    if source_pdf is None:
+        # Notebook-type documents don't have a source PDF, skip dimension check
+        return
+
+    for page_idx in range(min(source_pdf.page_count, remarks_document.page_count)):
+        source_page = source_pdf[page_idx]
+        output_page = remarks_document[page_idx]
+
+        source_rotation = source_page.rotation
+        source_mediabox = source_page.mediabox
+
+        # Get the "natural" dimensions from mediabox (before rotation is applied)
+        source_width = source_mediabox.width
+        source_height = source_mediabox.height
+
+        output_width = output_page.rect.width
+        output_height = output_page.rect.height
+
+        # For 90/270 rotations, dimensions should be swapped
+        # For 0/180 rotations, dimensions should match
+        if source_rotation in [90, 270]:
+            assert abs(output_width - source_height) < 1, \
+                f"Page {page_idx}: for {source_rotation}° rotation, output width ({output_width}) should match source height ({source_height})"
+            assert abs(output_height - source_width) < 1, \
+                f"Page {page_idx}: for {source_rotation}° rotation, output height ({output_height}) should match source width ({source_width})"
+        else:
+            assert abs(output_width - source_width) < 1, \
+                f"Page {page_idx}: for {source_rotation}° rotation, output width ({output_width}) should match source width ({source_width})"
+            assert abs(output_height - source_height) < 1, \
+                f"Page {page_idx}: for {source_rotation}° rotation, output height ({output_height}) should match source height ({source_height})"

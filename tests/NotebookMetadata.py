@@ -1,9 +1,11 @@
+import zipfile
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict
 
+import fitz
+
 from RemarkableNotebookType import ReMarkableNotebookType
 
-from remarks.metadata import ReMarkableAnnotationsFileHeaderVersion, ReMarkableDevice
 from remarks.warnings import ScrybbleWarning
 
 
@@ -76,4 +78,22 @@ class NotebookMetadata:
         for page in self.pages:
             if page.pdf_document_index == pdf_page_number:
                 return page
+        return None
+
+    def get_source_pdf(self) -> Optional[fitz.Document]:
+        """
+        Extract and return the source PDF from the .rmn/.rmdoc archive.
+
+        Returns:
+            A fitz.Document containing the source PDF, or None if no source PDF exists
+            (e.g., for notebook-type documents that don't have a backing PDF).
+        """
+        if self.notebook_type == ReMarkableNotebookType.NOTEBOOK:
+            return None
+
+        with zipfile.ZipFile(self.rmn_source, 'r') as z:
+            pdf_files = [name for name in z.namelist() if name.endswith('.pdf')]
+            if pdf_files:
+                pdf_data = z.read(pdf_files[0])
+                return fitz.open(stream=pdf_data, filetype="pdf")
         return None
