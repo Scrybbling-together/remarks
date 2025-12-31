@@ -163,6 +163,11 @@ def process_document(
                                         svg_pdf,
                                         0)
 
+                    for lnk in rmc_pdf_src[page_idx].get_links():
+                        (x0,y0,x1,y1) = lnk.bbox
+                        lnk.bbox = (x_bg+x0, y_bg+y0, x_bg+x1, y_bg+y1)
+                        page.insert_link(lnk)
+
                     rmc_pdf_src.insert_pdf(doc, start_at=page_idx)
                 else:
                     rmc_pdf_src.insert_pdf(svg_pdf, start_at=page_idx)
