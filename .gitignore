@@ -17,3 +17,5 @@ tests/out/*
 dist/
 processing_log.db
 result
+
+.DS_Store

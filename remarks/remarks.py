@@ -7,8 +7,10 @@ import zipfile
 
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device_from_pdf_size
 from rmc.exporters.svg import rm_to_svg, xx, yy
+
+import rmc
 
 from .Document import Document
 from .conversion.parsing import (
@@ -112,6 +114,15 @@ def process_document(
             # This offset is used for smart highlights
             highlights_x_translation = 0
             try:
+                # Detect device type from PDF page dimensions and configure SVG exporter
+                page_rotation = page.rotation
+                page.set_rotation(0)
+                w_bg, h_bg = page.cropbox.width, page.cropbox.height
+                if int(page_rotation) in [90, 270]:
+                    w_bg, h_bg = h_bg, w_bg
+                page.set_rotation(page_rotation)  # Restore rotation
+                set_device_from_pdf_size(w_bg, h_bg)
+                
                 # convert the pdf
                 rm_to_pdf(rm_annotation_file, temp_pdf.name)
 
@@ -119,11 +130,7 @@ def process_document(
 
                 # if the background page is not empty, need to merge svg on top of background page
                 if page.get_contents():
-                    page_rotation = page.rotation
-                    page.set_rotation(0)
-                    w_bg, h_bg = page.cropbox.width, page.cropbox.height
-                    if int(page_rotation) in [90, 270]:
-                        w_bg, h_bg = h_bg, w_bg
+                    # w_bg, h_bg already calculated above for device detection
                     # find the (top, right) coordinates of the svg
                     anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
                     x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
