@@ -1,0 +1,36 @@
+{
+    "name": "Lines medium",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Lines"],
+    "orientation": "landscape",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": 160},
+        {"magicOffsetY": 177.8},
+        {"offsetY": "templateHeight > mobileMaxWidth ? magicOffsetY : mobileOffsetY"}
+    ],
+    "items": [
+         {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "offsetY",
+                "width": "templateWidth",
+                "height": 78.7
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0
+                    ]
+                }
+            ]
+        }
+    ]
+}

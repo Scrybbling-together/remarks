@@ -1,0 +1,63 @@
+{
+    "name": "Grid bottom",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Grids"],
+    "orientation": "landscape",
+    "constants": [
+        {"gridSize": 78.3},
+        {"magicOffset": 0},
+        {"xpos": 0},
+        {"mobileMaxWidth": 1000},
+        {"ypos": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? templateHeight / 2 : 702"}
+    ],
+    "items": [
+        {
+            "id": "hlines",
+            "type": "group",
+            "boundingBox": {
+                "x": "xpos",
+                "y": "ypos",
+                "width": "templateWidth",
+                "height": "gridSize"
+            },
+            "repeat": {
+                "rows": "down",
+                "columns": "infinite"
+            },
+            "children": [
+                {
+                    "id": "hline",
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "vlines",
+            "type": "group",
+            "boundingBox": {
+                "x": "xpos",
+                "y": "ypos",
+                "width": "gridSize",
+                "height": "templateHeight"
+            },
+            "repeat": {
+                "rows": "down",
+                "columns": "infinite"
+            },
+            "children": [
+                {
+                    "id": "vline",
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", 0, "parentHeight"
+                    ]
+                }
+            ]
+        }
+    ]
+}

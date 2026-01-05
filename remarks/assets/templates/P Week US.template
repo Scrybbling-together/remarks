@@ -1,0 +1,155 @@
+{
+    "name": "Weekplanner US",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"defaultTextOffsetX": "templateWidth < mobileMaxWidth ? 40 : 30"},
+        {"defaultTextOffsetY": 280},
+        {"defaultLineOffsetY": 224},
+        {"yLineOffset": "(templateHeight - defaultLineOffsetY) / 7"},
+
+        {"yHorLine1": 146},
+        {"yHorLine2": "defaultLineOffsetY"},
+        {"yHorLine3": "templateWidth < mobileMaxWidth ? yLineOffset + defaultLineOffsetY : 312"},
+
+        {"xLine1": "templateWidth < mobileMaxWidth ? 0 : 1 * templateWidth / 7"},
+        {"xLine2": "templateWidth < mobileMaxWidth ? 0 : 2 * templateWidth / 7"},
+        {"xLine3": "templateWidth < mobileMaxWidth ? 0 : 3 * templateWidth / 7"},
+        {"xLine4": "templateWidth < mobileMaxWidth ? 0 : 4 * templateWidth / 7"},
+        {"xLine5": "templateWidth < mobileMaxWidth ? 0 : 5 * templateWidth / 7"},
+        {"xLine6": "templateWidth < mobileMaxWidth ? 0 : 6 * templateWidth / 7"},
+
+        {"x2Line1": "templateWidth < mobileMaxWidth ? templateWidth : xLine1"},
+        {"x2Line2": "templateWidth < mobileMaxWidth ? templateWidth : xLine2"},
+        {"x2Line3": "templateWidth < mobileMaxWidth ? templateWidth : xLine3"},
+        {"x2Line4": "templateWidth < mobileMaxWidth ? templateWidth : xLine4"},
+        {"x2Line5": "templateWidth < mobileMaxWidth ? templateWidth : xLine5"},
+        {"x2Line6": "templateWidth < mobileMaxWidth ? templateWidth : xLine6"},
+
+        {"y1Line1": "templateWidth < mobileMaxWidth ? 2 * yLineOffset + defaultLineOffsetY : yHorLine2"},
+        {"y1Line2": "templateWidth < mobileMaxWidth ? 3 * yLineOffset + defaultLineOffsetY : yHorLine2"},
+        {"y1Line3": "templateWidth < mobileMaxWidth ? 4 * yLineOffset + defaultLineOffsetY : yHorLine2"},
+        {"y1Line4": "templateWidth < mobileMaxWidth ? 5 * yLineOffset + defaultLineOffsetY : yHorLine2"},
+        {"y1Line5": "templateWidth < mobileMaxWidth ? 6 * yLineOffset + defaultLineOffsetY : yHorLine2"},
+        {"y1Line6": "templateWidth < mobileMaxWidth ? 7 * yLineOffset + defaultLineOffsetY : yHorLine2"},
+
+        {"y2Line1": "templateWidth < mobileMaxWidth ? y1Line1 : templateHeight"},
+        {"y2Line2": "templateWidth < mobileMaxWidth ? y1Line2 : templateHeight"},
+        {"y2Line3": "templateWidth < mobileMaxWidth ? y1Line3 : templateHeight"},
+        {"y2Line4": "templateWidth < mobileMaxWidth ? y1Line4 : templateHeight"},
+        {"y2Line5": "templateWidth < mobileMaxWidth ? y1Line5 : templateHeight"},
+        {"y2Line6": "templateWidth < mobileMaxWidth ? y1Line6 : templateHeight"},
+
+        {"weekOffsetY": "templateWidth < mobileMaxWidth ? 94 : 96"},
+        {"sundayOffsetY": "defaultTextOffsetY"},
+        {"mondayOffsetY":    "templateWidth < mobileMaxWidth ? 1 * yLineOffset + defaultTextOffsetY : defaultTextOffsetY"},
+        {"tuesdayOffsetY":   "templateWidth < mobileMaxWidth ? 2 * yLineOffset + defaultTextOffsetY : defaultTextOffsetY"},
+        {"wednesdayOffsetY": "templateWidth < mobileMaxWidth ? 3 * yLineOffset + defaultTextOffsetY : defaultTextOffsetY"},
+        {"thursdayOffsetY":  "templateWidth < mobileMaxWidth ? 4 * yLineOffset + defaultTextOffsetY : defaultTextOffsetY"},
+        {"fridayOffsetY":    "templateWidth < mobileMaxWidth ? 5 * yLineOffset + defaultTextOffsetY : defaultTextOffsetY"},
+        {"saturdayOffsetY":  "templateWidth < mobileMaxWidth ? 6 * yLineOffset + defaultTextOffsetY : defaultTextOffsetY"}
+    ],
+    "items": [
+        {
+            "id": "lines",
+            "type": "path",
+            "data": [
+                "M", 0, "yHorLine1", "L", "templateWidth", "yHorLine1",
+                "M", 0, "yHorLine2", "L", "templateWidth", "yHorLine2",
+                "M", 0, "yHorLine3", "L", "templateWidth", "yHorLine3",
+
+                "M", "xLine1", "y1Line1", "L", "x2Line1", "y2Line1",
+                "M", "xLine2", "y1Line2", "L", "x2Line2", "y2Line2",
+                "M", "xLine3", "y1Line3", "L", "x2Line3", "y2Line3",
+                "M", "xLine4", "y1Line4", "L", "x2Line4", "y2Line4",
+                "M", "xLine5", "y1Line5", "L", "x2Line5", "y2Line5",
+                "M", "xLine6", "y1Line6", "L", "x2Line6", "y2Line6"
+            ]
+        },
+        {
+            "type": "text",
+            "text": "Week",
+            "fontSize": 72,
+            "position": {
+                "x": "templateWidth / 2 - textWidth / 2",
+                "y": "weekOffsetY"
+            }
+        },
+        {
+            "type": "text",
+            "text": "WEEK NUMBER:",
+            "fontSize": 25,
+            "position": {
+                "x": "defaultTextOffsetX",
+                "y": 194
+            }
+        },
+        {
+            "type": "text",
+            "text": "Sunday",
+            "fontSize": 32,
+            "position": {
+                "x": "templateWidth < mobileMaxWidth ? defaultTextOffsetX : 0.5 * templateWidth / 7 - textWidth / 2",
+                "y": "sundayOffsetY"
+            }
+        },
+        {
+            "type": "text",
+            "text": "Monday",
+            "fontSize": 32,
+            "position": {
+                "x": "templateWidth < mobileMaxWidth ? defaultTextOffsetX : 1.5 * templateWidth / 7 - textWidth / 2",
+                "y": "mondayOffsetY"
+            }
+        },
+        {
+            "type": "text",
+            "text": "Tuesday",
+            "fontSize": 32,
+            "position": {
+                "x": "templateWidth < mobileMaxWidth ? defaultTextOffsetX : 2.5 * templateWidth / 7 - textWidth / 2",
+                "y": "tuesdayOffsetY"
+            }
+        },
+        {
+            "type": "text",
+            "text": "Wednesday",
+            "fontSize": 32,
+            "position": {
+                "x": "templateWidth < mobileMaxWidth ? defaultTextOffsetX : 3.5 * templateWidth / 7 - textWidth / 2",
+                "y": "wednesdayOffsetY"
+            }
+        },
+        {
+            "type": "text",
+            "text": "Thursday",
+            "fontSize": 32,
+            "position": {
+                "x": "templateWidth < mobileMaxWidth ? defaultTextOffsetX : 4.5 * templateWidth / 7 - textWidth / 2",
+                "y": "thursdayOffsetY"
+            }
+        },
+        {
+            "type": "text",
+            "text": "Friday",
+            "fontSize": 32,
+            "position": {
+                "x": "templateWidth < mobileMaxWidth ? defaultTextOffsetX : 5.5 * templateWidth / 7 - textWidth / 2",
+                "y": "fridayOffsetY"
+            }
+        },
+        {
+            "type": "text",
+            "text": "Saturday",
+            "fontSize": 32,
+            "position": {
+                "x": "templateWidth < mobileMaxWidth ? defaultTextOffsetX : 6.5 * templateWidth / 7 - textWidth / 2",
+                "y": "saturdayOffsetY"
+            }
+        }
+    ]
+}

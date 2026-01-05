@@ -1,0 +1,61 @@
+{
+    "name": "Guitar chords",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative"],
+    "orientation": "portrait",
+    "supportedDevices": ["rm2", "rmPP"],
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": 120},
+        {"columns": "templateWidth > mobileMaxWidth ? 4 : 2"},
+
+        {"boxWidth": 208},
+        {"boxHeight": 238},
+        {"offsetY": "templateWidth > mobileMaxWidth ? 154 : mobileOffsetY"},
+        {"totalWidth": 1099.5},
+        {"boxSpacing": 89},
+        {"defaultOffsetX": "templateWidth / 2 - totalWidth / 2 - 1"},
+        {"mobileOffsetX": "templateWidth / 2 - boxWidth - boxSpacing / 2"},
+        {"offsetX": "templateWidth > mobileMaxWidth ? defaultOffsetX : mobileOffsetX"}
+    ],
+    "items": [
+         {
+            "type": "group",
+            "boundingBox": {
+                "x": "offsetX",
+                "y": "offsetY",
+                "width": "boxWidth + boxSpacing",
+                "height": "boxHeight + 101"
+            },
+            "repeat": {
+                "columns": "columns",
+                "rows": 5
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "strokeWidth": 2,
+                    "data": [
+                        "M", 0, 0,
+                        "L", "boxWidth", 0,
+                        "L", "boxWidth", "boxHeight",
+                        "L", 0, "boxHeight",
+                        "Z"
+                    ]
+                },
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 41.5, 0, "L", 41.5, "boxHeight",
+                        "M", 83, 0, "L", 83, "boxHeight",
+                        "M", 124.5, 0, "L", 124.5, "boxHeight",
+                        "M", 166, 0, "L", 166, "boxHeight",
+                        "M", 0, 12.5, "L", "boxWidth", 12.5
+                    ]
+                }
+            ]
+        }
+    ]
+}

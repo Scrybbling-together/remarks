@@ -1,0 +1,72 @@
+{
+    "name": "Checklist",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Planners"],
+    "orientation": "landscape",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileTextOffsetX": "templateWidth - 300"},
+        {"mobileTextOffsetY": 137},
+        {"mobileBoxOffsetX": 100},
+        {"mobileLineOffsetX": 220},
+
+        {"boxSize": 55},
+        {"magicTextOffsetY": 110},
+        {"magicLineOffsetY": 149},
+        {"boxesOffsetY": 228},
+        {"magicTextOffsetX": 750},
+        {"defaultTextOffsetX": "templateWidth / 2 + magicTextOffsetX"},
+        {"textOffsetX": "templateHeight > mobileMaxWidth ? defaultTextOffsetX : mobileTextOffsetX"},
+        {"textOffsetY": "templateHeight > mobileMaxWidth ? magicTextOffsetY : mobileTextOffsetY"},
+
+        {"magicBoxOffsetX": 125},
+        {"offsetX": "templateHeight > mobileMaxWidth ? magicBoxOffsetX : mobileBoxOffsetX"},
+        {"magicLineOffsetX": 210},
+        {"lineOffsetX": "templateHeight > mobileMaxWidth ? magicLineOffsetX : mobileLineOffsetX"}
+    ],
+    "items": [
+        {
+            "type": "text",
+            "text": "Deadline",
+            "fontSize": 24,
+            "position": {
+                "x": "textOffsetX",
+                "y": "textOffsetY"
+            }
+        },
+        {
+            "type": "path",
+            "data": [
+                "M", 0, "magicLineOffsetY", "L", "templateWidth", "magicLineOffsetY"
+            ]
+        },
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "lineOffsetX",
+                "y": "boxesOffsetY",
+                "width": "templateWidth",
+                "height": 97.4
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", "-offsetX", 0,
+                        "L", "boxSize - offsetX", 0,
+                        "L", "boxSize - offsetX", "boxSize",
+                        "L", "-offsetX", "boxSize",
+                        "Z",
+
+                        "M", 0, "boxSize", "L", "templateWidth", "boxSize"
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,120 @@
+{
+    "name": "Day planner",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Planners"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetX": "160 - 95 + 12"},
+        {"offsetX": "templateWidth > mobileMaxWidth ? 0 : mobileOffsetX"},
+        {"magicDayOffsetX": 355},
+        {"magicTimeOffsetX": 660},
+        {"magicDateOffsetX": 490},
+        {"magicLineOffsetX": 186},
+        {"dayOffsetX": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? (templateWidth / 2 - 150) : magicDayOffsetX"},
+        {"timeOffsetX": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? (templateWidth / 2 - 43) : magicTimeOffsetX"},
+        {"dateOffsetX": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? (templateWidth / 2 - 250) : magicDateOffsetX"},
+        {"linesOffsetX": "templateWidth < mobileMaxWidth ? 120 : magicLineOffsetX"}
+    ],
+    "items": [
+         {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "offsetX",
+                "width": "templateHeight",
+                "height": "templateHeight"
+            },
+            "children": [
+                {
+                    "type": "text",
+                    "text": "Day:",
+                    "fontSize": 72,
+                    "position": {
+                        "x": "templateWidth / 2 - dayOffsetX",
+                        "y": 95
+                    }
+                },
+                {
+                    "type": "text",
+                    "text": "TIME",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "templateWidth / 2 - timeOffsetX",
+                        "y": 205
+                    }
+                },
+                {
+                    "id": "group-date-item",
+                    "type": "group",
+                    "boundingBox": {
+                        "x": "templateWidth / 2 + dateOffsetX",
+                        "y": 205,
+                        "width": "parentWidth",
+                        "height": 30
+                    },
+                    "children": [
+                        {
+                            "type": "text",
+                            "text": "DATE",
+                            "fontSize": 24,
+                            "position": {
+                                "x": 0,
+                                "y": 0
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "/",
+                            "fontSize": 24,
+                            "position": {
+                                "x": 100,
+                                "y": 0
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "/",
+                            "fontSize": 24,
+                            "position": {
+                                "x": 145,
+                                "y": 0
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "two-h-lines",
+                    "type": "path",
+                    "data": [
+                        "M", "templateWidth / 2 - templateHeight / 2", 145, "L", "parentWidth", 145,
+                        "M", "templateWidth / 2 - templateHeight / 2", 245, "L", "parentWidth", 245
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "group-h-lines",
+            "type": "group",
+            "boundingBox": {
+                "x": "linesOffsetX",
+                "y": "offsetX + 379",
+                "width": "templateHeight",
+                "height": 116.5
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0
+                    ]
+                }
+            ]
+        }
+    ]
+}

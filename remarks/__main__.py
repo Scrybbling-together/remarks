@@ -47,6 +47,21 @@ def main():
         help="Device type (overrides auto-detection)",
         metavar="DEVICE",
     )
+    parser.add_argument(
+        "--templates-dir",
+        help="Directory containing .template files (overrides built-in templates)",
+        metavar="TEMPLATES_DIR",
+    )
+    parser.add_argument(
+        "--no-chrome",
+        action="store_true",
+        help="Use Cairo instead of Chrome for PDF conversion",
+    )
+    parser.add_argument(
+        "--chrome-loc",
+        help="Path to Chrome/Chromium binary",
+        metavar="PATH",
+    )
 
     args = parser.parse_args()
     args_dict = vars(args)
@@ -54,6 +69,10 @@ def main():
     input_dir = pathlib.Path(args_dict.pop("input_dir"))
     output_dir = pathlib.Path(args_dict.pop("output_dir"))
     device = args_dict.pop("device")
+    templates_dir_str = args_dict.pop("templates_dir")
+    templates_dir = pathlib.Path(templates_dir_str) if templates_dir_str else None
+    no_chrome = args_dict.pop("no_chrome")
+    chrome_loc = args_dict.pop("chrome_loc")
 
     log_level = args_dict.pop("log_level")
     logging.basicConfig(
@@ -67,7 +86,11 @@ def main():
     if not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    run_remarks(input_dir, output_dir, device=device)
+    if templates_dir and not templates_dir.exists():
+        parser.error(f'Templates directory "{templates_dir}" does not exist')
+
+    run_remarks(input_dir, output_dir, device=device, templates_dir=templates_dir,
+                no_chrome=no_chrome, chrome_loc=chrome_loc)
 
 
 if __name__ == "__main__":

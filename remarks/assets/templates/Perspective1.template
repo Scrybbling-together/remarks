@@ -1,0 +1,67 @@
+{
+    "name": "Perspective 1",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative"],
+    "orientation": "portrait",
+    "constants": [
+        { "lineCount": 21 },
+        { "lineSpacing": "templateHeight / (lineCount - 1)" },
+        { "xCenter": "templateWidth / 2" },
+        { "yCenter": "templateHeight / 2" }
+    ],
+    "items": [
+        {
+            "id": "line-group",
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "lineSpacing",
+                "width": "templateWidth",
+                "height": "lineSpacing"
+            },
+            "repeat": {
+                "rows": 19
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [ "M", 0, 0, "L", "templateWidth", 0 ]
+                }
+            ]
+        }, {
+            "id": "vertical-center-line",
+            "type": "path",
+            "data": [ "M", "xCenter", 0, "L", "xCenter", "templateHeight" ]
+        }, {
+            "id": "perspective-lines",
+            "type": "path",
+            "strokeWidth": 1,
+            "data": [
+                "M", 0, "yCenter",
+                "L", "xCenter", "0 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "1 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "2 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "3 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "4 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "5 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "6 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "7 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "8 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "9 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "10 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "11 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "12 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "13 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "14 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "15 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "16 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "17 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "18 * lineSpacing", "L", "templateWidth", "yCenter",
+                "L", "xCenter", "19 * lineSpacing", "L", 0, "yCenter",
+                "L", "xCenter", "20 * lineSpacing", "L", "templateWidth", "yCenter"
+            ]
+        }
+    ]
+}

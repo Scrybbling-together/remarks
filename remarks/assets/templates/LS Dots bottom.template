@@ -1,0 +1,48 @@
+{
+    "name": "Dots bottom",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative", "Grids"],
+    "orientation": "landscape",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetX": 5.5},
+        {"mobileOffsetY": "templateHeight / 2"},
+        {"orientaionWidth": "templateWidth > templateHeight ? templateWidth : templateHeight"},
+        {"magicOffsetX": -42.5},
+        {"magicOffsetY": 724},
+        {"offsetX": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? mobileOffsetX : magicOffsetX"},
+        {"offsetY": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? mobileOffsetY : magicOffsetY"}
+    ],
+    "items": [
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "offsetX - 0.5",
+                "y": "offsetY",
+                "width": 42.5,
+                "height": 42.5
+            },
+            "repeat": {
+                "columns": "infinite",
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "strokeWidth": 1,
+                    "fillColor": "#000000",
+                    "antialiasing": false,
+                    "data": [
+                        "M", 0, 0,
+                        "L", 1, 0,
+                        "L", 1, 1,
+                        "L", 0, 1,
+                        "Z"
+                    ]
+                }
+            ]
+        }
+    ]
+}

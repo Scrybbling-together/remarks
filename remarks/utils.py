@@ -128,7 +128,7 @@ def get_document_tags(path: str):
 def sanitize_obsidian_tag(tag: str) -> str:
     """
     Sanitize a reMarkable page tag for use in Obsidian.
-    
+
     Based on testing, Obsidian tags:
     - Must start with a letter (not number)
     - Work well with letters, numbers, dashes, underscores
@@ -138,39 +138,39 @@ def sanitize_obsidian_tag(tag: str) -> str:
     """
     if not tag:
         return ""
-    
+
     # Remove leading # characters
     while tag.startswith("#"):
         tag = tag[1:]
-    
+
     # If tag was only # characters, mark as invalid
     if not tag:
         return "invalid-tag"
-    
+
     # Replace angle brackets (they break Obsidian parsing completely)
     tag = tag.replace("<", "-").replace(">", "-")
-    
+
     # Replace other problematic characters with dashes
     # Keep: letters (including accented), numbers, dashes, underscores, forward slashes
     # Also keep some Unicode that seems to work: ¿€£¥
     # Use \w to include accented characters, but exclude specific problematic ones
     tag = re.sub(r'[^\w\-_/¿€£¥]', '-', tag, flags=re.UNICODE)
-    
+
     # Collapse multiple consecutive dashes
     tag = re.sub(r'-+', '-', tag)
-    
+
     # Remove leading/trailing dashes
     tag = tag.strip('-')
-    
+
     # If tag is empty after cleanup, it was all invalid characters
     if not tag:
         return "invalid-tag"
-    
+
     # Ensure it starts with a letter (Obsidian requirement)
     if not tag[0].isalpha():
         # If it starts with number or other, prefix with 'tag'
         tag = f"tag-{tag}"
-    
+
     return tag
 
 
@@ -201,3 +201,41 @@ def list_ann_rm_files(path):
     if not content_dir.is_dir():
         return []
     return list(content_dir.glob("*.rm"))
+
+
+def get_page_template(path: str, page_uuid: str) -> str:
+    """
+    Get the template name for a specific page.
+
+    Args:
+        path: Path to the .metadata file
+        page_uuid: UUID of the page
+
+    Returns:
+        Template name or None if no template assigned
+    """
+    content = read_meta_file(path, suffix=".content")
+    if not content:
+        return None
+
+    # Check cPages format (newer)
+    if 'cPages' in content:
+        for page in content['cPages'].get('pages', []):
+            if page.get('id') == page_uuid:
+                template = page.get('template', {})
+                if isinstance(template, dict):
+                    return template.get('value')
+                return template if template else None
+
+    # Check pages format with pageTemplates (older)
+    if 'pageTemplates' in content:
+        try:
+            pages = content.get('pages', [])
+            page_idx = pages.index(page_uuid)
+            templates = content['pageTemplates']
+            if page_idx < len(templates):
+                return templates[page_idx] if templates[page_idx] else None
+        except (ValueError, IndexError):
+            pass
+
+    return None
