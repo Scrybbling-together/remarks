@@ -1,0 +1,60 @@
+{
+    "name": "US College",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Lines"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": 160},
+        {"magicOffsetX": 464},
+        {"magicOffsetY": 176},
+        {"extraOffsetX": 10},
+        {"offsetX": "templateWidth / 2 - templateHeight / 2 + magicOffsetX"},
+        {"offsetY": "templateWidth > mobileMaxWidth ? magicOffsetY : mobileOffsetY"}
+    ],
+    "items": [
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "offsetY",
+                "width": "templateHeight",
+                "height": 62
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", "templateWidth / 2 - templateHeight / 2", 0, "L", "parentWidth", 0
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": 0,
+                "width": "templateHeight",
+                "height": 62
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", "offsetX", 0, "L", "offsetX", "parentHeight - 1",
+                        "M", "offsetX + extraOffsetX", 0, "L", "offsetX + extraOffsetX", "parentHeight - 1"
+                    ]
+                }
+            ]
+        }
+    ]
+}

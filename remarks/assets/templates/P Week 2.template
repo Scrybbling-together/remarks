@@ -1,0 +1,120 @@
+{
+    "name": "Weekplanner 2",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": "120 - 96 + 51"},
+        {"offsetY": "templateWidth > mobileMaxWidth ? 0 : mobileOffsetY"},
+        { "yHeader": 146 },
+        { "weekNumberHeight": 77 },
+        { "dayHeaderHeight": 89 },
+        { "yDays": "yHeader + weekNumberHeight" },
+        { "daysHeight": "templateHeight - yDays" },
+        { "dayHeight": "daysHeight / 3"}
+    ],
+    "items": [
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "offsetY",
+                "width": "templateWidth",
+                "height": "templateHeight"
+            },
+            "children": [
+                {
+                    "id": "lines",
+                    "type": "path",
+                    "data": [
+                        "M", 0, "yHeader", "L", "templateWidth", "yHeader",
+                        "M", 0, "yHeader + weekNumberHeight", "L", "templateWidth", "yHeader + weekNumberHeight",
+                        "M", 0, "yDays", "L", "templateWidth", "yDays",
+                        "M", 0, "yDays + dayHeaderHeight", "L", "templateWidth", "yDays + dayHeaderHeight",
+                        "M", 0, "yDays + dayHeight", "L", "templateWidth", "yDays + dayHeight",
+                        "M", 0, "yDays + dayHeight + dayHeaderHeight", "L", "templateWidth", "yDays + dayHeight + dayHeaderHeight",
+                        "M", 0, "yDays + 2 * dayHeight", "L", "templateWidth", "yDays + 2 * dayHeight",
+                        "M", 0, "yDays + 2 * dayHeight + dayHeaderHeight", "L", "templateWidth", "yDays + 2 * dayHeight + dayHeaderHeight",
+                        "M", "templateWidth / 2", "yDays", "L", "templateWidth / 2", "templateHeight",
+                        "M", "3 * templateWidth / 4", "yDays + 2 * dayHeight", "L", "3 * templateWidth / 4", "templateHeight"
+                    ]
+                }, {
+                    "type": "text",
+                    "text": "Week",
+                    "fontSize": 72,
+                    "position": {
+                        "x": "templateWidth / 2 - textWidth / 2",
+                        "y": 96
+                    }
+                }, {
+                    "type": "text",
+                    "text": "WEEK NUMBER:",
+                    "fontSize": 25,
+                    "position": {
+                        "x": 30,
+                        "y": 194
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Monday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "templateWidth / 4 - textWidth / 2",
+                        "y": "yDays + dayHeaderHeight / 2 + 12"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Tuesday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "3 * templateWidth / 4 - textWidth / 2",
+                        "y": "yDays + dayHeaderHeight / 2 + 12"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Wednesday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "templateWidth / 4 - textWidth / 2",
+                        "y": "yDays + dayHeight + dayHeaderHeight / 2 + 12"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Thursday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "3 * templateWidth / 4 - textWidth / 2",
+                        "y": "yDays + dayHeight + dayHeaderHeight / 2 + 12"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Friday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "templateWidth / 4 - textWidth / 2",
+                        "y": "yDays + 2 * dayHeight + dayHeaderHeight / 2 + 12"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Saturday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "5 * templateWidth / 8 - textWidth / 2",
+                        "y": "yDays + 2 * dayHeight + dayHeaderHeight / 2 + 12"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Sunday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "7 * templateWidth / 8 - textWidth / 2",
+                        "y": "yDays + 2 * dayHeight + dayHeaderHeight / 2 + 12"
+                    }
+                }
+            ]
+        }
+    ]
+}

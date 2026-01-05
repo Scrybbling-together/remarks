@@ -1,0 +1,45 @@
+{
+    "name": "Dots small",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative", "Grids"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetX": 5.5},
+        {"magicOffset": 22},
+        {"magicOffsetX": "paperOriginX - magicOffset"},
+        {"offsetX": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? mobileOffsetX : magicOffsetX"}
+    ],
+    "items": [
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "offsetX + 1",
+                "y": 0,
+                "width": 42.5,
+                "height": 42.5
+            },
+            "repeat": {
+                "columns": "infinite",
+                "rows": "infinite"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "strokeWidth": 1,
+                    "fillColor": "#000000",
+                    "antialiasing": false,
+                    "data": [
+                        "M", 0, 0,
+                        "L", 1, 0,
+                        "L", 1, 1,
+                        "L", 0, 1,
+                        "Z"
+                    ]
+                }
+            ]
+        }
+    ]
+}

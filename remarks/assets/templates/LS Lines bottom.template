@@ -1,0 +1,36 @@
+{
+    "name": "Lined bottom",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Lines"],
+    "orientation": "landscape",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": "templateHeight / 2"},
+        {"magicOffsetY": 695},
+        {"offsetY": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? mobileOffsetY : magicOffsetY"}
+    ],
+    "items": [
+         {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "offsetY",
+                "width": "templateWidth",
+                "height": 78.7
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0
+                    ]
+                }
+            ]
+        }
+    ]
+}

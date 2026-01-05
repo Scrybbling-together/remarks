@@ -13,6 +13,7 @@ classifiers = [
     "Topic :: Multimedia :: Graphics :: Graphics Conversion",
     "Topic :: Utilities"
 ]
+include = ["remarks/assets/templates/*.template"]
 
 # https://python-poetry.org/docs/dependency-specification/
 [tool.poetry.dependencies]

@@ -1,0 +1,35 @@
+{
+    "name": "Lined top",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Lines"],
+    "orientation": "landscape",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"magicOffsetY": 787},
+        {"offsetY": "templateWidth < mobileMaxWidth || templateHeight < mobileMaxWidth ? templateHeight / 2 : magicOffsetY"}
+    ],
+    "items": [
+         {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "offsetY",
+                "width": "templateWidth",
+                "height": 78.7
+            },
+            "repeat": {
+                "rows": "up"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0
+                    ]
+                }
+            ]
+        }
+    ]
+}

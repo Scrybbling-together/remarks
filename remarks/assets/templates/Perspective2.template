@@ -1,0 +1,99 @@
+{
+    "name": "Perspective 2",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative"],
+    "orientation": "portrait",
+    "constants": [
+        { "cx": "templateWidth / 2" },
+        { "cy": "templateHeight / 2" },
+        { "h": "templateHeight / 2" },
+        { "w": "templateWidth / 2" },
+        { "r00": 0.9 },
+        { "r01": 0.81 },
+        { "r02": 0.729 },
+        { "r03": 0.6561 },
+        { "r04": 0.59049 },
+        { "r05": 0.53144 },
+        { "r06": 0.4783 },
+        { "r07": 0.43047 },
+        { "r08": 0.38742 },
+        { "r09": 0.34868 },
+        { "r10": 0.31381 },
+        { "r11": 0.28243 },
+        { "r12": 0.25419 },
+        { "r13": 0.22877 },
+        { "r14": 0.20589 },
+        { "r15": 0.1853 },
+        { "r16": 0.16677 },
+        { "r17": 0.15009 },
+        { "r18": 0.13509 },
+        { "r19": 0.12158 },
+        { "r20": 0.10942 },
+        { "r21": 0.09848 }
+    ],
+    "items": [
+        {
+            "id": "lines",
+            "type": "path",
+            "data": [
+                "M",                       0, 0, "L",         "templateWidth", "templateHeight",
+                "M", "0.125 * templateWidth", 0, "L", "0.875 * templateWidth", "templateHeight",
+                "M", "0.25  * templateWidth", 0, "L", "0.75  * templateWidth", "templateHeight",
+                "M", "0.375 * templateWidth", 0, "L", "0.625 * templateWidth", "templateHeight",
+                "M", "0.5   * templateWidth", 0, "L", "0.5   * templateWidth", "templateHeight",
+                "M", "0.625 * templateWidth", 0, "L", "0.375 * templateWidth", "templateHeight",
+                "M", "0.75  * templateWidth", 0, "L", "0.25  * templateWidth", "templateHeight",
+                "M", "0.875 * templateWidth", 0, "L", "0.125 * templateWidth", "templateHeight",
+                "M",         "templateWidth", 0, "L",                       0, "templateHeight",
+
+                "M", 0, "0.125 * templateHeight", "L", "templateWidth", "0.875 * templateHeight",
+                "M", 0, "0.25  * templateHeight", "L", "templateWidth", "0.75  * templateHeight",
+                "M", 0, "0.375 * templateHeight", "L", "templateWidth", "0.625 * templateHeight",
+                "M", 0, "0.5   * templateHeight", "L", "templateWidth", "0.5   * templateHeight",
+                "M", 0, "0.625 * templateHeight", "L", "templateWidth", "0.375 * templateHeight",
+                "M", 0, "0.75  * templateHeight", "L", "templateWidth", "0.25  * templateHeight",
+                "M", 0, "0.875 * templateHeight", "L", "templateWidth", "0.125 * templateHeight"
+            ]
+        }, {
+            "id": "cover-center",
+            "type": "path",
+            "fillColor": "#ffffff",
+            "strokeColor": "#00000000",
+            "data": [
+                "M", "cx - r21 * w", "cy - r21 * h",
+                "L", "cx + r21 * w", "cy - r21 * h",
+                "L", "cx + r21 * w", "cy + r21 * h",
+                "L", "cx - r21 * w", "cy + r21 * h"
+            ]
+        }, {
+            "id": "rectangles",
+            "type": "path",
+            "data": [
+                "M", "cx - r00 * w", "cy - r00 * h",  "L", "cx + r00 * w", "cy - r00 * h",  "L", "cx + r00 * w", "cy + r00 * h",  "L", "cx - r00 * w", "cy + r00 * h",  "Z",
+                "M", "cx - r01 * w", "cy - r01 * h",  "L", "cx + r01 * w", "cy - r01 * h",  "L", "cx + r01 * w", "cy + r01 * h",  "L", "cx - r01 * w", "cy + r01 * h",  "Z",
+                "M", "cx - r02 * w", "cy - r02 * h",  "L", "cx + r02 * w", "cy - r02 * h",  "L", "cx + r02 * w", "cy + r02 * h",  "L", "cx - r02 * w", "cy + r02 * h",  "Z",
+                "M", "cx - r03 * w", "cy - r03 * h",  "L", "cx + r03 * w", "cy - r03 * h",  "L", "cx + r03 * w", "cy + r03 * h",  "L", "cx - r03 * w", "cy + r03 * h",  "Z",
+                "M", "cx - r04 * w", "cy - r04 * h",  "L", "cx + r04 * w", "cy - r04 * h",  "L", "cx + r04 * w", "cy + r04 * h",  "L", "cx - r04 * w", "cy + r04 * h",  "Z",
+                "M", "cx - r05 * w", "cy - r05 * h",  "L", "cx + r05 * w", "cy - r05 * h",  "L", "cx + r05 * w", "cy + r05 * h",  "L", "cx - r05 * w", "cy + r05 * h",  "Z",
+                "M", "cx - r06 * w", "cy - r06 * h",  "L", "cx + r06 * w", "cy - r06 * h",  "L", "cx + r06 * w", "cy + r06 * h",  "L", "cx - r06 * w", "cy + r06 * h",  "Z",
+                "M", "cx - r07 * w", "cy - r07 * h",  "L", "cx + r07 * w", "cy - r07 * h",  "L", "cx + r07 * w", "cy + r07 * h",  "L", "cx - r07 * w", "cy + r07 * h",  "Z",
+                "M", "cx - r08 * w", "cy - r08 * h",  "L", "cx + r08 * w", "cy - r08 * h",  "L", "cx + r08 * w", "cy + r08 * h",  "L", "cx - r08 * w", "cy + r08 * h",  "Z",
+                "M", "cx - r09 * w", "cy - r09 * h",  "L", "cx + r09 * w", "cy - r09 * h",  "L", "cx + r09 * w", "cy + r09 * h",  "L", "cx - r09 * w", "cy + r09 * h",  "Z",
+                "M", "cx - r10 * w", "cy - r10 * h",  "L", "cx + r10 * w", "cy - r10 * h",  "L", "cx + r10 * w", "cy + r10 * h",  "L", "cx - r10 * w", "cy + r10 * h",  "Z",
+                "M", "cx - r11 * w", "cy - r11 * h",  "L", "cx + r11 * w", "cy - r11 * h",  "L", "cx + r11 * w", "cy + r11 * h",  "L", "cx - r11 * w", "cy + r11 * h",  "Z",
+                "M", "cx - r12 * w", "cy - r12 * h",  "L", "cx + r12 * w", "cy - r12 * h",  "L", "cx + r12 * w", "cy + r12 * h",  "L", "cx - r12 * w", "cy + r12 * h",  "Z",
+                "M", "cx - r13 * w", "cy - r13 * h",  "L", "cx + r13 * w", "cy - r13 * h",  "L", "cx + r13 * w", "cy + r13 * h",  "L", "cx - r13 * w", "cy + r13 * h",  "Z",
+                "M", "cx - r14 * w", "cy - r14 * h",  "L", "cx + r14 * w", "cy - r14 * h",  "L", "cx + r14 * w", "cy + r14 * h",  "L", "cx - r14 * w", "cy + r14 * h",  "Z",
+                "M", "cx - r15 * w", "cy - r15 * h",  "L", "cx + r15 * w", "cy - r15 * h",  "L", "cx + r15 * w", "cy + r15 * h",  "L", "cx - r15 * w", "cy + r15 * h",  "Z",
+                "M", "cx - r16 * w", "cy - r16 * h",  "L", "cx + r16 * w", "cy - r16 * h",  "L", "cx + r16 * w", "cy + r16 * h",  "L", "cx - r16 * w", "cy + r16 * h",  "Z",
+                "M", "cx - r17 * w", "cy - r17 * h",  "L", "cx + r17 * w", "cy - r17 * h",  "L", "cx + r17 * w", "cy + r17 * h",  "L", "cx - r17 * w", "cy + r17 * h",  "Z",
+                "M", "cx - r18 * w", "cy - r18 * h",  "L", "cx + r18 * w", "cy - r18 * h",  "L", "cx + r18 * w", "cy + r18 * h",  "L", "cx - r18 * w", "cy + r18 * h",  "Z",
+                "M", "cx - r19 * w", "cy - r19 * h",  "L", "cx + r19 * w", "cy - r19 * h",  "L", "cx + r19 * w", "cy + r19 * h",  "L", "cx - r19 * w", "cy + r19 * h",  "Z",
+                "M", "cx - r20 * w", "cy - r20 * h",  "L", "cx + r20 * w", "cy - r20 * h",  "L", "cx + r20 * w", "cy + r20 * h",  "L", "cx - r20 * w", "cy + r20 * h",  "Z",
+                "M", "cx - r21 * w", "cy - r21 * h",  "L", "cx + r21 * w", "cy - r21 * h",  "L", "cx + r21 * w", "cy + r21 * h",  "L", "cx - r21 * w", "cy + r21 * h",  "Z"
+            ]
+        }
+    ]
+}

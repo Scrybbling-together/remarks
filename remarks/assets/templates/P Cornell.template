@@ -1,0 +1,46 @@
+{
+    "name": "Cornell",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Lines"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetX": 600},
+
+        {"magicOffsetX": "templateWidth > mobileMaxWidth ? 685 : mobileOffsetX"},
+        {"magicOffsetY": 103},
+        {"magicOffsetHeight": 1401},
+        {"offsetX": "templateWidth / 2 - templateHeight / 2 + magicOffsetX"}
+    ],
+    "items": [
+        {
+            "type": "path",
+            "data": [
+                "M", "templateWidth / 2 - templateHeight / 2", "magicOffsetHeight", "L", "templateHeight", "magicOffsetHeight",
+                "M", "offsetX", 0, "L", "offsetX", "magicOffsetHeight"
+            ]
+        },
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "offsetX",
+                "y": 0,
+                "width": "templateHeight",
+                "height": 76.4
+            },
+            "repeat": {
+                "rows": 17
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, "magicOffsetY", "L", "parentWidth", "magicOffsetY"
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,101 @@
+{
+    "name": "Checklist double",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Planners"],
+    "orientation": "landscape",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileTextOffsetX": 429},
+        {"leftMargin": "templateHeight > mobileMaxWidth ? 84 : 76"},
+        {"boxSize": 55},
+        {"spacingBetweenBoxAndLine": 72.5},
+        {"textMagicOffsetX": 750},
+        {"textOffsetX": "templateHeight > mobileMaxWidth ? textMagicOffsetX : mobileTextOffsetX"},
+        {"magicOffsetX": "templateHeight > mobileMaxWidth ? 84 : 120"},
+        {"offsetX": "magicOffsetX"},
+        {"magicLineOffsetX": 210},
+        {"magicOffsetX": "960 - templateWidth / 2"},
+        {"defaultLineLength": "templateWidth / 2 - magicLineOffsetX - magicOffsetX"},
+        {"mobileLineLength": "templateWidth / 2 - boxSize - spacingBetweenBoxAndLine - leftMargin"},
+        {"lineLength": "templateHeight > mobileMaxWidth ? defaultLineLength : mobileLineLength"},
+        {"secondLineMagicOffset": 205},
+        {"secondLineMobileOffset": 180},
+        {"secondLineOffset": "templateHeight > mobileMaxWidth ? secondLineMagicOffset : secondLineMobileOffset"},
+        {"secondmagicLineOffsetX": "magicLineOffsetX + lineLength + secondLineOffset"},
+        {"rightBoxOffsetX": "secondmagicLineOffsetX - spacingBetweenBoxAndLine - boxSize"},
+        {"textOffsetY": "templateHeight > mobileMaxWidth ? 110 : 137"}
+    ],
+    "items": [
+        {
+            "type": "text",
+            "text": "Deadline",
+            "fontSize": 24,
+            "position": {
+                "x": "templateWidth / 2 + textOffsetX",
+                "y": "textOffsetY"
+            }
+        },
+        {
+            "type": "path",
+            "data": [
+                "M", 0, 149, "L", "templateWidth", 149
+            ]
+        },
+        {
+            "id": "left-checkboxes",
+            "type": "group",
+            "boundingBox": {
+                "x": "offsetX",
+                "y": 228,
+                "width": "templateWidth",
+                "height": 97.4
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0,
+                        "L", "boxSize", 0,
+                        "L", "boxSize", "boxSize",
+                        "L", 0, "boxSize",
+                        "Z",
+
+                        "M", "magicLineOffsetX - offsetX", "boxSize", "L", "magicLineOffsetX + lineLength - offsetX", "boxSize"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "right-checkboxes",
+            "type": "group",
+            "boundingBox": {
+                "x": "rightBoxOffsetX",
+                "y": 228,
+                "width": "templateWidth",
+                "height": 97.4
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0,
+                        "L", "boxSize", 0,
+                        "L", "boxSize", "boxSize",
+                        "L", 0, "boxSize",
+                        "Z",
+
+                        "M", "spacingBetweenBoxAndLine + boxSize", "boxSize", "L", "templateWidth - secondmagicLineOffsetX + spacingBetweenBoxAndLine", "boxSize"
+                    ]
+                }
+            ]
+        }
+    ]
+}
