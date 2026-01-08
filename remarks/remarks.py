@@ -7,7 +7,7 @@ import zipfile
 
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device_from_pdf_size, set_device
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device_from_pdf_size, set_device, SCALE
 from rmc.exporters.svg import rm_to_svg, xx, yy
 
 import rmc
@@ -139,7 +139,15 @@ def process_document(
                     # w_bg, h_bg already calculated above for device detection
                     # find the (top, right) coordinates of the svg
                     anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
-                    x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
+                    # Convert PDF dimensions to screen coordinates for bounding box default
+                    # PDF uses points (72 DPI), screen uses device DPI; SCALE = 72/DPI
+                    # reMarkable uses center-top origin: x from -w/2 to w/2, y from 0 to h
+                    w_bg_screen = w_bg / SCALE
+                    h_bg_screen = h_bg / SCALE
+                    pdf_default_bounds = (-w_bg_screen / 2, w_bg_screen / 2, 0, h_bg_screen)
+                    x_min, x_max, y_min, y_max = get_bounding_box(
+                        ann_data["scene_tree"].root, anchor_pos, default=pdf_default_bounds
+                    )
                     x_shift, y_shift, w_svg, h_svg = xx(x_min), yy(y_min), xx(x_max - x_min + 1), yy(y_max - y_min + 1)
 
                     # compute the width/height of a blank page that can contain both svg and background pdf
