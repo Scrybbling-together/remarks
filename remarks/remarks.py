@@ -7,7 +7,7 @@ import zipfile
 
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device_from_pdf_size
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device_from_pdf_size, set_device
 from rmc.exporters.svg import rm_to_svg, xx, yy
 
 import rmc
@@ -30,7 +30,8 @@ from .warnings import scrybble_warning_only_v6_supported
 
 
 def run_remarks(
-        input_dir: pathlib.Path, output_dir: pathlib.Path
+        input_dir: pathlib.Path, output_dir: pathlib.Path,
+        device: str = None
 ):
     if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
@@ -69,7 +70,8 @@ def run_remarks(
             in_device_dir = get_ui_path(metadata_path)
             relative_doc_path = pathlib.Path(f"{in_device_dir}/{doc_name}")
 
-            process_document(metadata_path, relative_doc_path, output_dir)
+            process_document(metadata_path, relative_doc_path, output_dir,
+                             device=device)
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -83,7 +85,8 @@ def run_remarks(
 def process_document(
         metadata_path: pathlib.Path,
         relative_doc_path: pathlib.Path,
-        output_dir: pathlib.Path
+        output_dir: pathlib.Path,
+        device: str = None
 ):
 
     document = Document(metadata_path)
@@ -121,8 +124,11 @@ def process_document(
                 if int(page_rotation) in [90, 270]:
                     w_bg, h_bg = h_bg, w_bg
                 page.set_rotation(page_rotation)  # Restore rotation
-                set_device_from_pdf_size(w_bg, h_bg)
-                
+                if device:
+                    set_device(device)
+                else:
+                    set_device_from_pdf_size(w_bg, h_bg)
+
                 # convert the pdf
                 rm_to_pdf(rm_annotation_file, temp_pdf.name)
 
