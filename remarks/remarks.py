@@ -7,8 +7,8 @@ import zipfile
 
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box
-from rmc.exporters.svg import rm_to_svg, xx, yy
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, rmc_config
+from rmc.exporters.svg import rm_to_svg
 
 from .Document import Document
 from .conversion.parsing import (
@@ -147,7 +147,7 @@ def process_document(
                     # find the (top, right) coordinates of the svg
                     anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
                     x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
-                    x_shift, y_shift, w_svg, h_svg = xx(x_min), yy(y_min), xx(x_max - x_min + 1), yy(y_max - y_min + 1)
+                    x_shift, y_shift, w_svg, h_svg = rmc_config.xx(x_min), rmc_config.yy(y_min), rmc_config.xx(x_max - x_min + 1), rmc_config.yy(y_max - y_min + 1)
 
                     # compute the width/height of a blank page that can contain both svg and background pdf
                     width, height = max(w_svg, w_bg), max(h_svg, h_bg)
