@@ -7,7 +7,8 @@ import zipfile
 
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device_from_pdf_size, set_device, SCALE
+import rmc.exporters.svg as svg_exporter
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device, set_dimensions_for_pdf
 from rmc.exporters.svg import rm_to_svg, xx, yy
 
 import rmc
@@ -111,23 +112,33 @@ def process_document(
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
+            # Get PDF page dimensions BEFORE parsing to ensure correct SCALE is used
+            page_rotation = page.rotation
+            page.set_rotation(0)
+            w_bg, h_bg = page.cropbox.width, page.cropbox.height
+            if int(page_rotation) in [90, 270]:
+                w_bg, h_bg = h_bg, w_bg
+            page.set_rotation(page_rotation)  # Restore rotation
+
+            # Set SVG dimensions: use PDF dimensions if there's backing content,
+            # otherwise use device setting for notebooks
+            has_backing_pdf = page.get_contents()
+            if has_backing_pdf:
+                logging.info(f"Setting page dimensions based on pdf: {round(w_bg,2)} x {round(h_bg,2)}")
+                set_dimensions_for_pdf(w_bg, h_bg)
+            elif device:
+                logging.info(f"Setting page dimensions based on device: {device}")
+                set_device(device)
+            else:
+                logging.warning(f"Unknown device and no backing pdf: setting page size to RMPP (if this is incorrect, specify device with --device)")
+                set_device('RMPP')
+
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
 
             # This offset is used for smart highlights
             highlights_x_translation = 0
             try:
-                # Detect device type from PDF page dimensions and configure SVG exporter
-                page_rotation = page.rotation
-                page.set_rotation(0)
-                w_bg, h_bg = page.cropbox.width, page.cropbox.height
-                if int(page_rotation) in [90, 270]:
-                    w_bg, h_bg = h_bg, w_bg
-                page.set_rotation(page_rotation)  # Restore rotation
-                if device:
-                    set_device(device)
-                else:
-                    set_device_from_pdf_size(w_bg, h_bg)
 
                 # convert the pdf
                 rm_to_pdf(rm_annotation_file, temp_pdf.name)
@@ -135,15 +146,15 @@ def process_document(
                 svg_pdf = fitz.open(temp_pdf.name)
 
                 # if the background page is not empty, need to merge svg on top of background page
-                if page.get_contents():
-                    # w_bg, h_bg already calculated above for device detection
+                if has_backing_pdf:
+                    # w_bg, h_bg already calculated above
                     # find the (top, right) coordinates of the svg
                     anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
                     # Convert PDF dimensions to screen coordinates for bounding box default
                     # PDF uses points (72 DPI), screen uses device DPI; SCALE = 72/DPI
                     # reMarkable uses center-top origin: x from -w/2 to w/2, y from 0 to h
-                    w_bg_screen = w_bg / SCALE
-                    h_bg_screen = h_bg / SCALE
+                    w_bg_screen = w_bg / svg_exporter.SCALE
+                    h_bg_screen = h_bg / svg_exporter.SCALE
                     pdf_default_bounds = (-w_bg_screen / 2, w_bg_screen / 2, 0, h_bg_screen)
                     x_min, x_max, y_min, y_max = get_bounding_box(
                         ann_data["scene_tree"].root, anchor_pos, default=pdf_default_bounds
