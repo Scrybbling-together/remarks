@@ -14,8 +14,8 @@ from typing import Any, Dict, Optional
 from rmscene import read_tree
 from rmc.exporters.svg import (
     build_anchor_pos, get_bounding_box,
-    xx, yy, SVG_HEADER, draw_text, draw_group,
-    SCREEN_WIDTH, SCREEN_HEIGHT, SCALE,
+    SVG_HEADER, draw_text, draw_group,
+    rmc_config,
 )
 from rmc.exporters.pdf import chrome_svg_to_pdf
 from cairosvg import svg2pdf
@@ -111,14 +111,14 @@ def render_tree_with_template(
         tree.root, anchor_pos, newline_offsets, text_pos_x, anchor_x_pos, anchor_soft_offset
     )
 
-    width_pt = xx(x_max - x_min + 1)
-    height_pt = yy(y_max - y_min + 1)
+    width_pt = rmc_config.xx(x_max - x_min + 1)
+    height_pt = rmc_config.yy(y_max - y_min + 1)
 
     # Write SVG header
     output.write(SVG_HEADER.substitute(
         width=width_pt,
         height=height_pt,
-        viewbox=f"{xx(x_min)} {yy(y_min)} {width_pt} {height_pt}"
+        viewbox=f"{rmc_config.xx(x_min)} {rmc_config.yy(y_min)} {width_pt} {height_pt}"
     ) + "\n")
 
     # Render template background if provided
@@ -163,27 +163,27 @@ def render_template_background(
     Returns:
         SVG group element as string
     """
-    # Convert screen coords to template coords (add SCREEN_WIDTH/2 to shift from center to left origin)
+    # Convert screen coords to template coords (add screen_width/2 to shift from center to left origin)
     # The bounding box tells us how far the content extends
-    template_x_min = x_min + SCREEN_WIDTH / 2
-    template_x_max = x_max + SCREEN_WIDTH / 2
+    template_x_min = x_min + rmc_config.screen_width / 2
+    template_x_max = x_max + rmc_config.screen_width / 2
     template_y_min = y_min
     template_y_max = y_max
 
     # Create renderer with dimensions that cover the full bounding box
     # Use at least the standard template size, but expand if content goes beyond
-    render_width = max(SCREEN_WIDTH, template_x_max, -template_x_min + SCREEN_WIDTH)
-    render_height = max(SCREEN_HEIGHT, template_y_max)
+    render_width = max(rmc_config.screen_width, template_x_max, -template_x_min + rmc_config.screen_width)
+    render_height = max(rmc_config.screen_height, template_y_max)
 
-    renderer = TemplateRenderer(SCREEN_WIDTH, SCREEN_HEIGHT)
+    renderer = TemplateRenderer(rmc_config.screen_width, rmc_config.screen_height)
     # Set the actual bounds for tiling
     renderer.render_x_min = template_x_min
     renderer.render_x_max = template_x_max
     renderer.render_y_min = template_y_min
     renderer.render_y_max = template_y_max
     # Apply x_offset to align template coords (left-origin) with content coords (center-origin)
-    renderer.x_offset = -SCREEN_WIDTH / 2
-    return renderer.render_to_svg_group(template_data, SCALE, TEMPLATE_LINE_COLOUR)
+    renderer.x_offset = -rmc_config.screen_width / 2
+    return renderer.render_to_svg_group(template_data, rmc_config.scale, TEMPLATE_LINE_COLOUR)
 
 
 def rm_to_svg_with_template(
