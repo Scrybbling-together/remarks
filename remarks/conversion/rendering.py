@@ -17,8 +17,7 @@ from rmc.exporters.svg import (
     SVG_HEADER, draw_text, draw_group,
     rmc_config,
 )
-from rmc.exporters.pdf import chrome_svg_to_pdf
-from cairosvg import svg2pdf
+from rmc.exporters.pdf import _svg_to_pdf
 
 from .template import TemplateRenderer
 
@@ -60,17 +59,9 @@ def render_page_with_template(
             with open(output_path, 'w') as f:
                 f.write(svg_content)
         elif output_format == "pdf":
-            # Write SVG to temp file and convert to PDF
-            with tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False) as f:
-                f.write(svg_content)
-                temp_svg = f.name
-            try:
-                if use_chrome:
-                    chrome_svg_to_pdf(temp_svg, str(output_path), chrome_loc)
-                else:
-                    svg2pdf(url=temp_svg, write_to=str(output_path), dpi=72)
-            finally:
-                Path(temp_svg).unlink(missing_ok=True)
+            # Convert SVG to pdf
+            _svg_to_pdf(svg_content, output_path, use_chrome=use_chrome,
+                       chrome_loc=chrome_loc)
         else:
             _logger.error(f"Unknown output format: {output_format}")
             return False
@@ -229,15 +220,6 @@ def rm_to_pdf_with_template(
 
     svg_content = render_tree_with_template(tree, template_data)
 
-    # Write SVG to temp file and convert to PDF
-    with tempfile.NamedTemporaryFile(suffix=".svg", mode="w", delete=False) as f:
-        f.write(svg_content)
-        temp_svg = f.name
-
-    try:
-        if use_chrome:
-            chrome_svg_to_pdf(temp_svg, str(pdf_path), chrome_loc)
-        else:
-            svg2pdf(url=temp_svg, write_to=str(pdf_path), dpi=72)
-    finally:
-        Path(temp_svg).unlink(missing_ok=True)
+    # Convert SVG to pdf
+    _svg_to_pdf(svg_content, str(pdf_path), use_chrome=use_chrome,
+               chrome_loc=chrome_loc)
