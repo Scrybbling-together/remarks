@@ -1,0 +1,57 @@
+{
+    "name": "Margin medium",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Lines"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": 160},
+        {"magicOffsetX": 478},
+        {"magicOffsetY": 177.8},
+        {"offsetY": "templateWidth > mobileMaxWidth ? magicOffsetY : mobileOffsetY"}
+    ],
+    "items": [
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "templateWidth / 2 - templateHeight / 2",
+                "y": "offsetY",
+                "width": "templateHeight",
+                "height": 78.7
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "templateWidth / 2 - templateHeight / 2",
+                "y": 0,
+                "width": "templateHeight",
+                "height": 78.7
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", "magicOffsetX", 0, "L", "magicOffsetX", "parentHeight"
+                    ]
+                }
+            ]
+        }
+    ]
+}

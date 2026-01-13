@@ -1,0 +1,74 @@
+{
+    "name": "Checklist",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Planners"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileTextOffsetX": "templateWidth - 212"},
+        {"mobileBoxOffsetX": 125},
+        {"mobileBoxOffsetY": 257},
+        {"mobileLineOffsetX": 205},
+        {"mobileLineOffsetY": 179},
+        {"mobileTextOffsetY": 138},
+
+        {"boxSize": 55},
+        {"magicTextOffsetY": 152},
+        {"magicLineOffsetY": 192},
+        {"boxesOffsetY": "templateWidth > mobileMaxWidth ? 270 : mobileBoxOffsetY"},
+        {"magicTextOffsetX": "templateWidth / 2 + 522"},
+        {"textOffsetX": "templateWidth > mobileMaxWidth ? magicTextOffsetX : mobileTextOffsetX"},
+        {"textOffsetY": "templateWidth > mobileMaxWidth ? magicTextOffsetY : mobileTextOffsetY"},
+        {"singleLineOffsetY": "templateWidth > mobileMaxWidth ? magicLineOffsetY : mobileLineOffsetY"},
+
+        {"magicBoxOffsetX": 125},
+        {"offsetX": "templateWidth > mobileMaxWidth ? magicBoxOffsetX : mobileBoxOffsetX"},
+        {"magicLineOffsetX": "templateWidth / 2 - templateHeight / 2 + 445"},
+        {"lineOffsetX": "templateWidth > mobileMaxWidth ? magicLineOffsetX : mobileLineOffsetX"}
+    ],
+    "items": [
+        {
+            "type": "text",
+            "text": "Deadline",
+            "fontSize": 24,
+            "position": {
+                "x": "textOffsetX",
+                "y": "textOffsetY"
+            }
+        },
+        {
+            "type": "path",
+            "data": [
+                "M", "-textOffsetX", "singleLineOffsetY", "L", "templateHeight", "singleLineOffsetY"
+            ]
+        },
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "lineOffsetX",
+                "y": "boxesOffsetY",
+                "width": "templateHeight",
+                "height": 97.4
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", "-offsetX", 0,
+                        "L", "boxSize - offsetX", 0,
+                        "L", "boxSize - offsetX", "boxSize",
+                        "L", "-offsetX", "boxSize",
+                        "Z",
+
+                        "M", 0, "boxSize", "L", "templateHeight", "boxSize"
+                    ]
+                }
+            ]
+        }
+    ]
+}

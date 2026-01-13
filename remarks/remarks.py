@@ -7,13 +7,15 @@ import zipfile
 
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box
-from rmc.exporters.svg import rm_to_svg, xx, yy
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, rmc_config
+from rmc.exporters.svg import rm_to_svg
 
 from .Document import Document
 from .conversion.parsing import (
     parse_rm_file,
     read_rm_file_version, )
+from .conversion.template import load_template_by_name, get_bundled_templates_dir
+from .conversion.rendering import rm_to_pdf_with_template
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .output.PdfFile import apply_smart_highlight, add_error_annotation
@@ -22,13 +24,15 @@ from .utils import (
     get_document_filetype,
     get_visible_name,
     get_ui_path,
+    get_page_template,
 )
 from .warnings import scrybble_warning_only_v6_supported
 
 
-
 def run_remarks(
-        input_dir: pathlib.Path, output_dir: pathlib.Path
+        input_dir: pathlib.Path, output_dir: pathlib.Path,
+        templates_dir: pathlib.Path = None,
+        no_chrome: bool = False, chrome_loc: str = None
 ):
     if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
@@ -67,7 +71,9 @@ def run_remarks(
             in_device_dir = get_ui_path(metadata_path)
             relative_doc_path = pathlib.Path(f"{in_device_dir}/{doc_name}")
 
-            process_document(metadata_path, relative_doc_path, output_dir)
+            process_document(metadata_path, relative_doc_path, output_dir,
+                             templates_dir=templates_dir,
+                             use_chrome=not no_chrome, chrome_loc=chrome_loc)
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -81,7 +87,10 @@ def run_remarks(
 def process_document(
         metadata_path: pathlib.Path,
         relative_doc_path: pathlib.Path,
-        output_dir: pathlib.Path
+        output_dir: pathlib.Path,
+        templates_dir: pathlib.Path = None,
+        use_chrome: bool = True,
+        chrome_loc: str = None
 ):
 
     document = Document(metadata_path)
@@ -112,8 +121,19 @@ def process_document(
             # This offset is used for smart highlights
             highlights_x_translation = 0
             try:
-                # convert the pdf
-                rm_to_pdf(rm_annotation_file, temp_pdf.name)
+                # Load template for this page
+                # Use provided templates_dir or fall back to bundled templates
+                effective_templates_dir = templates_dir if templates_dir is not None else get_bundled_templates_dir()
+                template_data = None
+                template_name = get_page_template(metadata_path, page_uuid)
+                if template_name:
+                    template_data = load_template_by_name(effective_templates_dir, template_name)
+                    if template_data:
+                        logging.debug(f'Loaded template "{template_name}", from: {effective_templates_dir}')
+
+                # convert the pdf (with template if available)
+                rm_to_pdf_with_template(rm_annotation_file, temp_pdf.name, template_data,
+                                        use_chrome=use_chrome, chrome_loc=chrome_loc)
 
                 svg_pdf = fitz.open(temp_pdf.name)
 
@@ -127,7 +147,7 @@ def process_document(
                     # find the (top, right) coordinates of the svg
                     anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
                     x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
-                    x_shift, y_shift, w_svg, h_svg = xx(x_min), yy(y_min), xx(x_max - x_min + 1), yy(y_max - y_min + 1)
+                    x_shift, y_shift, w_svg, h_svg = rmc_config.xx(x_min), rmc_config.yy(y_min), rmc_config.xx(x_max - x_min + 1), rmc_config.yy(y_max - y_min + 1)
 
                     # compute the width/height of a blank page that can contain both svg and background pdf
                     width, height = max(w_svg, w_bg), max(h_svg, h_bg)

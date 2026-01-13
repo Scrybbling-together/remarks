@@ -1,0 +1,70 @@
+{
+    "name": "One storyboard 2",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative"],
+    "orientation": "landscape",
+    "supportedDevices": ["rm2", "rmPP"],
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": 120},
+        {"mobileItemWidth": "templateWidth / 2 - 150"},
+        {"horizontalSpacing": "templateHeight > mobileMaxWidth ? 73 : 60"},
+        {"boxWidth": "templateHeight > mobileMaxWidth ? 766 : mobileItemWidth"},
+        {"boxHeight": "templateHeight > mobileMaxWidth ? 1200 : 640"},
+        {"offsetY": "templateHeight > mobileMaxWidth ? 105 : mobileOffsetY"},
+        {"lineWidth": "templateHeight > mobileMaxWidth ? 889 : mobileItemWidth"},
+        {"lineSpacing": 80},
+        {"fullWidth": "boxWidth + horizontalSpacing + lineWidth"},
+        {"offsetX": "templateWidth / 2 - fullWidth / 2"},
+        {"rowCount": "templateHeight > mobileMaxWidth ? 16 : 9"},
+        {"groupHeight": "templateHeight > mobileMaxWidth ? 1404 : templateHeight"}
+    ],
+    "items": [
+         {
+            "type": "group",
+            "boundingBox": {
+                "x": "offsetX",
+                "y": "offsetY",
+                "width": "fullWidth",
+                "height": "groupHeight"
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0,
+                        "L", "boxWidth", 0,
+                        "L", "boxWidth", "boxHeight",
+                        "L", 0, "boxHeight",
+                        "Z"
+                    ]
+                },
+                {
+                    "type": "group",
+                    "boundingBox": {
+                        "x": "boxWidth + horizontalSpacing",
+                        "y": 0,
+                        "width": "lineWidth",
+                        "height": "lineSpacing"
+                    },
+                    "repeat": {
+                        "rows": "rowCount"
+                    },
+                    "children": [
+                        {
+                            "type": "path",
+                            "data": [
+                                "M", 0, 0, "L", "parentWidth", 0
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

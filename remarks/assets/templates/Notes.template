@@ -1,0 +1,70 @@
+{
+    "name": "Music",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Lines", "Creative"],
+    "orientation": "portrait",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": 120},
+        {"mobileLineWidth": 580},
+
+        {"firstGroupHeight": 215.3},
+        {"offsetY": "templateWidth > mobileMaxWidth ? 240.7 : mobileOffsetY"},
+        {"mobileSecondOffsetY": "mobileOffsetY + firstGroupHeight * 3"},
+        {"secondOffsetY": "templateWidth > mobileMaxWidth ? 885.3 : mobileSecondOffsetY"},
+        {"sideMargin": 39},
+        {"lineWidth": "templateWidth > mobileMaxWidth ? 1325 : mobileLineWidth"}
+    ],
+    "items": [
+         {
+            "type": "group",
+            "boundingBox": {
+                "x": "templateWidth / 2 - lineWidth / 2",
+                "y": "offsetY",
+                "width": "lineWidth",
+                "height": "firstGroupHeight"
+            },
+            "repeat": {
+                "rows": 3
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0,
+                        "M", 0, 26.8, "L", "parentWidth", 26.8,
+                        "M", 0, 53.5, "L", "parentWidth", 53.5,
+                        "M", 0, 80.3, "L", "parentWidth", 80.3,
+                        "M", 0, 107, "L", "parentWidth", 107
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": "templateWidth / 2 - lineWidth / 2",
+                "y": "secondOffsetY",
+                "width": "lineWidth",
+                "height": 214.2
+            },
+            "repeat": {
+                "rows": 4
+            },
+            "children": [
+                {
+                    "type": "path",
+                    "data": [
+                        "M", 0, 0, "L", "parentWidth", 0,
+                        "M", 0, 26.8, "L", "parentWidth", 26.8,
+                        "M", 0, 53.5, "L", "parentWidth", 53.5,
+                        "M", 0, 80.3, "L", "parentWidth", 80.3,
+                        "M", 0, 107, "L", "parentWidth", 107
+                    ]
+                }
+            ]
+        }
+    ]
+}

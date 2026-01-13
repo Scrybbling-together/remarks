@@ -1,0 +1,79 @@
+{
+    "name": "Two storyboards",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Creative"],
+    "orientation": "portrait",
+    "supportedDevices": ["rm2", "rmPP"],
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"boxWidth": "templateWidth > mobileMaxWidth ?  1161 : 580"},
+        {"boxHeight": 473},
+        {"offsetY": "templateWidth > mobileMaxWidth ? 74 : 120"},
+        {"lineSpacing": 57.5},
+        {"offsetX": "templateWidth / 2 - boxWidth / 2"},
+        {"lineOffsetY": "boxHeight + 53"},
+        {"groupHeight": 924}
+    ],
+    "items": [
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": 0,
+                "width": "templateWidth",
+                "height": "1872"
+            },
+            "repeat": {
+                "rows": "down"
+            },
+            "children": [
+                {
+                    "type": "group",
+                    "boundingBox": {
+                        "x": "offsetX",
+                        "y": "offsetY",
+                        "width": "boxWidth",
+                        "height": "groupHeight"
+                    },
+                    "repeat": {
+                        "rows": 2
+                    },
+                    "children": [
+                        {
+                            "type": "path",
+                            "data": [
+                                "M", 0, 0,
+                                "L", "boxWidth", 0,
+                                "L", "boxWidth", "boxHeight",
+                                "L", 0, "boxHeight",
+                                "Z"
+                            ]
+                        },
+                        {
+                            "type": "group",
+                            "boundingBox": {
+                                "x": 0,
+                                "y": 0,
+                                "width": "boxWidth",
+                                "height": "lineSpacing"
+                            },
+                            "repeat": {
+                                "rows": 6
+                            },
+                            "children": [
+                                {
+                                    "type": "path",
+                                    "data": [
+                                        "M", 0, "lineOffsetY", "L", "boxWidth", "lineOffsetY"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

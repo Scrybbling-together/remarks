@@ -1,0 +1,135 @@
+{
+    "name": "Weekplanner US",
+    "author": "reMarkable",
+    "templateVersion": "1.0.0",
+    "formatVersion": 1,
+    "categories": ["Planners"],
+    "orientation": "landscape",
+    "constants": [
+        {"mobileMaxWidth": 1000},
+        {"mobileOffsetY": "120 - 100 + 51"},
+        {"offsetY": "templateHeight > mobileMaxWidth ? 0 : mobileOffsetY"},
+        { "yHorLine1": 152 },
+        { "yHorLine2": 230 },
+        { "yHorLine3": 318 },
+        { "timeColumnWidth": 140 },
+        { "dayColumnWidth": "(templateWidth - timeColumnWidth) / 7"},
+        { "xVerLine1": "timeColumnWidth + 1 * dayColumnWidth" },
+        { "xVerLine2": "timeColumnWidth + 2 * dayColumnWidth" },
+        { "xVerLine3": "timeColumnWidth + 3 * dayColumnWidth" },
+        { "xVerLine4": "timeColumnWidth + 4 * dayColumnWidth" },
+        { "xVerLine5": "timeColumnWidth + 5 * dayColumnWidth" },
+        { "xVerLine6": "timeColumnWidth + 6 * dayColumnWidth" },
+        { "yDayLabel": "yHorLine2 + (yHorLine3 - yHorLine2) / 2 + 10" }
+    ],
+    "items": [
+        {
+            "type": "group",
+            "boundingBox": {
+                "x": 0,
+                "y": "offsetY",
+                "width": "templateWidth",
+                "height": "templateHeight"
+            },
+            "children": [
+                {
+                    "id": "lines",
+                    "type": "path",
+                    "data": [
+                        "M", 0, "yHorLine1", "L", "templateWidth", "yHorLine1",
+                        "M", 0, "yHorLine2", "L", "templateWidth", "yHorLine2",
+                        "M", 0, "yHorLine3", "L", "templateWidth", "yHorLine3",
+                        "M", "timeColumnWidth", "yHorLine2", "L", "timeColumnWidth", "templateHeight",
+                        "M", "xVerLine1", "yHorLine2", "L", "xVerLine1", "templateHeight",
+                        "M", "xVerLine1", "yHorLine2", "L", "xVerLine1", "templateHeight",
+                        "M", "xVerLine2", "yHorLine2", "L", "xVerLine2", "templateHeight",
+                        "M", "xVerLine3", "yHorLine2", "L", "xVerLine3", "templateHeight",
+                        "M", "xVerLine4", "yHorLine2", "L", "xVerLine4", "templateHeight",
+                        "M", "xVerLine5", "yHorLine2", "L", "xVerLine5", "templateHeight",
+                        "M", "xVerLine6", "yHorLine2", "L", "xVerLine6", "templateHeight"
+                    ]
+                }, {
+                    "type": "text",
+                    "text": "Week:",
+                    "fontSize": 72,
+                    "position": {
+                        "x": 580,
+                        "y": 100
+                    }
+                }, {
+                    "type": "text",
+                    "text": "WEEK NUMBER:",
+                    "fontSize": 24,
+                    "position": {
+                        "x": 42,
+                        "y": 200
+                    }
+                }, {
+                    "type": "text",
+                    "text": "TIME",
+                    "fontSize": 24,
+                    "position": {
+                        "x": "timeColumnWidth / 2 - textWidth / 2 - 4",
+                        "y": 282
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Sunday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "xVerLine1 - dayColumnWidth / 2 - textWidth / 2",
+                        "y": "yDayLabel"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Monday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "xVerLine1 + dayColumnWidth / 2 - textWidth / 2",
+                        "y": "yDayLabel"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Tuesday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "xVerLine2 + dayColumnWidth / 2 - textWidth / 2",
+                        "y": "yDayLabel"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Wednesday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "xVerLine3 + dayColumnWidth / 2 - textWidth / 2",
+                        "y": "yDayLabel"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Thursday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "xVerLine4 + dayColumnWidth / 2 - textWidth / 2",
+                        "y": "yDayLabel"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Friday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "xVerLine5 + dayColumnWidth / 2 - textWidth / 2",
+                        "y": "yDayLabel"
+                    }
+                }, {
+                    "type": "text",
+                    "text": "Saturday",
+                    "fontSize": 32,
+                    "position": {
+                        "x": "xVerLine6 + dayColumnWidth / 2 - textWidth / 2",
+                        "y": "yDayLabel"
+                    }
+                }
+            ]
+        }
+    ]
+}
