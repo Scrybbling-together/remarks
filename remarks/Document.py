@@ -34,23 +34,30 @@ class Document:
             pdf_src = fitz.open(f)
             source_pdf_page_count = pdf_src.page_count
 
+            # Track how many pages we've added so we insert at correct positions
+            pages_added = 0
             for i, page_idx in enumerate(self.pages_map):
                 if is_inserted_page(page_idx):
                     # This is when a blank/notebook page is inserted.
                     # These can have templates of course
+
+                    # Make sure we don't try and add a page beyond the end of the pdf
+                    insert_pos = min(i, source_pdf_page_count + pages_added)
                     pdf_src.new_page(
                         width=REMARKABLE_DOCUMENT.to_mm().to_mu().width,
                         height=REMARKABLE_DOCUMENT.to_mm().to_mu().height,
-                        pno=i,
+                        pno=insert_pos,
                     )
-                elif is_duplicate_page(page_idx) and i >= source_pdf_page_count:
+                    pages_added += 1
+                elif is_duplicate_page(page_idx) and i >= source_pdf_page_count + pages_added:
                     # When you duplicate a page on the reMarkable in the case of a PDF
                     # You need to find the page in the source PDF and copy it
-                    pdf_src.fullcopy_page(pno=page_idx)
+                    if page_idx < source_pdf_page_count:
+                        pdf_src.fullcopy_page(pno=page_idx)
+                        pages_added += 1
+                    # else: invalid redir value (points beyond source PDF), skip it
                 else:
-                    # Sometimes a page is technically marked as a duplicate, but it is already in the source PDF.
-                    # That is why there is an "and i >= source_pdf_page_count" check above.
-                    # print(f"Doing nothing, page {i} already exists in source document")
+                    # Page already exists in source PDF, nothing to do
                     pass
 
 
