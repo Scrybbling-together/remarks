@@ -106,6 +106,9 @@ def construct_redirection_map(content: dict) -> List[int]:
     redirection_map = []
     if "cPages" in content:
         for i, page in enumerate(content['cPages']['pages']):
+            # Skip deleted pages to stay in sync with pages_list
+            if page.get("deleted", {"value": 0})["value"] == 1:
+                continue
             if "redir" in page:
                 redirection_map.append(page['redir']['value'])
             else:
