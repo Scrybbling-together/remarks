@@ -457,6 +457,27 @@ def rotated_270_document():
     )
 
 
+@pytest.fixture
+def orphaned_rm_file_document():
+    return NotebookMetadata(
+        description="A PDF document with an orphaned .rm file (page deleted but annotation file remains on disk)",
+        notebook_name="On computable numbers",
+        rmn_source="tests/in/orphaned rm file.rmn",
+        notebook_type=ReMarkableNotebookType.PDF,
+        pdf_pages=36,
+        pages=[
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+            ),
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=1,
+            )
+        ]
+    )
+
+
 all_notebooks = [
     "markdown_tags_document",
     "gosper_notebook",
@@ -474,4 +495,5 @@ all_notebooks = [
     "rotated_90_document",
     "rotated_180_document",
     "rotated_270_document",
+    "orphaned_rm_file_document",
 ]

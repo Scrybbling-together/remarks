@@ -105,6 +105,10 @@ class Document:
         )
 
         for page_uuid in page_uuids:
+            if page_uuid not in self.pages_list:
+                # Orphaned .rm file (e.g. page was deleted but file remains)
+                continue
+
             rm_annotation_file = None
 
             page_idx = self.pages_list.index(f"{page_uuid}")
