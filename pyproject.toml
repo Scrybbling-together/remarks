@@ -25,7 +25,7 @@ markupsafe = "<3.0.3"
 parsita = "^2.1.1"
 numpy = "^2.2.1"
 flask = "^3.1.0"
-rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "f260fea9f80d85d0e72db7f32746424e25fdd7ec" }
+rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "50e7ec9524af088ece67a6ba33281bc536c8f10b" }
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
 
