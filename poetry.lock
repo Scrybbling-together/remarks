@@ -974,8 +974,8 @@ rmscene = {git = "https://github.com/scrybbling-together/rmscene.git", branch = 
 [package.source]
 type = "git"
 url = "https://github.com/scrybbling-together/rmc.git"
-reference = "f260fea9f80d85d0e72db7f32746424e25fdd7ec"
-resolved_reference = "f260fea9f80d85d0e72db7f32746424e25fdd7ec"
+reference = "50e7ec9524af088ece67a6ba33281bc536c8f10b"
+resolved_reference = "50e7ec9524af088ece67a6ba33281bc536c8f10b"
 
 [[package]]
 name = "rmscene"
@@ -1169,4 +1169,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "455a58888c9d4ccc7905074d0a5f9bd219f36327ee793b1d2c9df87e62b6c065"
+content-hash = "18912a3dcd08e4bab7ff48599cdea4484b6391d9e3ad8c6732f35fe2485ab50a"
