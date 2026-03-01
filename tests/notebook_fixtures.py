@@ -461,7 +461,7 @@ def rotated_270_document():
 def orphaned_rm_file_document():
     return NotebookMetadata(
         description="A PDF document with an orphaned .rm file (page deleted but annotation file remains on disk)",
-        notebook_name="On computable numbers",
+        notebook_name="On computable numbers - orphaned rm",
         rmn_source="tests/in/orphaned rm file.rmn",
         notebook_type=ReMarkableNotebookType.PDF,
         pdf_pages=36,
