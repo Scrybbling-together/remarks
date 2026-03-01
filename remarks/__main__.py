@@ -3,6 +3,7 @@ import logging
 import pathlib
 
 from remarks import run_remarks
+from rmc.exporters.svg import DEVICE_PROFILES
 
 __prog_name__ = "remarks"
 __version__ = "0.3.1"
@@ -40,12 +41,19 @@ def main():
         action="help",
         help="Show this help message",
     )
+    parser.add_argument(
+        "--device",
+        choices=list(DEVICE_PROFILES.keys()),
+        help="Device type (overrides auto-detection)",
+        metavar="DEVICE",
+    )
 
     args = parser.parse_args()
     args_dict = vars(args)
 
     input_dir = pathlib.Path(args_dict.pop("input_dir"))
     output_dir = pathlib.Path(args_dict.pop("output_dir"))
+    device = args_dict.pop("device")
 
     log_level = args_dict.pop("log_level")
     logging.basicConfig(
@@ -59,7 +67,7 @@ def main():
     if not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    run_remarks(input_dir, output_dir)
+    run_remarks(input_dir, output_dir, device=device)
 
 
 if __name__ == "__main__":

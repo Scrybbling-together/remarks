@@ -7,8 +7,11 @@ import zipfile
 
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box
-from rmc.exporters.svg import rm_to_svg, xx, yy
+import rmc.exporters.svg as svg_exporter
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device, set_dimensions_for_pdf, rmc_config
+from rmc.exporters.svg import rm_to_svg
+
+import rmc
 
 from .Document import Document
 from .conversion.parsing import (
@@ -28,7 +31,8 @@ from .warnings import scrybble_warning_only_v6_supported
 
 
 def run_remarks(
-        input_dir: pathlib.Path, output_dir: pathlib.Path
+        input_dir: pathlib.Path, output_dir: pathlib.Path,
+        device: str = None
 ):
     if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
@@ -67,7 +71,8 @@ def run_remarks(
             in_device_dir = get_ui_path(metadata_path)
             relative_doc_path = pathlib.Path(f"{in_device_dir}/{doc_name}")
 
-            process_document(metadata_path, relative_doc_path, output_dir)
+            process_document(metadata_path, relative_doc_path, output_dir,
+                             device=device)
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -81,7 +86,8 @@ def run_remarks(
 def process_document(
         metadata_path: pathlib.Path,
         relative_doc_path: pathlib.Path,
-        output_dir: pathlib.Path
+        output_dir: pathlib.Path,
+        device: str = None
 ):
 
     document = Document(metadata_path)
@@ -106,28 +112,54 @@ def process_document(
         rm_file_version = read_rm_file_version(rm_annotation_file)
 
         if rm_file_version == ReMarkableAnnotationsFileHeaderVersion.V6:
+            # Get PDF page dimensions BEFORE parsing to ensure correct SCALE is used
+            page_rotation = page.rotation
+            page.set_rotation(0)
+            w_bg, h_bg = page.cropbox.width, page.cropbox.height
+            if int(page_rotation) in [90, 270]:
+                w_bg, h_bg = h_bg, w_bg
+            page.set_rotation(page_rotation)  # Restore rotation
+
+            # Set SVG dimensions: use PDF dimensions if there's backing content,
+            # otherwise use device setting for notebooks
+            has_backing_pdf = page.get_contents()
+            if has_backing_pdf:
+                logging.info(f"Setting page dimensions based on pdf: {round(w_bg,2)} x {round(h_bg,2)}")
+                set_dimensions_for_pdf(w_bg, h_bg)
+            elif device:
+                logging.info(f"Setting page dimensions based on device: {device}")
+                set_device(device)
+            else:
+                logging.warning(f"Unknown device and no backing pdf: setting page size to RMPP (if this is incorrect, specify device with --device)")
+                set_device('RMPP')
+
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
             temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
 
             # This offset is used for smart highlights
             highlights_x_translation = 0
             try:
+
                 # convert the pdf
                 rm_to_pdf(rm_annotation_file, temp_pdf.name)
 
                 svg_pdf = fitz.open(temp_pdf.name)
 
                 # if the background page is not empty, need to merge svg on top of background page
-                if page.get_contents():
-                    page_rotation = page.rotation
-                    page.set_rotation(0)
-                    w_bg, h_bg = page.cropbox.width, page.cropbox.height
-                    if int(page_rotation) in [90, 270]:
-                        w_bg, h_bg = h_bg, w_bg
+                if has_backing_pdf:
+                    # w_bg, h_bg already calculated above
                     # find the (top, right) coordinates of the svg
                     anchor_pos = build_anchor_pos(ann_data["scene_tree"].root_text)
-                    x_min, x_max, y_min, y_max = get_bounding_box(ann_data["scene_tree"].root, anchor_pos)
-                    x_shift, y_shift, w_svg, h_svg = xx(x_min), yy(y_min), xx(x_max - x_min + 1), yy(y_max - y_min + 1)
+                    # Convert PDF dimensions to screen coordinates for bounding box default
+                    # PDF uses points (72 DPI), screen uses device DPI; SCALE = 72/DPI
+                    # reMarkable uses center-top origin: x from -w/2 to w/2, y from 0 to h
+                    w_bg_screen = w_bg / rmc_config.scale
+                    h_bg_screen = h_bg / rmc_config.scale
+                    pdf_default_bounds = (-w_bg_screen / 2, w_bg_screen / 2, 0, h_bg_screen)
+                    x_min, x_max, y_min, y_max = get_bounding_box(
+                        ann_data["scene_tree"].root, anchor_pos, default=pdf_default_bounds
+                    )
+                    x_shift, y_shift, w_svg, h_svg = rmc_config.xx(x_min), rmc_config.yy(y_min), rmc_config.xx(x_max - x_min + 1), rmc_config.yy(y_max - y_min + 1)
 
                     # compute the width/height of a blank page that can contain both svg and background pdf
                     width, height = max(w_svg, w_bg), max(h_svg, h_bg)

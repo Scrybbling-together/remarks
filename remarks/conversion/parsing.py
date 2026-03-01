@@ -3,7 +3,7 @@ import struct
 from dataclasses import dataclass
 from typing import List, TypedDict, Tuple
 
-from rmc.exporters.svg import X_SHIFT, xx, yy
+from rmc.exporters.svg import rmc_config
 from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock
 from rmscene.scene_items import Line, GlyphRange, Rectangle
 from rmscene.text import TextDocument
@@ -71,10 +71,10 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
                 if isinstance(el, GlyphRange):
                     translated_rectangles = [
                         Rectangle(
-                            x=xx(rectangle.x),
-                            y=yy(rectangle.y),
-                            w=xx(rectangle.w),
-                            h=yy(rectangle.h)
+                            x=rmc_config.xx(rectangle.x),
+                            y=rmc_config.yy(rectangle.y),
+                            w=rmc_config.xx(rectangle.w),
+                            h=rmc_config.yy(rectangle.h)
                         ) for rectangle in el.rectangles]
                     # sort by reading order
                     translated_rectangles.sort(key=lambda h: (h.y, h.x))
