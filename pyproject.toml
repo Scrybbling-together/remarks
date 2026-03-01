@@ -13,6 +13,7 @@ classifiers = [
     "Topic :: Multimedia :: Graphics :: Graphics Conversion",
     "Topic :: Utilities"
 ]
+include = ["remarks/assets/templates/*.template"]
 
 # https://python-poetry.org/docs/dependency-specification/
 [tool.poetry.dependencies]
@@ -20,10 +21,11 @@ python = "^3.12"
 PyMuPDF = "^1.23.5"
 rmscene = { git = "https://github.com/scrybbling-together/rmscene.git", branch = "main" }
 pyyaml = "^6.0.1"
+markupsafe = "<3.0.3"
 parsita = "^2.1.1"
 numpy = "^2.2.1"
 flask = "^3.1.0"
-rmc = { git = "https://github.com/scrybbling-together/rmc.git", branch = "main" }
+rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "f260fea9f80d85d0e72db7f32746424e25fdd7ec" }
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
 
