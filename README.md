@@ -15,6 +15,37 @@ Remarks is designed and developed for Linux. There are no Remarks binaries.
 
 If you don't want to use Nix, you can use [poetry](https://python-poetry.org/) and install the dependencies manually.
 
+## Optional: Use reMarkable's fonts and templates for better output
+
+Remarks works out of the box, but output quality improves with reMarkable's own templates and custom fonts.
+
+### Templates
+
+Copy templates from your reMarkable device:
+
+```sh
+scp -r root@<DEVICE_IP>:/usr/share/remarkable/templates/ templates/
+```
+
+Then pass `--templates-dir templates/` to remarks, or set the `REMARKS_TEMPLATES_DIR` environment variable.
+
+### Fonts
+
+Download reMarkable's custom fonts:
+
+```sh
+./download_remarkable_fonts.sh
+```
+
+This downloads the following files into `fonts/`:
+- `reMarkableSans.woff2`
+- `reMarkableSerif.woff2`
+- `reMarkableSerifItalic.woff2`
+
+Then pass `--fonts-dir fonts/` to remarks, or set the `REMARKS_FONTS_DIR` environment variable.
+
+Without these fonts, remarks uses bundled open-source alternatives (Noto Sans, EB Garamond).
+
 ## Functionality
 
 - Convert a ReMarkable notebook to PDF

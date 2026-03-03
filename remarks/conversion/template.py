@@ -633,11 +633,6 @@ class TemplateRenderer:
         )
 
 
-def get_bundled_templates_dir() -> Path:
-    """Return the path to bundled template files."""
-    return Path(__file__).parent.parent / "assets" / "templates"
-
-
 def load_template(template_path: Path) -> Optional[Dict[str, Any]]:
     """
     Load a template file and return parsed JSON data.
