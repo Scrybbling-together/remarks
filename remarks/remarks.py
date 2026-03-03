@@ -8,7 +8,7 @@ import zipfile
 import fitz  # PyMuPDF
 from rmc.exporters.pdf import rm_to_pdf
 import rmc.exporters.svg as svg_exporter
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device, set_dimensions_for_pdf, rmc_config
+from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device, set_dimensions_for_pdf, set_fonts_dir, rmc_config
 from rmc.exporters.svg import rm_to_svg
 
 import rmc
@@ -17,6 +17,8 @@ from .Document import Document
 from .conversion.parsing import (
     parse_rm_file,
     read_rm_file_version, )
+from .conversion.template import load_template_by_name
+from .conversion.rendering import rm_to_pdf_with_template
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .output.PdfFile import apply_smart_highlight, add_error_annotation
@@ -25,15 +27,34 @@ from .utils import (
     get_document_filetype,
     get_visible_name,
     get_ui_path,
+    get_page_template,
 )
 from .warnings import scrybble_warning_only_v6_supported
 
 
-
 def run_remarks(
         input_dir: pathlib.Path, output_dir: pathlib.Path,
-        device: str = None
+        device: str = None,
+        templates_dir: pathlib.Path = None,
+        fonts_dir: pathlib.Path = None,
+        no_chrome: bool = False, chrome_loc: str = None
 ):
+    # Resolve fonts_dir: explicit arg > REMARKS_FONTS_DIR env var > None (use bundled fallbacks)
+    if fonts_dir is None:
+        env_fonts_dir = os.environ.get("REMARKS_FONTS_DIR")
+        if env_fonts_dir:
+            fonts_dir = pathlib.Path(env_fonts_dir)
+    if fonts_dir is not None:
+        set_fonts_dir(fonts_dir)
+        logging.info(f"Using fonts directory: {fonts_dir}")
+
+    # Resolve templates_dir: explicit arg > REMARKS_TEMPLATES_DIR env var > None (no templates)
+    if templates_dir is None:
+        env_templates_dir = os.environ.get("REMARKS_TEMPLATES_DIR")
+        if env_templates_dir:
+            templates_dir = pathlib.Path(env_templates_dir)
+            logging.info(f"Using templates directory from env: {templates_dir}")
+
     if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp()
         with zipfile.ZipFile(input_dir, 'r') as zip_ref:
@@ -72,7 +93,8 @@ def run_remarks(
             relative_doc_path = pathlib.Path(f"{in_device_dir}/{doc_name}")
 
             process_document(metadata_path, relative_doc_path, output_dir,
-                             device=device)
+                             device=device, templates_dir=templates_dir,
+                             use_chrome=not no_chrome, chrome_loc=chrome_loc)
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -87,7 +109,10 @@ def process_document(
         metadata_path: pathlib.Path,
         relative_doc_path: pathlib.Path,
         output_dir: pathlib.Path,
-        device: str = None
+        device: str = None,
+        templates_dir: pathlib.Path = None,
+        use_chrome: bool = True,
+        chrome_loc: str = None
 ):
 
     document = Document(metadata_path)
@@ -139,9 +164,19 @@ def process_document(
             # This offset is used for smart highlights
             highlights_x_translation = 0
             try:
+                # Load template for this page
+                template_data = None
+                template_name = get_page_template(metadata_path, page_uuid)
+                if template_name and templates_dir is not None:
+                    template_data = load_template_by_name(templates_dir, template_name)
+                    if template_data:
+                        logging.debug(f'Loaded template "{template_name}", from: {templates_dir}')
+                elif template_name:
+                    logging.debug(f'Template "{template_name}" requested but no templates directory provided')
 
-                # convert the pdf
-                rm_to_pdf(rm_annotation_file, temp_pdf.name)
+                # convert the pdf (with template if available)
+                rm_to_pdf_with_template(rm_annotation_file, temp_pdf.name, template_data,
+                                        use_chrome=use_chrome, chrome_loc=chrome_loc)
 
                 svg_pdf = fitz.open(temp_pdf.name)
 
