@@ -9,6 +9,12 @@ import sentry_sdk
 
 app = Flask("Remarks http server")
 
+# Bind address is configurable so self-hosters can change the port / run multiple
+# instances without editing source. Defaults match the previous hardcoded values.
+BIND_HOST = os.getenv("REMARKS_BIND_HOST", "0.0.0.0")
+BIND_PORT = os.getenv("REMARKS_BIND_PORT", "5000")
+
+
 def main_prod():
     """Production entry point using Gunicorn"""
     import gunicorn.app.wsgiapp as wsgi
@@ -23,7 +29,7 @@ def main_prod():
     # Gunicorn configuration
     sys.argv = [
         'gunicorn',
-        '--bind', '0.0.0.0:5000',
+        '--bind', f'{BIND_HOST}:{BIND_PORT}',
         '--workers', '2',
         '--worker-class', 'sync',
         '--timeout', '300',  # 5 minutes for file processing
@@ -63,7 +69,7 @@ def health():
     return {"status": "healthy"}, 200
 
 def main():
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host=BIND_HOST, port=int(BIND_PORT))
 
 if __name__ == "__main__":
     main()
