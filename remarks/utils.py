@@ -124,9 +124,8 @@ def is_duplicate_page(idx: int) -> bool:
 
 def get_document_tags(path: str):
     content = read_meta_file(path, suffix=".content")
-    if "tags" in content:
-        for tag in content['tags']:
-            yield sanitize_obsidian_tag(tag['name'])
+    for tag in content.get("tags") or []:
+        yield sanitize_obsidian_tag(tag['name'])
 
 def sanitize_obsidian_tag(tag: str) -> str:
     """
@@ -196,7 +195,7 @@ def get_pages_data(path: str) -> Tuple[List[str], List[int]]:
     if "cPages" in content:
         return [page["id"] for page in content["cPages"]["pages"] if not page.get("deleted", {
             "value": 0})["value"] == 1], redirection_map
-    return content["pages"], redirection_map
+    return content.get("pages") or [], redirection_map
 
 
 def list_ann_rm_files(path):
