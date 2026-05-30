@@ -1,7 +1,6 @@
 import logging
 import pathlib
 import os
-import tempfile
 
 from flask import Flask, request
 
@@ -9,26 +8,6 @@ import remarks
 import sentry_sdk
 
 app = Flask("Remarks http server")
-
-
-def _check_writable_tempdir():
-    """Fail fast with a clear message if the temp dir isn't writable.
-
-    The renderer writes temporary files for every conversion (notebook extraction,
-    SVG/PDF intermediates). In a hardened / read-only container without a writable
-    temp dir this otherwise fails deep inside processing with an opaque error.
-    Honors $REMARKS_TEMP_DIR / $TMPDIR (Python's tempfile already reads $TMPDIR).
-    """
-    tmp = os.getenv("REMARKS_TEMP_DIR") or tempfile.gettempdir()
-    try:
-        with tempfile.NamedTemporaryFile(dir=tmp, delete=True):
-            pass
-    except OSError as e:
-        logging.error(
-            "Temp directory %r is not writable: %s. Mount a writable volume there "
-            "or set REMARKS_TEMP_DIR / TMPDIR to a writable path.", tmp, e
-        )
-        raise SystemExit(1)
 
 
 def main_prod():
@@ -41,8 +20,6 @@ def main_prod():
     else:
         sentry_sdk.init(dsn=sentry_dsn, send_default_pii=True)
         logging.info("Initialized Sentry")
-
-    _check_writable_tempdir()
 
     # Gunicorn configuration
     sys.argv = [

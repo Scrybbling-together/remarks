@@ -25,13 +25,11 @@ from .utils import (
     get_document_filetype,
     get_visible_name,
     get_ui_path,
+    get_writable_tempdir,
 )
 from .warnings import scrybble_warning_only_v6_supported
 
-# Optional override for where temporary files are written. Defaults to None, i.e. the
-# system temp dir (which itself honors $TMPDIR). Lets self-hosters point temp at a
-# writable volume when running in a hardened / read-only-root container.
-REMARKS_TEMP_DIR = os.getenv("REMARKS_TEMP_DIR") or None
+REMARKS_TEMP_DIR = get_writable_tempdir()
 
 
 def run_remarks(

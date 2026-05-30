@@ -1,6 +1,8 @@
 import json
+import os
 import pathlib
 import re
+import tempfile
 from functools import cache
 from typing import Tuple, List
 
@@ -9,6 +11,19 @@ RM_WIDTH = 1404
 RM_HEIGHT = 1872
 
 INSERTED_PAGE = -1
+
+
+def get_writable_tempdir() -> str:
+    tmp = os.getenv("REMARKS_TEMP_DIR") or tempfile.gettempdir()
+    try:
+        with tempfile.NamedTemporaryFile(dir=tmp, delete=True):
+            pass
+    except OSError as e:
+        raise SystemExit(
+            f"Temp directory {tmp!r} is not writable: {e}. "
+            "Set REMARKS_TEMP_DIR or TMPDIR to a writable path."
+        )
+    return tmp
 
 
 @cache
