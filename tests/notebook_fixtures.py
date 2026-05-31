@@ -478,6 +478,18 @@ def orphaned_rm_file_document():
     )
 
 
+@pytest.fixture
+def unannotated_pdf_document():
+    return NotebookMetadata(
+        description="A PDF added to the device but never annotated; its .content has null tags and null pages",
+        notebook_name="unannotated pdf",
+        rmn_source="tests/in/unannotated pdf.rmdoc",
+        notebook_type=ReMarkableNotebookType.PDF,
+        pdf_pages=1,
+        pages=[]
+    )
+
+
 all_notebooks = [
     "markdown_tags_document",
     "gosper_notebook",
@@ -496,4 +508,5 @@ all_notebooks = [
     "rotated_180_document",
     "rotated_270_document",
     "orphaned_rm_file_document",
+    "unannotated_pdf_document",
 ]
