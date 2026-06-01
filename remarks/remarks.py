@@ -25,9 +25,11 @@ from .utils import (
     get_document_filetype,
     get_visible_name,
     get_ui_path,
+    get_writable_tempdir,
 )
 from .warnings import scrybble_warning_only_v6_supported
 
+REMARKS_TEMP_DIR = get_writable_tempdir()
 
 
 def run_remarks(
@@ -35,7 +37,7 @@ def run_remarks(
         device: str = None
 ):
     if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
-        temp_dir = tempfile.mkdtemp()
+        temp_dir = tempfile.mkdtemp(dir=REMARKS_TEMP_DIR)
         with zipfile.ZipFile(input_dir, 'r') as zip_ref:
             zip_ref.extractall(temp_dir)
         input_dir = pathlib.Path(temp_dir)
@@ -134,7 +136,7 @@ def process_document(
                 set_device('RMPP')
 
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
-            temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False)
+            temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False, dir=REMARKS_TEMP_DIR)
 
             # This offset is used for smart highlights
             highlights_x_translation = 0

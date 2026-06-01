@@ -9,6 +9,7 @@ import sentry_sdk
 
 app = Flask("Remarks http server")
 
+
 def main_prod():
     """Production entry point using Gunicorn"""
     import gunicorn.app.wsgiapp as wsgi
