@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import pathlib
@@ -224,3 +225,6 @@ def process_document(
 
     output_obsidian_path = output_dir/f"{relative_doc_path}"
     obsidian_markdown.save(output_obsidian_path)
+
+    sidecar_path = output_dir/f"{relative_doc_path} _scrybble.json"
+    sidecar_path.write_text(json.dumps({"annotation_pages": len(document.rm_annotation_files)}))
