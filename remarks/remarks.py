@@ -147,26 +147,15 @@ def process_document(
 
         has_ann_hl = False
 
-        # Create a new PDF document to hold the page that will be annotated
         work_doc = fitz.open()
 
-        # Get document page dimensions and calculate what scale should be
-        # applied to fit it into the device (given the device's own dimensions)
-        if rm_annotation_file:
-            try:
-                dims = determine_document_dimensions(rm_annotation_file)
-            except ValueError:
-                dims = REMARKABLE_DOCUMENT
-        else:
-            dims = REMARKABLE_DOCUMENT
+        orig_rect = pdf_src[page_idx].rect
         ann_page = work_doc.new_page(
-            width=dims.width,
-            height=dims.height,
+            width=orig_rect.width,
+            height=orig_rect.height,
         )
-
-        pdf_src_page_rect = fitz.Rect(
-            0, 0, REMARKABLE_DOCUMENT.width, REMARKABLE_DOCUMENT.height
-        )
+        pdf_src_page_rect = fitz.Rect(0, 0, orig_rect.width, orig_rect.height)
+        ann_page._remarks_orig_w = orig_rect.width
 
         # This check is necessary because PyMuPDF doesn't let us
         # "show_pdf_page" from an empty (blank) page
@@ -197,16 +186,15 @@ def process_document(
             offset_y = 0
             is_ann_out_page = True
             obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document)
-            if version == "V6":
-                offset_x = RM_WIDTH / 2
-            if dims.height >= (RM_HEIGHT + 88 * 3):
-                offset_y = 3 * 88  # why 3 * text_offset? No clue, ask ReMarkable.
-            if abs(x_min) + abs(x_max) > 1872:
-                scale = RM_WIDTH / (max(x_max, 1872) - min(x_min, 0))
-                ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
-            else:
-                scale = RM_HEIGHT / (max(y_max, 2048) - min(y_min, 0))
-                ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
+            if version != "V6":
+                if orig_rect.height >= (RM_HEIGHT + 88 * 3):
+                    offset_y = 3 * 88
+                if abs(x_min) + abs(x_max) > 1872:
+                    scale = RM_WIDTH / (max(x_max, 1872) - min(x_min, 0))
+                    ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
+                else:
+                    scale = RM_HEIGHT / (max(y_max, 2048) - min(y_min, 0))
+                    ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
         if "highlights" not in ann_type and has_ann_hl:
             logging.info(
                 "- Found highlighted text on page #{page_idx} but `--ann_type` flag is set to `scribbles` only, so we won't bother with it"
