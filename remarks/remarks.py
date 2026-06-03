@@ -147,15 +147,18 @@ def process_document(
 
         has_ann_hl = False
 
+        # Create a new PDF document to hold the page that will be annotated
         work_doc = fitz.open()
 
-        orig_rect = pdf_src[page_idx].rect
+        # Get document page dimensions and calculate what scale should be
+        # applied to fit it into the device (given the device's own dimensions)
+        dims = pdf_src[page_idx].rect
         ann_page = work_doc.new_page(
-            width=orig_rect.width,
-            height=orig_rect.height,
+            width=dims.width,
+            height=dims.height,
         )
-        pdf_src_page_rect = fitz.Rect(0, 0, orig_rect.width, orig_rect.height)
-        ann_page._remarks_orig_w = orig_rect.width
+
+        pdf_src_page_rect = fitz.Rect(0, 0, dims.width, dims.height)
 
         # This check is necessary because PyMuPDF doesn't let us
         # "show_pdf_page" from an empty (blank) page
@@ -186,9 +189,13 @@ def process_document(
             offset_y = 0
             is_ann_out_page = True
             obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document)
-            if version != "V6":
-                if orig_rect.height >= (RM_HEIGHT + 88 * 3):
-                    offset_y = 3 * 88
+            if version == "V6":
+                scale = dims.width / RM_HEIGHT
+                offset_x = (RM_HEIGHT / 2) * scale
+                ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
+            else:
+                if dims.height >= (RM_HEIGHT + 88 * 3):
+                    offset_y = 3 * 88  # why 3 * text_offset? No clue, ask ReMarkable.
                 if abs(x_min) + abs(x_max) > 1872:
                     scale = RM_WIDTH / (max(x_max, 1872) - min(x_min, 0))
                     ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)

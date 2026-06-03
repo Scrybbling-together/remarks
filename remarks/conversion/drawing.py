@@ -133,36 +133,6 @@ def prepare_segments(data: TLayers):
     return segs
 
 
-RM_CANVAS_REF = 1872
-
-
-def _scale(page):
-    pdf_w = getattr(page, "_remarks_orig_w", page.rect.width)
-    return pdf_w / RM_CANVAS_REF
-
-
-def _scale_points(points, page):
-    s = _scale(page)
-    return [((p[0] + RM_CANVAS_REF / 2) * s, p[1] * s) for p in points]
-
-
-def _scale_rects(rects, page):
-    s = _scale(page)
-    out = []
-    for r in rects:
-        if hasattr(r, "__iter__"):
-            r = list(r)
-            out.append([
-                (r[0] + RM_CANVAS_REF / 2) * s,
-                r[1] * s,
-                (r[2] + RM_CANVAS_REF / 2) * s,
-                r[3] * s,
-            ])
-        else:
-            out.append(r)
-    return out
-
-
 def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
     segments = prepare_segments(data)
 
@@ -259,7 +229,7 @@ def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
             # a warning and carry on
             try:
                 # https://pymupdf.readthedocs.io/en/latest/recipes-annotations.html#how-to-add-and-modify-annotations
-                annot = page.add_highlight_annot(_scale_rects(seg_data["rects"], page))
+                annot = page.add_highlight_annot(seg_data["rects"])
 
                 try:
                     color_array = fitz.utils.getColor(
@@ -299,7 +269,7 @@ def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
                 batched_lines_per_tool[batch_key] = batch_points
 
             for seg_points in seg_data["points"]:
-                batch_points.append(_scale_points(seg_points, page))
+                batch_points.append(seg_points)
 
     # draw the batched lines
     for (stroke_width, opacity, color_code), points in batched_lines_per_tool.items():
