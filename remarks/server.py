@@ -9,11 +9,8 @@ import sentry_sdk
 
 app = Flask("Remarks http server")
 
-# Bind address is configurable so self-hosters can change the port / run multiple
-# instances without editing source. Defaults match the previous hardcoded values.
 BIND_HOST = os.getenv("REMARKS_BIND_HOST", "0.0.0.0")
 BIND_PORT = os.getenv("REMARKS_BIND_PORT", "5000")
-
 
 def main_prod():
     """Production entry point using Gunicorn"""

@@ -15,6 +15,28 @@ Remarks is designed and developed for Linux. There are no Remarks binaries.
 
 If you don't want to use Nix, you can use [poetry](https://python-poetry.org/) and install the dependencies manually.
 
+### Container image
+
+Remarks provides a nix flake for building docker images. There are two flavors, a python Flask-powered server for hosting purposes and a binary for CLI usage. The CLI container has the exact same API as the unbundled remarks python application.
+
+```sh
+# Render server (HTTP API on :5000):
+nix build .#dockerServer && docker load < result
+
+# One-shot CLI:
+nix build .#dockerBin && docker load < result
+```
+
+The server reads a few environment variables:
+
+| Variable             | Default            | Purpose                                              |
+| -------------------- | ------------------ | ---------------------------------------------------- |
+| `REMARKS_BIND_HOST`  | `0.0.0.0`          | Address gunicorn / the dev server binds to           |
+| `REMARKS_BIND_PORT`  | `5000`             | Port to listen on                                    |
+| `REMARKS_TEMP_DIR`   | system temp dir    | Where intermediate files are written (point at a writable volume in a read-only-root container) |
+
+`GET /health` returns `200` for container health checks.
+
 ## Functionality
 
 - Convert a ReMarkable notebook to PDF
