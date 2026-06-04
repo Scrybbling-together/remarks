@@ -72,7 +72,23 @@
         };
         dockerServer = pkgs.dockerTools.buildLayeredImage {
           name = "remarks-server";
-          config = { Entrypoint = [ "${remarksBin}/bin/remarks-server" ]; };
+          config = {
+            Entrypoint = [ "${remarksBin}/bin/remarks-server" ];
+            # Health check so `docker` / compose can gate on `service_healthy`.
+            # The image has no shell or curl, so use the python that is already
+            # in the closure to hit the /health route. Honors REMARKS_BIND_PORT.
+            # `s` = one second expressed in nanoseconds (Docker image-config format).
+            Healthcheck = let s = 1000000000; in {
+              Test = [
+                "CMD" "${pkgs.python312}/bin/python3" "-c"
+                "import os,urllib.request,sys; p=os.getenv('REMARKS_BIND_PORT','5000'); sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:%s/health' % p).getcode()==200 else 1)"
+              ];
+              Interval = 30 * s;
+              Timeout = 5 * s;
+              StartPeriod = 20 * s;
+              Retries = 3;
+            };
+          };
         };
       in {
         packages = {
