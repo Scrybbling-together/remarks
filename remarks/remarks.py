@@ -220,7 +220,7 @@ def process_document(
 
     output_pdf_path = output_dir/f"{relative_doc_path} _remarks.pdf"
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
-    rmc_pdf_src.save(output_pdf_path)
+    rmc_pdf_src.ez_save(output_pdf_path, garbage=4)
 
     output_obsidian_path = output_dir/f"{relative_doc_path}"
     obsidian_markdown.save(output_obsidian_path)
