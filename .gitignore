@@ -19,3 +19,4 @@ processing_log.db
 result
 
 .DS_Store
+.idea/
