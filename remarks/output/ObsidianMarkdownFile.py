@@ -5,9 +5,9 @@ from typing import List, Dict
 import yaml
 from jinja2 import Environment, FileSystemLoader
 from rmscene.scene_items import GlyphRange, ParagraphStyle
-from rmscene.text import Paragraph
 
-from remarks.Document import Document
+from rm_api.models import Document, Tag
+from pylibrm_lines.text import Paragraph
 
 def render_paragraph(paragraph: Paragraph):
     paragraph_content = ""
@@ -38,7 +38,7 @@ def render_paragraph(paragraph: Paragraph):
 class RMPage:
     def __init__(self):
         self.highlights: List[GlyphRange] = []
-        self.tags: List[str] = []
+        self.tags: List[Tag] = []
         self.text: None | list[Paragraph] = None
 
 
@@ -145,24 +145,24 @@ def merge_highlights(highlights: List[GlyphRange]):
     return merged_highlights
 
 
-class ObsidianMarkdownFile:
+class ObsidianMarkdownFile:  # TODO: Partial converted.
     def __init__(self, document: Document):
-        self.pages: Dict[int, RMPage] = {}
+        self.pages = {}
         self.document = document
 
-    def retrieve_page(self, index: int):
-        if not index in self.pages:
+    def retrieve_page(self, page_id: str):
+        if not page_id in self.pages:
             page = RMPage()
-            self.pages[index] = page
+            self.pages[page_id] = page
         else:
-            page = self.pages[index]
+            page = self.pages[page_id]
 
         return page
 
     def save(self, location: pathlib.Path):
-        frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.name}
-        if self.document.rm_tags:
-            frontmatter["tags"] = [f"#remarkable/{tag}" for tag in self.document.rm_tags]
+        frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.metadata.visible_name}
+        if self.document.content.tags:
+            frontmatter["tags"] = [f"#remarkable/{tag.name}" for tag in self.document.content.tags]
 
         env = Environment(loader=FileSystemLoader(pathlib.Path(__file__).parent))
         template = env.get_template('obsidian_markdown.md.jinja')
@@ -171,7 +171,6 @@ class ObsidianMarkdownFile:
             'document': self.document,
             'frontmatter': yaml.dump(frontmatter, indent=3, width=360),
             'pages': self.pages,
-            'sorted_pages': sorted(self.pages.items()),
             'render_paragraph': render_paragraph
         })
 
@@ -179,19 +178,26 @@ class ObsidianMarkdownFile:
             f.write(content)
 
     def add_highlights(
-        self, page_idx: int, highlights: List[GlyphRange]
+        self, page_id: str, highlights: List[GlyphRange]
     ):
         if not highlights:
             return
 
-        self.retrieve_page(page_idx).highlights = merge_highlights(highlights)
+        self.retrieve_page(page_id).highlights = merge_highlights(highlights)
 
-    def add_text(self, page_idx: int, text):
+    def add_text(self, page_id: str, text):
         if not text:
             return
-        self.retrieve_page(page_idx).text = text["text"].contents
+        self.retrieve_page(page_id).text = text["text"].contents
 
-    def add_page_tags(self, page_idx: int, tags: List[str]):
+    def add_page_tags(self, page_id: str, tags: List[str]):
         if not tags:
             return
-        self.retrieve_page(page_idx).tags = tags
+        self.retrieve_page(page_id).tags = tags
+
+    def handle_page_tags(self):
+        for page in self.document.content.c_pages.pages:
+            # Filter out this page's tags from the document's page_tags list
+            page_tags = [tag for tag in self.document.content.page_tags if tag.page_id == page.id]
+            if page_tags:
+                self.add_page_tags(page.id, page_tags)

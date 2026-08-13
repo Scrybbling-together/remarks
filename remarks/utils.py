@@ -3,14 +3,28 @@ import os
 import pathlib
 import re
 import tempfile
+from enum import Enum
+
+import pygame as pe
 from functools import cache
 from typing import Tuple, List
 
-# reMarkable's device dimensions
+import pymupdf
+from PIL import Image
+
+# rM2 DPI / typographic measurement unit
+PDF_SCALING = 227 / 72
+
+
+# reMarkable's device dimensions TODO: REMOVE
 RM_WIDTH = 1404
 RM_HEIGHT = 1872
 
 INSERTED_PAGE = -1
+
+class ScalingTypes(Enum):
+    NO_SCALING = 0
+    PDF_PTS = 1
 
 
 def get_writable_tempdir() -> str:
@@ -218,3 +232,24 @@ def list_ann_rm_files(path):
     if not content_dir.is_dir():
         return []
     return list(content_dir.glob("*.rm"))
+
+def rect_to_murect(rect: pe.Rect, scaling: ScalingTypes = ScalingTypes.NO_SCALING) -> pymupdf.Rect:
+    """Convert a pygame.Rect to a pymupdf.Rect"""
+    if scaling == ScalingTypes.PDF_PTS:
+        rect = pe.Rect(
+            rect.left / PDF_SCALING,
+            rect.top / PDF_SCALING,
+            rect.width / PDF_SCALING,
+            rect.height / PDF_SCALING,
+        )
+    return pymupdf.Rect(rect.left, rect.top, rect.right, rect.bottom)
+
+def frame_to_pixmap(raw_frame: bytes, size: Tuple[int, int]) -> pymupdf.Pixmap:
+    # return Image.frombytes('RGBA', size, raw_frame, 'raw', 'RGBA')
+    return pymupdf.Pixmap(
+        pymupdf.csRGB,
+        size[0],
+        size[1],
+        raw_frame,
+        1,
+    )

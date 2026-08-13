@@ -3,10 +3,8 @@ import struct
 from dataclasses import dataclass
 from typing import List, TypedDict, Tuple
 
-from rmc.exporters.svg import rmc_config
-from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock
-from rmscene.scene_items import Line, GlyphRange, Rectangle
-from rmscene.text import TextDocument
+import pylibrm_lines
+from pylibrm_lines import SceneTree
 
 from ..dimensions import ReMarkableDimensions
 from ..metadata import ReMarkableAnnotationsFileHeaderVersion
@@ -22,6 +20,9 @@ def update_boundaries_from_point(x, y, boundaries):
     boundaries["x_min"] = min(boundaries["x_min"], x)
     boundaries["y_min"] = min(boundaries["y_min"], y)
 
+Rectangle = None
+TextDocument = None
+GlyphRange = None
 
 @dataclass
 class RemarksRectangle:
@@ -51,40 +52,11 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
         "scene_tree": None
     }
 
-    with open(file_path, "rb") as f:
-        tree = SceneTree()
-        blocks = [b for b in read_blocks(f)]
-        build_tree(tree, blocks)
-
-        output["scene_tree"] = tree
-
-        try:
-            for block in blocks:
-                if isinstance(block, RootTextBlock):
-                    output["text"] = {
-                        "pos_x": block.value.pos_x,
-                        "pos_y": block.value.pos_y,
-                        "width": block.value.width,
-                        "text": TextDocument.from_scene_item(tree.root_text),
-                    }
-            for el in tree.walk():
-                if isinstance(el, GlyphRange):
-                    translated_rectangles = [
-                        Rectangle(
-                            x=rmc_config.xx(rectangle.x),
-                            y=rmc_config.yy(rectangle.y),
-                            w=rmc_config.xx(rectangle.w),
-                            h=rmc_config.yy(rectangle.h)
-                        ) for rectangle in el.rectangles]
-                    # sort by reading order
-                    translated_rectangles.sort(key=lambda h: (h.y, h.x))
-                    highlight: RemarksRectangle = RemarksRectangle(
-                        color=el.color.value,
-                        rectangles=translated_rectangles)
-                    output["glyph_ranges"].append(el)
-                    output["highlights"].append(highlight)
-        except AssertionError:
-            print("ReMarkable broken data")
+    tree = pylibrm_lines.lib.buildTree(file_path.encode())
+    if not tree:
+        return output, False
+    SceneTree(tree.decode(), None, None)
+    print("got tree")
 
     return output, False
 
