@@ -28,7 +28,7 @@ flask = "^3.1.0"
 rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "fix-poetry-dependencies" }
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
-pylibrm-lines = "1.3.1"
+pylibrm-lines = "1.3.3"
 pygame-ce = "^2.5.8"
 
 [tool.poetry.extras]

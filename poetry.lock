@@ -2388,13 +2388,13 @@ crypto = ["cryptography (>=3.4.0)"]
 
 [[package]]
 name = "pylibrm-lines"
-version = "1.3.1"
+version = "1.3.3"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pylibrm_lines-1.3.1-py3-none-any.whl", hash = "sha256:b6cc59e77b0b5b6e457f58796de8374a4c52483cf7cd629d888720c2f65a6f69"},
+    {file = "pylibrm_lines-1.3.3-py3-none-any.whl", hash = "sha256:e969988bfa5c69c8560507040fa2a50a368e30734c468a8ddce916b933b9ccdb"},
 ]
 
 [package.dependencies]
@@ -2402,7 +2402,7 @@ ipykernel = ">=7.3.0,<8.0.0"
 pillow = ">=12.1.1"
 pymupdf = ">=1.25.0,<2.0.0"
 rm-api = ">=1.3.1"
-rm-lines-sys = ">=1.4.2"
+rm-lines-sys = ">=1.4.4,<1.5.0"
 
 [[package]]
 name = "pymupdf"
@@ -2728,15 +2728,15 @@ websocket-client = ">=1.8.0"
 
 [[package]]
 name = "rm-lines-sys"
-version = "1.4.2"
+version = "1.4.5"
 description = "This project holds the dynamic library and bindings for python."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "rm_lines_sys-1.4.2-py3-none-macosx_26_0_arm64.whl", hash = "sha256:3f9fe93a540781000cdfe4949b99da1cef68df45423db64959ea76953c1cebcf"},
-    {file = "rm_lines_sys-1.4.2-py3-none-manylinux_2_39_x86_64.whl", hash = "sha256:422923ec9b320abc2aeb1b8e5184e13bd441b8354c8dd592c15c3c5b8c454f9e"},
-    {file = "rm_lines_sys-1.4.2-py3-none-win_amd64.whl", hash = "sha256:1f32f0f5deba7e4d55fb80b7ef5fcae29b6eaa9dd12b1e26dba74b98cad7c8e8"},
+    {file = "rm_lines_sys-1.4.5-py3-none-macosx_26_0_arm64.whl", hash = "sha256:20286fd9ba73a0c7232b899e74adad3d65094b3a58ae51482c4828879690ada6"},
+    {file = "rm_lines_sys-1.4.5-py3-none-manylinux_2_39_x86_64.whl", hash = "sha256:cff07df2d877de5966fda09b5da728ef13e119d8c06ba4b981f7c7413e2be894"},
+    {file = "rm_lines_sys-1.4.5-py3-none-win_amd64.whl", hash = "sha256:8f59b5cc9dda83d41f6abb7ee45b20b6383a93992cb5032b5b39c9304548d35c"},
 ]
 
 [[package]]
@@ -3265,4 +3265,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "ab6e81c64f304ce307fb921524a9395f7bd40961a5cf657f582b519d8a4c6981"
+content-hash = "e405bca16ab2df2323b2464d8ac7f15a4768c3dbf2f527690acc504080db8529"

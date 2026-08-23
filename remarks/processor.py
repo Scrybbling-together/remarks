@@ -3,7 +3,8 @@ import pathlib
 
 import pymupdf
 import pygame as pe
-from pylibrm_lines import SceneTree, FailedToBuildTree, Renderer, SceneInfo
+from pylibrm_lines import SceneTree, FailedToBuildTree, Renderer, SceneInfo, set_debug_mode
+from pylibrm_lines.renderer import BACKDROP_ALIGN_TOP_CENTER
 from pymupdf import Page
 from rm_api.defaults import RM_SCREEN_SIZE
 from rm_api.models import LocalDocument, Page
@@ -12,18 +13,6 @@ from remarks.Document import sanitize_filename
 from remarks.output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from remarks.utils import rect_to_murect, ScalingTypes, frame_to_pixmap
 from remarks.warnings import scrybble_warning_tree_failed_to_build
-
-
-class DPIEmbeddedPage:
-    def __init__(self, page, dpi=228):
-        self._page = page
-        self.dpi = dpi
-
-    def get_pixmap(self, **kwargs):
-        return self._page.get_pixmap(dpi=self.dpi, **kwargs)
-
-    def __getattr__(self, name):
-        return getattr(self._page, name)
 
 
 class DocumentProcessor:
@@ -62,7 +51,7 @@ class DocumentProcessor:
 
     def process_page(self, index: int, page: Page):
         logging.info(f"processing page {index + 1}, {page.id}")
-        pdf_page = DPIEmbeddedPage(self.get_pdf_page(index, page))
+        pdf_page = self.get_pdf_page(index, page)
 
         try:
             self.tree = SceneTree.from_document(self.document, page.id)
@@ -76,8 +65,8 @@ class DocumentProcessor:
         print(page_bounds, (pdf_page.rect.width, pdf_page.rect.height), "Resizing to (in pt):",
               rect_to_murect(page_bounds, scaling=ScalingTypes.PDF_PTS))
         mediabox = pe.Rect(
-            page_bounds.left/2,
-            page_bounds.top/2,
+            page_bounds.left,
+            page_bounds.top,
             max(page_bounds.width, pdf_page.rect.width),
             max(page_bounds.height, pdf_page.rect.height)
         )
@@ -85,7 +74,8 @@ class DocumentProcessor:
 
         # Add the backdrop for sampling
         self.renderer.config.backdrop_sampling = True
-        self.renderer.set_backdrop_pymupdf(pdf_page)
+        self.renderer.config.backdrop_align = BACKDROP_ALIGN_TOP_CENTER
+        self.renderer.set_backdrop_pymupdf(pdf_page, dpi=227)
 
         frame = frame_to_pixmap(
             self.renderer.get_frame_raw(
@@ -97,25 +87,26 @@ class DocumentProcessor:
         )
         pdf_page.insert_image(
             rect_to_murect(
-                mediabox,
+                mediabox.move(-page_bounds.left, -page_bounds.top),
                 scaling=ScalingTypes.PDF_PTS
             ),
             pixmap=frame
         )
 
     def get_page_bounds(self) -> pe.Rect:
-        x, y, w, h = 0, 0, *self.scene_info.paper_size
+        x, y, x2, y2 = 0, 0, *self.scene_info.paper_size
         layers = self.renderer.get_layers()
 
         if layers:
             for layer in layers:
                 size_tracker = layer.size_tracker
                 print(size_tracker.left, size_tracker.top, size_tracker.right, size_tracker.bottom)
-                x = min(x, -size_tracker.left)
-                y = min(y, -size_tracker.top)
-                w = max(w, size_tracker.right - size_tracker.left)
-                h = max(h, size_tracker.bottom - size_tracker.top)
-        rect = pe.Rect((x, y, w, h))
+                x = min(x, size_tracker.left)
+                y = min(y, size_tracker.top)
+                x2 = max(x2, size_tracker.right)
+                y2 = max(y2, size_tracker.bottom)
+        rect = pe.Rect((x, y, 1, 1))
+        rect.size = (x2 - x, y2 - y)
         return rect
 
     def get_pdf_page(self, index: int, page: Page) -> pymupdf.Page:
