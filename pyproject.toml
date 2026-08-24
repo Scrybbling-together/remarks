@@ -37,9 +37,11 @@ server = ["flask"]
 remarks = 'remarks.__main__:main'
 remarks-server = "remarks.server:main_prod"
 
-[poetry.group.dev.dependencies]
-pytest = {version = "^7.2.0", extras = []}
-tqdm = "^4.67.1"
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "tqdm (>=4.70.0,<5.0.0)"
+]
 
 [build-system]
 # https://python-poetry.org/docs/pyproject/#poetry-and-pep-517
@@ -54,3 +56,5 @@ markers = [
     "visual",
     "unfinished_feature"
 ]
+
+
