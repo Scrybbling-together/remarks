@@ -119,27 +119,6 @@ def determine_document_dimensions(file_path) -> ReMarkableDimensions:
         dims["x_max"] - dims["x_min"], dims["y_max"] - dims["y_min"]
     )
 
-
-def read_rm_file_version(file_path: str) -> str:
-    with open(file_path, "rb") as f:
-        src_header = f.readline()
-
-        # 32nd character (marked with V) is the version number
-        #                                                       V
-        expected_header_fmt = b"reMarkable .lines file, version=0          "
-        fmt = f"<{len(expected_header_fmt)}sI"
-        header, nlayers = struct.unpack_from(fmt, src_header, 0)
-        # 32nd character is the version number
-        version = chr(header[32])
-
-        if version == "3":
-            return ReMarkableAnnotationsFileHeaderVersion.V3
-        elif version == "6":
-            return ReMarkableAnnotationsFileHeaderVersion.V6
-        else:
-            return ReMarkableAnnotationsFileHeaderVersion.UNKNOWN
-
-
 def check_rm_file_version(file_path):
     with open(file_path, "rb") as f:
         data = f.read()
