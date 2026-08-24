@@ -19,15 +19,17 @@ include = ["remarks/assets/templates/*.template"]
 [tool.poetry.dependencies]
 python = "^3.12"
 PyMuPDF = "^1.23.5"
-rmscene = { git = "https://github.com/scrybbling-together/rmscene.git", rev = "0e1a31432e86571aa9e4e8eaa5f8505a55f127c3" }
+rmscene = { git = "https://github.com/scrybbling-together/rmscene.git", rev = "main" }
 pyyaml = "^6.0.1"
 markupsafe = "<3.0.3"
 parsita = "^2.1.1"
 numpy = "^2.2.1"
 flask = "^3.1.0"
-rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "50e7ec9524af088ece67a6ba33281bc536c8f10b" }
+rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "main" }
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
+pylibrm-lines = "1.3.3"
+pygame-ce = "^2.5.8"
 
 [tool.poetry.extras]
 server = ["flask"]
@@ -36,7 +38,7 @@ server = ["flask"]
 remarks = 'remarks.__main__:main'
 remarks-server = "remarks.server:main_prod"
 
-[tool.poetry.dev-dependencies]
+[poetry.group.dev.dependencies]
 pytest = {version = "^7.2.0", extras = []}
 tqdm = "^4.67.1"
 
