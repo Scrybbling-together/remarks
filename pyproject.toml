@@ -29,7 +29,6 @@ rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "50e7ec952
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
 pylibrm-lines = "1.3.3"
-pygame-ce = "^2.5.8"
 
 [tool.poetry.extras]
 server = ["flask"]
