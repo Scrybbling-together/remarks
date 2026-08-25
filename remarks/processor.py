@@ -8,7 +8,6 @@ from pylibrm_lines import SceneTree, FailedToBuildTree, Renderer, SceneInfo, set
 from pylibrm_lines.renderer import BACKDROP_ALIGN_TOP_CENTER, PEN_HIGHLIGHTER
 from pylibrm_lines.scene_items.glyph_range import GlyphRangeItem
 from pylibrm_lines.scene_items.line import LineItem
-from pymupdf import Page
 from rm_api.defaults import RM_SCREEN_SIZE
 from rm_api.models import LocalDocument, Page
 
@@ -26,6 +25,9 @@ class DocumentProcessor:
         self.document = document
         self.output_dir = output_dir
         self.obsidian_markdown = ObsidianMarkdownFile(document)
+
+        self.pdf_page = None
+        self.page_bounds = None
 
     @property
     def doc_pages(self):
@@ -54,50 +56,53 @@ class DocumentProcessor:
 
     def process_page(self, index: int, page: Page):
         logging.info(f"processing page {index + 1}, {page.id}")
-        pdf_page = self.get_pdf_page(index, page)
+        self.pdf_page = self.get_pdf_page(index, page)
 
         try:
             self.tree = SceneTree.from_document(self.document, page.id)
         except FailedToBuildTree:
-            scrybble_warning_tree_failed_to_build.render_as_annotation(pdf_page)
+            scrybble_warning_tree_failed_to_build.render_as_annotation(self.pdf_page)
             return
         except FileNotFoundError:
             return
 
-        page_bounds = self.get_page_bounds()
-        print(page_bounds, (pdf_page.rect.width, pdf_page.rect.height), "Resizing to (in pt):",
-              rect_to_murect(page_bounds, scaling=ScalingTypes.PDF_PTS))
+        self.page_bounds = self.get_page_bounds()
+        print(self.page_bounds, (self.pdf_page.rect.width, self.pdf_page.rect.height), "Resizing to (in pt):",
+              rect_to_murect(self.page_bounds, scaling=ScalingTypes.PDF_PTS))
         mediabox = pe.Rect(
-            page_bounds.left,
-            page_bounds.top,
-            max(page_bounds.width, pdf_page.rect.width),
-            max(page_bounds.height, pdf_page.rect.height)
+            self.page_bounds.left,
+            self.page_bounds.top,
+            max(self.page_bounds.width, self.pdf_page.rect.width),
+            max(self.page_bounds.height, self.pdf_page.rect.height)
         )
-        pdf_page.set_mediabox(rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
+        self.pdf_page.set_mediabox(rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
 
         # Add the backdrop for sampling
         self.renderer.config.backdrop_sampling = True
         self.renderer.config.enable_glyph_highlights = False
         # self.renderer.config.disable_pen(PEN_HIGHLIGHTER)
         self.renderer.config.backdrop_align = BACKDROP_ALIGN_TOP_CENTER
-        self.renderer.set_backdrop_pymupdf(pdf_page, dpi=227)
+        self.renderer.set_backdrop_pymupdf(self.pdf_page, dpi=227)
 
         frame = frame_to_pixmap(
             self.renderer.get_frame_raw(
-                page_bounds.x, page_bounds.y,
+                self.page_bounds.x, self.page_bounds.y,
                 *mediabox.size,
                 *mediabox.size,
             ),
-            page_bounds.size
+            self.page_bounds.size
         )
-        pdf_page.insert_image(
+        self.pdf_page.insert_image(
             rect_to_murect(
-                mediabox.move(-page_bounds.left, -page_bounds.top),
+                mediabox.move(-self.page_bounds.left, -self.page_bounds.top),
                 scaling=ScalingTypes.PDF_PTS
             ),
             pixmap=frame
         )
 
+        self.add_highlighter()
+
+    def add_highlighter(self):
         self.renderer.config.use_whitelist = True
         self.renderer.config.enable_pen(PEN_HIGHLIGHTER)
         self.renderer.config.follow_rules_in_json = True
@@ -110,9 +115,9 @@ class DocumentProcessor:
             for info in layer.glyph_ranges:
                 glyph: GlyphRangeItem = info.glyph_range
                 for rect in glyph.rects:
-                    annot = pdf_page.add_highlight_annot(
+                    annot = self.pdf_page.add_highlight_annot(
                         rect_to_murect(
-                            pe.Rect(rect).move(self.paper_size[0]/2-page_bounds.left, 0),
+                            pe.Rect(rect).move(self.paper_size[0]/2-self.page_bounds.left, 0),
                             scaling=ScalingTypes.PDF_PTS
                         )
                     )
