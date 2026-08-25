@@ -121,6 +121,7 @@ class DocumentProcessor:
                         glyph.argb_color[2] / 255,
                         glyph.argb_color[3] / 255,
                     ))
+                    annot.set_info(content=glyph.text)
                     annot.update()
 
     @property
