@@ -2051,14 +2051,14 @@ xmp = ["defusedxml"]
 
 [[package]]
 name = "platformdirs"
-version = "4.11.3"
+version = "4.11.4"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "platformdirs-4.11.3-py3-none-any.whl", hash = "sha256:5ed065d443751de711da036041a7a214122efc4a4de393b3f4137ba5576540e7"},
-    {file = "platformdirs-4.11.3.tar.gz", hash = "sha256:66a73d38a849810252df809a3d8bcbda8e26f6c189920e7535ad608a48dbb5ab"},
+    {file = "platformdirs-4.11.4-py3-none-any.whl", hash = "sha256:e34ff91a24bcddc6d939b878bdf3f5c437c9c46fe9e212b1bf455fdf1ee57586"},
+    {file = "platformdirs-4.11.4.tar.gz", hash = "sha256:f3373be828247211d0febabea97e238c3dfde8a60b3c90c32756fb52cb21556d"},
 ]
 
 [[package]]
@@ -2388,21 +2388,21 @@ crypto = ["cryptography (>=3.4.0)"]
 
 [[package]]
 name = "pylibrm-lines"
-version = "1.3.3"
+version = "1.3.4"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pylibrm_lines-1.3.3-py3-none-any.whl", hash = "sha256:e969988bfa5c69c8560507040fa2a50a368e30734c468a8ddce916b933b9ccdb"},
+    {file = "pylibrm_lines-1.3.4-py3-none-any.whl", hash = "sha256:39901584baacba2035c57609f154cca936113b70f87929dbd9da45d241eec049"},
 ]
 
 [package.dependencies]
 ipykernel = ">=7.3.0,<8.0.0"
 pillow = ">=12.1.1"
 pymupdf = ">=1.25.0,<2.0.0"
-rm-api = ">=1.3.1"
-rm-lines-sys = ">=1.4.4,<1.5.0"
+rm-api = ">=1.3.2"
+rm-lines-sys = ">=1.4.6,<1.5.0"
 
 [[package]]
 name = "pymupdf"
@@ -2705,13 +2705,13 @@ compatible-mypy = ["mypy (>=1.12,<1.18)"]
 
 [[package]]
 name = "rm-api"
-version = "1.3.1"
+version = "1.3.2"
 description = "A python library to handle interactions with the reMarkable API."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "rm_api-1.3.1-py3-none-any.whl", hash = "sha256:f090680b04772cfbe6827483e71c05a19373b47a2ab30ad7ee2a332150e71af1"},
+    {file = "rm_api-1.3.2-py3-none-any.whl", hash = "sha256:08c010b363b3aef8f5cdafbef9b0f8b5d92baf2f76ba2f695efa41eb0455d4b1"},
 ]
 
 [package.dependencies]
@@ -2728,15 +2728,15 @@ websocket-client = ">=1.8.0"
 
 [[package]]
 name = "rm-lines-sys"
-version = "1.4.5"
+version = "1.4.6"
 description = "This project holds the dynamic library and bindings for python."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "rm_lines_sys-1.4.5-py3-none-macosx_26_0_arm64.whl", hash = "sha256:20286fd9ba73a0c7232b899e74adad3d65094b3a58ae51482c4828879690ada6"},
-    {file = "rm_lines_sys-1.4.5-py3-none-manylinux_2_39_x86_64.whl", hash = "sha256:cff07df2d877de5966fda09b5da728ef13e119d8c06ba4b981f7c7413e2be894"},
-    {file = "rm_lines_sys-1.4.5-py3-none-win_amd64.whl", hash = "sha256:8f59b5cc9dda83d41f6abb7ee45b20b6383a93992cb5032b5b39c9304548d35c"},
+    {file = "rm_lines_sys-1.4.6-py3-none-macosx_26_0_arm64.whl", hash = "sha256:55e9ff2bc248d9feb568a276f9c387239afcab6b084ad350c66360d5ca10ad20"},
+    {file = "rm_lines_sys-1.4.6-py3-none-manylinux_2_39_x86_64.whl", hash = "sha256:2604b7126d53e9f39330d69e22b70433aca40926830aeb397cc582e88d95b566"},
+    {file = "rm_lines_sys-1.4.6-py3-none-win_amd64.whl", hash = "sha256:226cf8cab15afd5b4e54c39c439dc7b31065f27ffd024e3f9a742338284bb508"},
 ]
 
 [[package]]
@@ -2783,14 +2783,14 @@ resolved_reference = "9116b0b488324543e11c4dbbe90cba0ee859da02"
 
 [[package]]
 name = "sentry-sdk"
-version = "2.68.0"
+version = "2.68.1"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "sentry_sdk-2.68.0-py3-none-any.whl", hash = "sha256:538e56c2d03679d42f7c0cb5f1af73a7a510b00abc7e296c13ac49b107b713a4"},
-    {file = "sentry_sdk-2.68.0.tar.gz", hash = "sha256:648c58e9887311a03470a41539e24bdbbf64a30ca4f5336f7e3dcc87276400b3"},
+    {file = "sentry_sdk-2.68.1-py3-none-any.whl", hash = "sha256:775b78871783a0ffd758276ad01b3bb2b1ebcdad8f9d2f0a7723f76b73c99b65"},
+    {file = "sentry_sdk-2.68.1.tar.gz", hash = "sha256:6a97895230b04bc35d4d8d2e51e3b9e21902dfb0086ccf1f131a80c15c7b997a"},
 ]
 
 [package.dependencies]
@@ -3265,4 +3265,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "e405bca16ab2df2323b2464d8ac7f15a4768c3dbf2f527690acc504080db8529"
+content-hash = "c58f2593ca96ee77c2adac743dbc4fd9e776b08302df762f38d6456d718a5e86"

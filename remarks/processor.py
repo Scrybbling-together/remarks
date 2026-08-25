@@ -1,10 +1,13 @@
 import logging
 import pathlib
+from typing import Tuple
 
 import pymupdf
 import pygame as pe
 from pylibrm_lines import SceneTree, FailedToBuildTree, Renderer, SceneInfo, set_debug_mode
-from pylibrm_lines.renderer import BACKDROP_ALIGN_TOP_CENTER
+from pylibrm_lines.renderer import BACKDROP_ALIGN_TOP_CENTER, PEN_HIGHLIGHTER
+from pylibrm_lines.scene_items.glyph_range import GlyphRangeItem
+from pylibrm_lines.scene_items.line import LineItem
 from pymupdf import Page
 from rm_api.defaults import RM_SCREEN_SIZE
 from rm_api.models import LocalDocument, Page
@@ -74,6 +77,8 @@ class DocumentProcessor:
 
         # Add the backdrop for sampling
         self.renderer.config.backdrop_sampling = True
+        self.renderer.config.enable_glyph_highlights = False
+        # self.renderer.config.disable_pen(PEN_HIGHLIGHTER)
         self.renderer.config.backdrop_align = BACKDROP_ALIGN_TOP_CENTER
         self.renderer.set_backdrop_pymupdf(pdf_page, dpi=227)
 
@@ -92,6 +97,38 @@ class DocumentProcessor:
             ),
             pixmap=frame
         )
+
+        self.renderer.config.use_whitelist = True
+        self.renderer.config.enable_pen(PEN_HIGHLIGHTER)
+        self.renderer.config.follow_rules_in_json = True
+        self.renderer.config.stroker_data_in_json = True
+        for layer in self.renderer.layers:
+            layer.update_data()
+            for info in layer.lines:
+                line: LineItem = info.line
+                pass
+            for info in layer.glyph_ranges:
+                glyph: GlyphRangeItem = info.glyph_range
+                for rect in glyph.rects:
+                    annot = pdf_page.add_highlight_annot(
+                        rect_to_murect(
+                            pe.Rect(rect).move(self.paper_size[0]/2-page_bounds.left, 0),
+                            scaling=ScalingTypes.PDF_PTS
+                        )
+                    )
+                    annot.set_colors(stroke=(
+                        glyph.argb_color[1] / 255,
+                        glyph.argb_color[2] / 255,
+                        glyph.argb_color[3] / 255,
+                    ))
+                    annot.update()
+
+    @property
+    def paper_size(self) -> Tuple[int, int]:
+        if self.scene_info:
+            return self.scene_info.paper_size
+        else:
+            return RM_SCREEN_SIZE
 
     def get_page_bounds(self) -> pe.Rect:
         x, y, x2, y2 = 0, 0, *self.scene_info.paper_size
