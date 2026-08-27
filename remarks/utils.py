@@ -13,14 +13,14 @@ import pymupdf
 from PIL import Image
 
 # rM2 DPI / typographic measurement unit
-PDF_SCALING = 227 / 72
-
+PDF_SCALING = 227.54 / 72
 
 # reMarkable's device dimensions TODO: REMOVE
 RM_WIDTH = 1404
 RM_HEIGHT = 1872
 
 INSERTED_PAGE = -1
+
 
 class ScalingTypes(Enum):
     NO_SCALING = 0
@@ -148,13 +148,16 @@ def construct_redirection_map(content: dict) -> List[int]:
 def is_inserted_page(idx: int) -> bool:
     return idx == INSERTED_PAGE
 
+
 def is_duplicate_page(idx: int) -> bool:
     return idx >= 0
+
 
 def get_document_tags(path: str):
     content = read_meta_file(path, suffix=".content")
     for tag in content.get("tags") or []:
         yield sanitize_obsidian_tag(tag['name'])
+
 
 def sanitize_obsidian_tag(tag: str) -> str:
     """
@@ -169,39 +172,39 @@ def sanitize_obsidian_tag(tag: str) -> str:
     """
     if not tag:
         return ""
-    
+
     # Remove leading # characters
     while tag.startswith("#"):
         tag = tag[1:]
-    
+
     # If tag was only # characters, mark as invalid
     if not tag:
         return "invalid-tag"
-    
+
     # Replace angle brackets (they break Obsidian parsing completely)
     tag = tag.replace("<", "-").replace(">", "-")
-    
+
     # Replace other problematic characters with dashes
     # Keep: letters (including accented), numbers, dashes, underscores, forward slashes
     # Also keep some Unicode that seems to work: ¿€£¥
     # Use \w to include accented characters, but exclude specific problematic ones
     tag = re.sub(r'[^\w\-_/¿€£¥]', '-', tag, flags=re.UNICODE)
-    
+
     # Collapse multiple consecutive dashes
     tag = re.sub(r'-+', '-', tag)
-    
+
     # Remove leading/trailing dashes
     tag = tag.strip('-')
-    
+
     # If tag is empty after cleanup, it was all invalid characters
     if not tag:
         return "invalid-tag"
-    
+
     # Ensure it starts with a letter (Obsidian requirement)
     if not tag[0].isalpha():
         # If it starts with number or other, prefix with 'tag'
         tag = f"tag-{tag}"
-    
+
     return tag
 
 
@@ -218,6 +221,7 @@ def get_page_tags(path: str, page_id: str) -> List[str]:
         return page_tags
     return []
 
+
 def get_pages_data(path: str) -> Tuple[List[str], List[int]]:
     content = read_meta_file(path, suffix=".content")
     redirection_map = construct_redirection_map(content)
@@ -233,10 +237,11 @@ def list_ann_rm_files(path):
         return []
     return list(content_dir.glob("*.rm"))
 
-def rect_to_murect(rect: pe.Rect, scaling: ScalingTypes = ScalingTypes.NO_SCALING) -> pymupdf.Rect:
+
+def rect_to_murect(rect: pe.FRect, scaling: ScalingTypes = ScalingTypes.NO_SCALING) -> pymupdf.Rect:
     """Convert a pygame.Rect to a pymupdf.Rect"""
     if scaling == ScalingTypes.PDF_PTS:
-        rect = pe.Rect(
+        rect = pe.FRect(
             rect.left / PDF_SCALING,
             rect.top / PDF_SCALING,
             rect.width / PDF_SCALING,

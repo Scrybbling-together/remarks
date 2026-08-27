@@ -13,7 +13,7 @@ from rm_api.models import LocalDocument, Page
 
 from remarks.Document import sanitize_filename
 from remarks.output.ObsidianMarkdownFile import ObsidianMarkdownFile
-from remarks.utils import rect_to_murect, ScalingTypes, frame_to_pixmap
+from remarks.utils import rect_to_murect, ScalingTypes, frame_to_pixmap, PDF_SCALING
 from remarks.warnings import scrybble_warning_tree_failed_to_build
 
 
@@ -66,35 +66,67 @@ class DocumentProcessor:
         except FileNotFoundError:
             return
 
-        self.page_bounds = self.get_page_bounds()
-        print(self.page_bounds, (self.pdf_page.rect.width, self.pdf_page.rect.height), "Resizing to (in pt):",
-              rect_to_murect(self.page_bounds, scaling=ScalingTypes.PDF_PTS))
-        mediabox = pe.Rect(
-            self.page_bounds.left,
-            self.page_bounds.top,
-            max(self.page_bounds.width, self.pdf_page.rect.width),
-            max(self.page_bounds.height, self.pdf_page.rect.height)
+        rm_page_bounds = self.get_page_bounds()
+        self.page_bounds = rm_page_bounds
+
+        mediabox = pe.FRect(
+            0, 0,
+            # self.page_bounds.left,
+            # self.page_bounds.top,
+            max(self.page_bounds.width, self.pdf_page.rect.width * PDF_SCALING),
+            max(self.page_bounds.height, self.pdf_page.rect.height * PDF_SCALING)
         )
+
+        # Align the PDF
+        if self.pdf_page.rect.width >= self.pdf_page.rect.height:
+            # Align to the center vertically
+            mediabox.y = (self.pdf_page.rect.height * PDF_SCALING - mediabox.height) / 2
+        else:
+            # Align to the center horizontally
+            mediabox.x = (self.pdf_page.rect.width * PDF_SCALING - mediabox.width) / 2
+
+        size_rounded = (int(mediabox.width), int(mediabox.height))
+
+        # Expand
+        x_adjust = -min(0, self.page_bounds.left + self.pdf_page.rect.width)
+        y_adjust = -min(0, self.page_bounds.top + self.pdf_page.rect.height / 2)
+
+        mediabox.width += x_adjust
+        mediabox.height += y_adjust
+
+        # Align
+        mediabox.x -= x_adjust / 2
+        mediabox.y -= y_adjust / 2
+
+        # mediabox = pe.FRect(
+        #     0, -250, self.pdf_page.mediabox.width * PDF_SCALING, self.pdf_page.mediabox.height * PDF_SCALING + 500
+        # )
+
+        print("\nPAGE BOUNDS (in px):", self.page_bounds,
+              "\nPAGE BOUNDS (in pt):", self.page_bounds.scale_by(1 / PDF_SCALING),
+              "\nPDF SIZE (in px):", (self.pdf_page.rect.width, self.pdf_page.rect.height),
+              "\nPDF MEDIABOX (in pt):", self.pdf_page.mediabox,
+              "\nResizing to (in px):", mediabox,
+              "\nResizing to (in pt):", rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
+
         self.pdf_page.set_mediabox(rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
 
         # Add the backdrop for sampling
         self.renderer.config.backdrop_sampling = True
-        self.renderer.config.enable_glyph_highlights = False
-        # self.renderer.config.disable_pen(PEN_HIGHLIGHTER)
         self.renderer.config.backdrop_align = BACKDROP_ALIGN_TOP_CENTER
         self.renderer.set_backdrop_pymupdf(self.pdf_page, dpi=227)
 
         frame = frame_to_pixmap(
             self.renderer.get_frame_raw(
-                self.page_bounds.x, self.page_bounds.y,
-                *mediabox.size,
-                *mediabox.size,
+                int(rm_page_bounds.x), int(rm_page_bounds.y),
+                int(rm_page_bounds.width), int(rm_page_bounds.height),
+                *size_rounded,
             ),
-            self.page_bounds.size
+            size_rounded
         )
         self.pdf_page.insert_image(
             rect_to_murect(
-                mediabox.move(-self.page_bounds.left, -self.page_bounds.top),
+                pe.FRect(x_adjust / 2, y_adjust / 2, *size_rounded),
                 scaling=ScalingTypes.PDF_PTS
             ),
             pixmap=frame
@@ -117,7 +149,7 @@ class DocumentProcessor:
                 for rect in glyph.rects:
                     annot = self.pdf_page.add_highlight_annot(
                         rect_to_murect(
-                            pe.Rect(rect).move(self.paper_size[0]/2-self.page_bounds.left, 0),
+                            pe.FRect(rect).move(self.paper_size[0] / 2 - self.page_bounds.left, 0),
                             scaling=ScalingTypes.PDF_PTS
                         )
                     )
@@ -127,6 +159,7 @@ class DocumentProcessor:
                         glyph.argb_color[3] / 255,
                     ))
                     annot.set_info(content=glyph.text)
+                    annot.set_opacity(0)
                     annot.update()
 
     @property
@@ -136,8 +169,8 @@ class DocumentProcessor:
         else:
             return RM_SCREEN_SIZE
 
-    def get_page_bounds(self) -> pe.Rect:
-        x, y, x2, y2 = 0, 0, *self.scene_info.paper_size
+    def get_page_bounds(self) -> pe.FRect:
+        x, y, x2, y2 = 0, 0, 0, 0
         layers = self.renderer.get_layers()
 
         if layers:
@@ -148,7 +181,7 @@ class DocumentProcessor:
                 y = min(y, size_tracker.top)
                 x2 = max(x2, size_tracker.right)
                 y2 = max(y2, size_tracker.bottom)
-        rect = pe.Rect((x, y, 1, 1))
+        rect = pe.FRect((x, y, 1, 1))
         rect.size = (x2 - x, y2 - y)
         return rect
 
@@ -161,7 +194,7 @@ class DocumentProcessor:
             raise ValueError(f"Page {page.id} does not have a redirect to a PDF page")
         if page.redirect.value < 0 or page.redirect.value >= len(self.pdf_document):
             raise IndexError(f"Page redirect index {page.redirect.value} is out of bounds for the PDF document")
-        return self.pdf_document[page.redirect.value]
+        return self.pdf_document[index]
 
     def load_or_create_pdf(self):
         if self.document.content.file_type in ["pdf", "epub"]:
@@ -169,7 +202,20 @@ class DocumentProcessor:
             if not file:
                 raise FileNotFoundError("Could not find the PDF file for this document")
             pdf_path = self.document.get_file(file.hash)
-            self.pdf_document = pymupdf.open(filename=pdf_path, filetype="pdf")
+            source = pymupdf.open(filename=pdf_path, filetype="pdf")
+
+            self.pdf_document = pymupdf.open()
+
+            for i, page in enumerate(self.doc_pages):
+                source_page = page.redirect.value if page.redirect else i
+
+                self.pdf_document.insert_pdf(
+                    source,
+                    from_page=source_page,
+                    to_page=source_page,
+                )
+
+            source.close()
         else:
             self.pdf_document = pymupdf.open()  # Create a new empty PDF document
             for _ in self.doc_pages:
