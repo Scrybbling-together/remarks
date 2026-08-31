@@ -81,14 +81,13 @@ class DocumentProcessor:
         pdf_expand_top = -self.page_bounds.top
         pdf_expand_bottom = self.page_bounds.bottom - self.pdf_size_px[1]
 
-        pdf_expand_y = max(0, pdf_expand_top) + max(0, pdf_expand_bottom)
         pdf_expand_x = max(0, pdf_expand_left) + max(0, pdf_expand_right)
+        pdf_expand_y = max(0, pdf_expand_top) + max(0, pdf_expand_bottom)
 
         # Set the mediabox and size of the lines
         mediabox = pe.FRect(
-            -max(0, pdf_expand_left), -max(0, pdf_expand_bottom),
-            # self.page_bounds.left,
-            # self.page_bounds.top,
+            -max(0, pdf_expand_left),
+            -max(0, pdf_expand_bottom),
             self.pdf_size_px[0] + pdf_expand_x,
             self.pdf_size_px[1] + pdf_expand_y
         )
