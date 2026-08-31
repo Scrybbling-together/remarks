@@ -27,6 +27,7 @@ class DocumentProcessor:
         self.obsidian_markdown = ObsidianMarkdownFile(document)
 
         self.pdf_page = None
+        self.pdf_size_px = None
         self.page_bounds = None
 
     @property
@@ -57,6 +58,10 @@ class DocumentProcessor:
     def process_page(self, index: int, page: Page):
         logging.info(f"processing page {index + 1}, {page.id}")
         self.pdf_page = self.get_pdf_page(index, page)
+        self.pdf_size_px = (
+            self.pdf_page.rect.width * PDF_SCALING,
+            self.pdf_page.rect.height * PDF_SCALING
+        )
 
         try:
             self.tree = SceneTree.from_document(self.document, page.id)
@@ -66,48 +71,41 @@ class DocumentProcessor:
         except FileNotFoundError:
             return
 
-        rm_page_bounds = self.get_page_bounds()
-        self.page_bounds = rm_page_bounds
+        self.page_bounds = self.get_page_bounds()
 
+        # Calculate the PDF Expand / Offsets
+        _pdf_sides = (self.pdf_size_px[0] - self.paper_size[0]) / 2
+        pdf_expand_left = (-self.page_bounds.left) - _pdf_sides
+        pdf_expand_right = (self.page_bounds.right - _pdf_sides - self.paper_size[0])
+
+        pdf_expand_top = -self.page_bounds.top
+        pdf_expand_bottom = self.page_bounds.bottom - self.pdf_size_px[1]
+
+        pdf_expand_y = max(0, pdf_expand_top) + max(0, pdf_expand_bottom)
+        pdf_expand_x = max(0, pdf_expand_left) + max(0, pdf_expand_right)
+
+        # Set the mediabox and size of the lines
         mediabox = pe.FRect(
-            0, 0,
+            -max(0, pdf_expand_left), -max(0, pdf_expand_bottom),
             # self.page_bounds.left,
             # self.page_bounds.top,
-            max(self.page_bounds.width, self.pdf_page.rect.width * PDF_SCALING),
-            max(self.page_bounds.height, self.pdf_page.rect.height * PDF_SCALING)
+            self.pdf_size_px[0] + pdf_expand_x,
+            self.pdf_size_px[1] + pdf_expand_y
         )
 
-        # Align the PDF
-        if self.pdf_page.rect.width >= self.pdf_page.rect.height:
-            # Align to the center vertically
-            mediabox.y = (self.pdf_page.rect.height * PDF_SCALING - mediabox.height) / 2
-        else:
-            # Align to the center horizontally
-            mediabox.x = (self.pdf_page.rect.width * PDF_SCALING - mediabox.width) / 2
+        size_rounded = (
+            int(mediabox.width + min(0, pdf_expand_left) + min(0, pdf_expand_right)),
+            int(mediabox.height + min(0, pdf_expand_top) + min(0, pdf_expand_bottom))
+        )
 
-        size_rounded = (int(mediabox.width), int(mediabox.height))
-
-        # Expand
-        x_adjust = -min(0, self.page_bounds.left + self.pdf_page.rect.width)
-        y_adjust = -min(0, self.page_bounds.top + self.pdf_page.rect.height / 2)
-
-        mediabox.width += x_adjust
-        mediabox.height += y_adjust
-
-        # Align
-        mediabox.x -= x_adjust / 2
-        mediabox.y -= y_adjust / 2
-
-        # mediabox = pe.FRect(
-        #     0, -250, self.pdf_page.mediabox.width * PDF_SCALING, self.pdf_page.mediabox.height * PDF_SCALING + 500
-        # )
-
-        print("\nPAGE BOUNDS (in px):", self.page_bounds,
-              "\nPAGE BOUNDS (in pt):", self.page_bounds.scale_by(1 / PDF_SCALING),
-              "\nPDF SIZE (in px):", (self.pdf_page.rect.width, self.pdf_page.rect.height),
-              "\nPDF MEDIABOX (in pt):", self.pdf_page.mediabox,
-              "\nResizing to (in px):", mediabox,
-              "\nResizing to (in pt):", rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
+        # DEBUGGING INFO
+        # print("\nPAGE BOUNDS (in px):", self.page_bounds,
+        #       "\nPAGE BOUNDS (in pt):", self.page_bounds.scale_by(1 / PDF_SCALING),
+        #       f"\nPDF EXPAND (in px): l:{pdf_expand_left}, r:{pdf_expand_right}, t:{pdf_expand_top}, b:{pdf_expand_bottom}",
+        #       "\nPDF SIZE (in px):", (self.pdf_page.rect.width, self.pdf_page.rect.height),
+        #       "\nPDF MEDIABOX (in pt):", self.pdf_page.mediabox,
+        #       "\nResizing to (in px):", mediabox,
+        #       "\nResizing to (in pt):", rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
 
         self.pdf_page.set_mediabox(rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
 
@@ -116,22 +114,30 @@ class DocumentProcessor:
         self.renderer.config.backdrop_align = BACKDROP_ALIGN_TOP_CENTER
         self.renderer.set_backdrop_pymupdf(self.pdf_page, dpi=227)
 
+        # Render the lines
         frame = frame_to_pixmap(
             self.renderer.get_frame_raw(
-                int(rm_page_bounds.x), int(rm_page_bounds.y),
-                int(rm_page_bounds.width), int(rm_page_bounds.height),
+                int(self.page_bounds.x), int(self.page_bounds.y),
+                int(self.page_bounds.width), int(self.page_bounds.height),
                 *size_rounded,
             ),
             size_rounded
         )
+
+        # Add the lines to the PDF page
         self.pdf_page.insert_image(
             rect_to_murect(
-                pe.FRect(x_adjust / 2, y_adjust / 2, *size_rounded),
+                pe.FRect(
+                    -min(0, pdf_expand_left),
+                    -min(0, pdf_expand_top),
+                    *size_rounded
+                ),
                 scaling=ScalingTypes.PDF_PTS
             ),
             pixmap=frame
         )
 
+        # Add PDF Highlighter annotations for glyph ranges
         self.add_highlighter()
 
     def add_highlighter(self):
