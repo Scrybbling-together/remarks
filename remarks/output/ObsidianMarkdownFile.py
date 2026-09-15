@@ -4,18 +4,19 @@ from typing import List, Dict
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
-from rmscene.scene_items import GlyphRange, ParagraphStyle
-from rmscene.text import Paragraph
 
-from remarks.Document import Document
+from rm_api.models import Document, Tag
+from pylibrm_lines.text import Paragraph, ParagraphStyle
+from pylibrm_lines.scene_items.glyph_range import GlyphRangeItem
+
 
 def render_paragraph(paragraph: Paragraph):
     paragraph_content = ""
     for st in paragraph.contents:
-        st_text = str(st)
-        if st.properties['font-weight'] == "bold":
+        st_text = st.text
+        if st.formatting.bold:
             st_text = f"**{st_text}**"
-        if st.properties['font-style'] == "italic":
+        if st.formatting.italic:
             st_text = f"_{st_text}_"
         paragraph_content += st_text
 
@@ -37,12 +38,12 @@ def render_paragraph(paragraph: Paragraph):
 
 class RMPage:
     def __init__(self):
-        self.highlights: List[GlyphRange] = []
-        self.tags: List[str] = []
+        self.highlights: List[GlyphRangeItem] = []
+        self.tags: List[Tag] = []
         self.text: None | list[Paragraph] = None
 
 
-def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int) -> str:
+def merge_highlight_texts(h1: GlyphRangeItem, h2: GlyphRangeItem, distance: int) -> str:
     """
     Merge the text of two highlights based on their relative positions.
 
@@ -78,7 +79,7 @@ def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int) -> str:
     return " ".join(text.split())
 
 
-def calculate_highlight_distance(h1: GlyphRange, h2: GlyphRange):
+def calculate_highlight_distance(h1: GlyphRangeItem, h2: GlyphRangeItem):
     if h1.start > h2.start:
         h1, h2 = h2, h1
     end_of_h1 = h1.start + h1.length
@@ -90,7 +91,7 @@ def calculate_highlight_distance(h1: GlyphRange, h2: GlyphRange):
     return distance, end_of_h1, h1, h2
 
 
-def merge_highlights(highlights: List[GlyphRange]):
+def merge_highlights(highlights: List[GlyphRangeItem]):
     max_gap_threshold = 3
     merged_highlights = list(filter(lambda h: h is not None and type(h.start) is int, highlights.copy()))
     # Continue until no more changes
@@ -120,12 +121,13 @@ def merge_highlights(highlights: List[GlyphRange]):
                     new_length = new_end - new_start
 
                     # Create new highlight
-                    merged_highlight = GlyphRange(
+                    merged_highlight = GlyphRangeItem(
                         start=new_start,
                         length=new_length,
                         text=merge_highlight_texts(h1, h2, distance),
                         color=h1.color,
-                        rectangles=h1.rectangles + h2.rectangles
+                        argb_color=h1.argb_color,
+                        rects=h1.rects + h2.rects,
                     )
 
                     # Replace A with merged highlight and remove B
@@ -145,24 +147,24 @@ def merge_highlights(highlights: List[GlyphRange]):
     return merged_highlights
 
 
-class ObsidianMarkdownFile:
+class ObsidianMarkdownFile:  # TODO: Partial converted.
     def __init__(self, document: Document):
-        self.pages: Dict[int, RMPage] = {}
+        self.pages = {}
         self.document = document
 
-    def retrieve_page(self, index: int):
-        if not index in self.pages:
+    def retrieve_page(self, page_id: str):
+        if not page_id in self.pages:
             page = RMPage()
-            self.pages[index] = page
+            self.pages[page_id] = page
         else:
-            page = self.pages[index]
+            page = self.pages[page_id]
 
         return page
 
     def save(self, location: pathlib.Path):
-        frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.name}
-        if self.document.rm_tags:
-            frontmatter["tags"] = [f"#remarkable/{tag}" for tag in self.document.rm_tags]
+        frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.metadata.visible_name}
+        if self.document.content.tags:
+            frontmatter["tags"] = [f"#remarkable/{tag.name}" for tag in self.document.content.tags]
 
         env = Environment(loader=FileSystemLoader(pathlib.Path(__file__).parent))
         template = env.get_template('obsidian_markdown.md.jinja')
@@ -171,7 +173,6 @@ class ObsidianMarkdownFile:
             'document': self.document,
             'frontmatter': yaml.dump(frontmatter, indent=3, width=360),
             'pages': self.pages,
-            'sorted_pages': sorted(self.pages.items()),
             'render_paragraph': render_paragraph
         })
 
@@ -179,19 +180,25 @@ class ObsidianMarkdownFile:
             f.write(content)
 
     def add_highlights(
-        self, page_idx: int, highlights: List[GlyphRange]
+            self, page_id: str, highlights: List[GlyphRangeItem]
     ):
         if not highlights:
             return
 
-        self.retrieve_page(page_idx).highlights = merge_highlights(highlights)
+        self.retrieve_page(page_id).highlights = merge_highlights(highlights)
 
-    def add_text(self, page_idx: int, text):
-        if not text:
-            return
-        self.retrieve_page(page_idx).text = text["text"].contents
+    def add_text(self, page_id: str, text: Paragraph):
+        pass  # TODO
+        # self.retrieve_page(page_id).text
 
-    def add_page_tags(self, page_idx: int, tags: List[str]):
+    def add_page_tags(self, page_id: str, tags: List[Tag]):
         if not tags:
             return
-        self.retrieve_page(page_idx).tags = tags
+        self.retrieve_page(page_id).tags = tags
+
+    def handle_page_tags(self):
+        for page in self.document.content.c_pages.pages:
+            # Filter out this page's tags from the document's page_tags list
+            page_tags = [tag for tag in self.document.content.page_tags if tag.page_id == page.id]
+            if page_tags:
+                self.add_page_tags(page.id, page_tags)
