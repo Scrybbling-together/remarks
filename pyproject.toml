@@ -28,7 +28,8 @@ flask = "^3.1.0"
 rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "50e7ec9524af088ece67a6ba33281bc536c8f10b" }
 sentry-sdk = { version="^2.25.0", extras=["flask"] }
 gunicorn = "23.0.0"
-pylibrm-lines = "1.3.3"
+pylibrm-lines = "1.3.4"
+rm_api = ">=1.3.3"
 
 [tool.poetry.extras]
 server = ["flask"]
