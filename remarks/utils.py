@@ -120,12 +120,12 @@ def construct_redirection_map(content: dict) -> List[int]:
 
     redirection_map = []
     if "cPages" in content:
-        for i, page in enumerate(content['cPages']['pages']):
+        for i, page in enumerate(content["cPages"]["pages"]):
             # Skip deleted pages to stay in sync with pages_list
             if page.get("deleted", {"value": 0})["value"] == 1:
                 continue
             if "redir" in page:
-                redirection_map.append(page['redir']['value'])
+                redirection_map.append(page["redir"]["value"])
             else:
                 redirection_map.append(INSERTED_PAGE)
     return redirection_map
@@ -134,18 +134,21 @@ def construct_redirection_map(content: dict) -> List[int]:
 def is_inserted_page(idx: int) -> bool:
     return idx == INSERTED_PAGE
 
+
 def is_duplicate_page(idx: int) -> bool:
     return idx >= 0
+
 
 def get_document_tags(path: str):
     content = read_meta_file(path, suffix=".content")
     for tag in content.get("tags") or []:
-        yield sanitize_obsidian_tag(tag['name'])
+        yield sanitize_obsidian_tag(tag["name"])
+
 
 def sanitize_obsidian_tag(tag: str) -> str:
     """
     Sanitize a reMarkable page tag for use in Obsidian.
-    
+
     Based on testing, Obsidian tags:
     - Must start with a letter (not number)
     - Work well with letters, numbers, dashes, underscores
@@ -155,39 +158,39 @@ def sanitize_obsidian_tag(tag: str) -> str:
     """
     if not tag:
         return ""
-    
+
     # Remove leading # characters
     while tag.startswith("#"):
         tag = tag[1:]
-    
+
     # If tag was only # characters, mark as invalid
     if not tag:
         return "invalid-tag"
-    
+
     # Replace angle brackets (they break Obsidian parsing completely)
     tag = tag.replace("<", "-").replace(">", "-")
-    
+
     # Replace other problematic characters with dashes
     # Keep: letters (including accented), numbers, dashes, underscores, forward slashes
     # Also keep some Unicode that seems to work: ¿€£¥
     # Use \w to include accented characters, but exclude specific problematic ones
-    tag = re.sub(r'[^\w\-_/¿€£¥]', '-', tag, flags=re.UNICODE)
-    
+    tag = re.sub(r"[^\w\-_/¿€£¥]", "-", tag, flags=re.UNICODE)
+
     # Collapse multiple consecutive dashes
-    tag = re.sub(r'-+', '-', tag)
-    
+    tag = re.sub(r"-+", "-", tag)
+
     # Remove leading/trailing dashes
-    tag = tag.strip('-')
-    
+    tag = tag.strip("-")
+
     # If tag is empty after cleanup, it was all invalid characters
     if not tag:
         return "invalid-tag"
-    
+
     # Ensure it starts with a letter (Obsidian requirement)
     if not tag[0].isalpha():
         # If it starts with number or other, prefix with 'tag'
         tag = f"tag-{tag}"
-    
+
     return tag
 
 
@@ -204,12 +207,16 @@ def get_page_tags(path: str, page_id: str) -> List[str]:
         return page_tags
     return []
 
+
 def get_pages_data(path: str) -> Tuple[List[str], List[int]]:
     content = read_meta_file(path, suffix=".content")
     redirection_map = construct_redirection_map(content)
     if "cPages" in content:
-        return [page["id"] for page in content["cPages"]["pages"] if not page.get("deleted", {
-            "value": 0})["value"] == 1], redirection_map
+        return [
+            page["id"]
+            for page in content["cPages"]["pages"]
+            if not page.get("deleted", {"value": 0})["value"] == 1
+        ], redirection_map
     return content.get("pages") or [], redirection_map
 
 

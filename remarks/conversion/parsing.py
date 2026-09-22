@@ -48,7 +48,7 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
         "highlights": [],
         "glyph_ranges": [],
         "text": None,
-        "scene_tree": None
+        "scene_tree": None,
     }
 
     with open(file_path, "rb") as f:
@@ -74,13 +74,15 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
                             x=rmc_config.xx(rectangle.x),
                             y=rmc_config.yy(rectangle.y),
                             w=rmc_config.xx(rectangle.w),
-                            h=rmc_config.yy(rectangle.h)
-                        ) for rectangle in el.rectangles]
+                            h=rmc_config.yy(rectangle.h),
+                        )
+                        for rectangle in el.rectangles
+                    ]
                     # sort by reading order
                     translated_rectangles.sort(key=lambda h: (h.y, h.x))
                     highlight: RemarksRectangle = RemarksRectangle(
-                        color=el.color.value,
-                        rectangles=translated_rectangles)
+                        color=el.color.value, rectangles=translated_rectangles
+                    )
                     output["glyph_ranges"].append(el)
                     output["highlights"].append(highlight)
         except AssertionError:
@@ -118,6 +120,7 @@ def determine_document_dimensions(file_path) -> ReMarkableDimensions:
     return ReMarkableDimensions(
         dims["x_max"] - dims["x_min"], dims["y_max"] - dims["y_min"]
     )
+
 
 def check_rm_file_version(file_path):
     with open(file_path, "rb") as f:
@@ -179,6 +182,7 @@ def parse_rm_file(file_path: str) -> Tuple[Tuple[TMetaData, bool], str]:
     raise ValueError(
         f"{file_path} is not a valid .rm file: <header={header}><nlayers={nlayers}>"
     )
+
 
 # The line segment will pop up hundreds or thousands of times in notebooks where it is relevant.
 # this flag ensures it will print at most once.

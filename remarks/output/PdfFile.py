@@ -12,16 +12,16 @@ from rmscene.scene_items import PenColor, HARDCODED_COLORMAP
 
 def get_highlight_color(pen_color: int) -> tuple[float, float, float]:
     """Convert PenColor enum value to RGB tuple for PDF annotations.
-    
+
     Args:
         pen_color: PenColor enum value from rmscene
-        
+
     Returns:
         RGB tuple with values normalized to 0-1 range for PyMuPDF
     """
     # Create reverse mapping from PenColor to RGBA
     color_to_rgba = {v: k for k, v in HARDCODED_COLORMAP.items()}
-    
+
     # Try to convert to PenColor enum, fall back to raw integer lookup
     try:
         pen_color_enum = PenColor(pen_color)
@@ -29,13 +29,15 @@ def get_highlight_color(pen_color: int) -> tuple[float, float, float]:
     except ValueError:
         # If the color value is not a valid PenColor enum, use fallback
         rgba = (255, 237, 117, 255)
-    
+
     # Convert to RGB (ignore alpha) and normalize to 0-1 range
     r, g, b, _ = rgba
     return (r / 255, g / 255, b / 255)
 
 
-def apply_smart_highlight(page: Page, highlight: RemarksRectangle, x_translation: float) -> None:
+def apply_smart_highlight(
+    page: Page, highlight: RemarksRectangle, x_translation: float
+) -> None:
     # Get the color for this highlight based on its PenColor value
     highlight_color = get_highlight_color(highlight.color)
 
@@ -55,14 +57,11 @@ def apply_smart_highlight(page: Page, highlight: RemarksRectangle, x_translation
 
 
 def add_error_annotation(page: Page, more_info=""):
-    page.add_text_annot(
-        text="Scrybble error" + more_info,
-        icon="Note",
-        point=(10, 10)
-    )
+    page.add_text_annot(text="Scrybble error" + more_info, icon="Note", point=(10, 10))
 
 
 # Following two functions are lifted almost directly from https://github.com/pymupdf/PyMuPDF/issues/318#issuecomment-658781494.
+
 
 def check_contain(r_word, points):
     """If `r_word` is contained in the rectangular area.
@@ -97,14 +96,11 @@ def extract_annot(annot, words_on_page):
     """
     quad_points = annot.vertices
     quad_count = int(len(quad_points) / 4)
-    sentences = ['' for i in range(quad_count)]
+    sentences = ["" for i in range(quad_count)]
     for i in range(quad_count):
-        points = quad_points[i * 4: i * 4 + 4]
-        words = [
-            w for w in words_on_page if
-            check_contain(Rect(w[:4]), points)
-        ]
-        sentences[i] = ' '.join(w[4] for w in words)
-    sentence = ' '.join(sentences)
+        points = quad_points[i * 4 : i * 4 + 4]
+        words = [w for w in words_on_page if check_contain(Rect(w[:4]), points)]
+        sentences[i] = " ".join(w[4] for w in words)
+    sentence = " ".join(sentences)
 
     return sentence

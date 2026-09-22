@@ -11,7 +11,13 @@ from pylibrm_lines import SceneTree, FailedToBuildTree
 from rm_api.models import LocalDocument
 from rmc.exporters.pdf import rm_to_pdf
 import rmc.exporters.svg as svg_exporter
-from rmc.exporters.svg import build_anchor_pos, get_bounding_box, set_device, set_dimensions_for_pdf, rmc_config
+from rmc.exporters.svg import (
+    build_anchor_pos,
+    get_bounding_box,
+    set_device,
+    set_dimensions_for_pdf,
+    rmc_config,
+)
 from rmc.exporters.svg import rm_to_svg
 
 import rmc
@@ -34,13 +40,10 @@ from .warnings import scrybble_warning_tree_failed_to_build
 REMARKS_TEMP_DIR = get_writable_tempdir()
 
 
-def run_remarks(
-        input_dir: pathlib.Path, output_dir: pathlib.Path,
-        device: str = None
-):
+def run_remarks(input_dir: pathlib.Path, output_dir: pathlib.Path, device: str = None):
     if input_dir.name.endswith(".rmn") or input_dir.name.endswith(".rmdoc"):
         temp_dir = tempfile.mkdtemp(dir=REMARKS_TEMP_DIR)
-        with zipfile.ZipFile(input_dir, 'r') as zip_ref:
+        with zipfile.ZipFile(input_dir, "r") as zip_ref:
             zip_ref.extractall(temp_dir)
         input_dir = pathlib.Path(temp_dir)
 
@@ -70,13 +73,16 @@ def run_remarks(
             continue
 
         if doc_type in supported_types:
-            logging.info(f'\nFile: "{doc_name} [type={doc_type}]" ({metadata_path.stem})')
+            logging.info(
+                f'\nFile: "{doc_name} [type={doc_type}]" ({metadata_path.stem})'
+            )
 
             in_device_dir = get_ui_path(metadata_path)
             relative_doc_path = pathlib.Path(f"{in_device_dir}/{doc_name}")
 
-            process_document(metadata_path, relative_doc_path, output_dir,
-                             device=device)
+            process_document(
+                metadata_path, relative_doc_path, output_dir, device=device
+            )
         else:
             logging.info(
                 f'\nFile skipped: "{doc_name}" ({metadata_path.stem}) due to unsupported filetype: {doc_type}. remarks only supports: {", ".join(supported_types)}'
@@ -88,10 +94,10 @@ def run_remarks(
 
 
 def process_document(
-        metadata_path: pathlib.Path,
-        relative_doc_path: pathlib.Path,
-        output_dir: pathlib.Path,
-        device: str = None
+    metadata_path: pathlib.Path,
+    relative_doc_path: pathlib.Path,
+    output_dir: pathlib.Path,
+    device: str = None,
 ):
     document = Document(metadata_path)
     rmc_pdf_src = document.open_source_pdf()
@@ -105,9 +111,9 @@ def process_document(
     obsidian_markdown.handle_page_tags()
 
     for (
-            page_uuid,
-            page_idx,
-            rm_annotation_file,
+        page_uuid,
+        page_idx,
+        rm_annotation_file,
     ) in document.pages():
         logging.info(f"processing page {page_idx + 1}, {page_uuid}")
         page = rmc_pdf_src[page_idx]
@@ -151,18 +157,23 @@ def process_document(
         # otherwise use device setting for notebooks
         has_backing_pdf = page.get_contents()
         if has_backing_pdf:
-            logging.info(f"Setting page dimensions based on pdf: {round(w_bg, 2)} x {round(h_bg, 2)}")
+            logging.info(
+                f"Setting page dimensions based on pdf: {round(w_bg, 2)} x {round(h_bg, 2)}"
+            )
             set_dimensions_for_pdf(w_bg, h_bg)
         elif device:
             logging.info(f"Setting page dimensions based on device: {device}")
             set_device(device)
         else:
             logging.warning(
-                f"Unknown device and no backing pdf: setting page size to RMPP (if this is incorrect, specify device with --device)")
-            set_device('RMPP')
+                f"Unknown device and no backing pdf: setting page size to RMPP (if this is incorrect, specify device with --device)"
+            )
+            set_device("RMPP")
 
         (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
-        temp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", mode="w", delete=False, dir=REMARKS_TEMP_DIR)
+        temp_pdf = tempfile.NamedTemporaryFile(
+            suffix=".pdf", mode="w", delete=False, dir=REMARKS_TEMP_DIR
+        )
 
         # This offset is used for smart highlights
         highlights_x_translation = 0
@@ -187,8 +198,12 @@ def process_document(
                 x_min, x_max, y_min, y_max = get_bounding_box(
                     ann_data["scene_tree"].root, anchor_pos, default=pdf_default_bounds
                 )
-                x_shift, y_shift, w_svg, h_svg = rmc_config.xx(x_min), rmc_config.yy(y_min), rmc_config.xx(
-                    x_max - x_min + 1), rmc_config.yy(y_max - y_min + 1)
+                x_shift, y_shift, w_svg, h_svg = (
+                    rmc_config.xx(x_min),
+                    rmc_config.yy(y_min),
+                    rmc_config.xx(x_max - x_min + 1),
+                    rmc_config.yy(y_max - y_min + 1),
+                )
 
                 # compute the width/height of a blank page that can contain both svg and background pdf
                 width, height = max(w_svg, w_bg), max(h_svg, h_bg)
@@ -207,22 +222,22 @@ def process_document(
                     # When SVG is smaller, PDF spans full width, so center is at w_bg/2
                     highlights_x_translation = w_bg / 2
                 if h_svg > h_bg:
-                    y_bg = - y_shift
+                    y_bg = -y_shift
                 elif h_svg < h_bg:
                     y_svg = y_shift
 
                 # create the merged page in independent document as show_pdf_page can't be done on the same document
                 doc = fitz.open()
-                page = doc.new_page(-1,
-                                    width=width,
-                                    height=height)
-                page.show_pdf_page(fitz.Rect(x_bg, y_bg, x_bg + w_bg, y_bg + h_bg),
-                                   rmc_pdf_src,
-                                   page_idx,
-                                   rotate=-page_rotation)
-                page.show_pdf_page(fitz.Rect(x_svg, y_svg, x_svg + w_svg, y_svg + h_svg),
-                                   svg_pdf,
-                                   0)
+                page = doc.new_page(-1, width=width, height=height)
+                page.show_pdf_page(
+                    fitz.Rect(x_bg, y_bg, x_bg + w_bg, y_bg + h_bg),
+                    rmc_pdf_src,
+                    page_idx,
+                    rotate=-page_rotation,
+                )
+                page.show_pdf_page(
+                    fitz.Rect(x_svg, y_svg, x_svg + w_svg, y_svg + h_svg), svg_pdf, 0
+                )
 
                 rmc_pdf_src.insert_pdf(doc, start_at=page_idx)
             else:
@@ -237,7 +252,9 @@ def process_document(
         if ann_data:
             if ann_data["highlights"]:
                 for highlight in ann_data["highlights"]:
-                    apply_smart_highlight(rmc_pdf_src[page_idx], highlight, highlights_x_translation)
+                    apply_smart_highlight(
+                        rmc_pdf_src[page_idx], highlight, highlights_x_translation
+                    )
 
     output_pdf_path = output_dir / f"{relative_doc_path} _remarks.pdf"
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
