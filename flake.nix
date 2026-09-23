@@ -23,32 +23,38 @@
   };
 
   outputs =
-    { self, nixpkgs, flake-utils, pyproject-nix, uv2nix, pyproject-build-systems }:
-    flake-utils.lib.eachDefaultSystem (system:
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      pyproject-nix,
+      uv2nix,
+      pyproject-build-systems,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (nixpkgs) lib;
 
-        # Single source of truth for the interpreter, shared by the package build
-        # and the development shell so the two cannot drift apart.
+        # Single source of truth for the interpreter
         python = pkgs.python312;
 
         workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
 
-        # Equivalent of poetry2nix's `preferWheels = true`
         overlay = workspace.mkPyprojectOverlay { sourcePreference = "wheel"; };
 
-        # Ports of the old `defaultPoetryOverrides.extend` block. The git
+        # The git
         # dependencies are poetry projects published without wheels, so they get
         # built from source and need their build backend declared explicitly.
         pyprojectOverrides = final: prev: {
           rmc = prev.rmc.overrideAttrs (old: {
-            nativeBuildInputs = (old.nativeBuildInputs or [ ])
-              ++ final.resolveBuildSystem { poetry-core = [ ]; };
+            nativeBuildInputs =
+              (old.nativeBuildInputs or [ ]) ++ final.resolveBuildSystem { poetry-core = [ ]; };
           });
           rmscene = prev.rmscene.overrideAttrs (old: {
-            nativeBuildInputs = (old.nativeBuildInputs or [ ])
-              ++ final.resolveBuildSystem { poetry-core = [ ]; };
+            nativeBuildInputs =
+              (old.nativeBuildInputs or [ ]) ++ final.resolveBuildSystem { poetry-core = [ ]; };
           });
 
           # cairocffi (pulled in by rmc -> cairosvg) resolves libcairo at import
@@ -64,21 +70,18 @@
           });
         };
 
-        pythonSet =
-          (pkgs.callPackage pyproject-nix.build.packages { inherit python; })
-          .overrideScope (lib.composeManyExtensions [
+        pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
+          lib.composeManyExtensions [
             pyproject-build-systems.overlays.default
             overlay
             pyprojectOverrides
-          ]);
+          ]
+        );
 
-        # Replaces mkPoetryApplication + `extras = [ "server" ]`.
-        remarksBin = pythonSet.mkVirtualEnv "remarks-env"
-          (workspace.deps.default // { remarks = [ "server" ]; });
+        remarksBin = pythonSet.mkVirtualEnv "remarks-env" (
+          workspace.deps.default // { remarks = [ "server" ]; }
+        );
 
-        # Native libraries that dlopen()-style dependencies need at runtime.
-        # In the Nix build these are baked into the derivations; in the impure
-        # uv shell the wheels come from PyPI, so we expose them via LD_LIBRARY_PATH.
         runtimeLibs = [
           pkgs.stdenv.cc.cc.lib
           pkgs.zlib
@@ -102,11 +105,10 @@
             pkgs.poppler-utils
             # qpdf is useful to modify pdf metadata
             pkgs.qpdf
-          ] ++ runtimeLibs;
+          ]
+          ++ runtimeLibs;
 
           env = {
-            # Always use the Nix-provided interpreter; a downloaded CPython is
-            # dynamically linked against a generic glibc and will not run here.
             UV_PYTHON_DOWNLOADS = "never";
             UV_PYTHON = python.interpreter;
             LD_LIBRARY_PATH = lib.makeLibraryPath runtimeLibs;
@@ -139,13 +141,18 @@
 
         dockerBinary = pkgs.dockerTools.buildImage {
           name = "remarks-bin";
-          config = { Entrypoint = [ "${remarksBin}/bin/remarks" ]; };
+          config = {
+            Entrypoint = [ "${remarksBin}/bin/remarks" ];
+          };
         };
         dockerServer = pkgs.dockerTools.buildLayeredImage {
           name = "remarks-server";
-          config = { Entrypoint = [ "${remarksBin}/bin/remarks-server" ]; };
+          config = {
+            Entrypoint = [ "${remarksBin}/bin/remarks-server" ];
+          };
         };
-      in {
+      in
+      {
         packages = {
           default = remarksBin;
           remarks = remarksBin;
@@ -161,5 +168,6 @@
         };
 
         devShells.default = environment;
-      });
+      }
+    );
 }
