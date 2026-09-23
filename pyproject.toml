@@ -1,11 +1,10 @@
-[tool.poetry]
+[project]
 name = "remarks"
 version = "0.3.10"
 description = "Extract annotations (highlights and scribbles) from PDF, EPUB, and notebooks marked with reMarkable™ paper tablets. Export to Markdown, PDF, PNG, and SVG."
-authors = ["Laura <https://github.com/azeirah>"]
+authors = [{ name = "Laura" }]
 readme = "README.md"
 license = "GPL-3.0-only"
-repository = "https://github.com/scrybbling-together/remarks"
 keywords = ["remarkable-tablet", "remarkable", "markdown", "png", "pdf", "svg", "annotations", "highlights", "scribbles"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -13,42 +12,51 @@ classifiers = [
     "Topic :: Multimedia :: Graphics :: Graphics Conversion",
     "Topic :: Utilities"
 ]
-include = ["remarks/assets/templates/*.template"]
+requires-python = ">=3.12,<4.0"
 
-# https://python-poetry.org/docs/dependency-specification/
-[tool.poetry.dependencies]
-python = "^3.12"
-PyMuPDF = "^1.23.5"
-rmscene = { git = "https://github.com/scrybbling-together/rmscene.git", rev = "main" }
-pyyaml = "^6.0.1"
-markupsafe = "<3.0.3"
-parsita = "^2.1.1"
-numpy = "^2.2.1"
-flask = "^3.1.0"
-rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "50e7ec9524af088ece67a6ba33281bc536c8f10b" }
-sentry-sdk = { version="^2.25.0", extras=["flask"] }
-gunicorn = "23.0.0"
-pylibrm-lines = "1.3.4"
-rm_api = ">=1.3.3"
+# https://packaging.python.org/en/latest/specifications/dependency-specifiers/
+dependencies = [
+    "PyMuPDF>=1.23.5,<2",
+    "rmscene",
+    "pyyaml>=6.0.1,<7",
+    "markupsafe<3.0.3",
+    "parsita>=2.1.1,<3",
+    "numpy>=2.2.1,<3",
+    "flask>=3.1.0,<4",
+    "jinja2>=3.1,<4",
+    "rmc",
+    "sentry-sdk[flask]>=2.25.0,<3",
+    "gunicorn==23.0.0",
+    "pylibrm-lines==1.3.4",
+    "rm_api>=1.3.3",
+]
 
-[tool.poetry.extras]
-server = ["flask"]
+[project.optional-dependencies]
+server = ["flask>=3.1.0,<4"]
 
-[tool.poetry.scripts]
-remarks = 'remarks.__main__:main'
+[project.scripts]
+remarks = "remarks.__main__:main"
 remarks-server = "remarks.server:main_prod"
+
+[project.urls]
+Repository = "https://github.com/scrybbling-together/remarks"
+
+[tool.uv.sources]
+rmscene = { git = "https://github.com/scrybbling-together/rmscene.git", rev = "main" }
+rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "50e7ec9524af088ece67a6ba33281bc536c8f10b" }
 
 [dependency-groups]
 dev = [
-    "pytest (>=9.1.1,<10.0.0)",
-    "tqdm (>=4.70.0,<5.0.0)"
+    "pytest>=9.1.1,<10.0.0",
+    "tqdm>=4.70.0,<5.0.0"
 ]
 
 [build-system]
-# https://python-poetry.org/docs/pyproject/#poetry-and-pep-517
-# https://github.com/python-poetry/poetry/releases/tag/1.3.0
-requires = ["poetry-core>=1.4.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["remarks"]
 
 [tool.pytest.ini_options]
 markers = [
@@ -57,5 +65,3 @@ markers = [
     "visual",
     "unfinished_feature"
 ]
-
-
