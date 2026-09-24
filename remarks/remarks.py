@@ -107,9 +107,6 @@ def process_document(
 
     obsidian_markdown = ObsidianMarkdownFile(document__new)
 
-    # First, add page tags for ALL pages (including those without .rm files)
-    obsidian_markdown.handle_page_tags()
-
     for (
         page_uuid,
         page_idx,

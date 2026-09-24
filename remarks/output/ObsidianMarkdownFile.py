@@ -20,20 +20,20 @@ def render_paragraph(paragraph: Paragraph):
             st_text = f"_{st_text}_"
         paragraph_content += st_text
 
-    if paragraph.style.value == ParagraphStyle.PLAIN:
+    if paragraph.style.legacy_style.value == ParagraphStyle.PLAIN:
         return f"\n{paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.BOLD:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.BOLD:
         return f"\n###### {paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.HEADING:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.HEADING:
         return f"\n##### {paragraph_content}\n"
     elif (
-        paragraph.style.value == ParagraphStyle.BULLET
-        or paragraph.style.value == ParagraphStyle.BULLET2
+        paragraph.style.legacy_style.value == ParagraphStyle.BULLET
+        or paragraph.style.legacy_style.value == ParagraphStyle.BULLET2
     ):
         return f"- {paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.CHECKBOX:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.CHECKBOX:
         return f"- [ ] {paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.CHECKBOX_CHECKED:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.CHECKBOX_CHECKED:
         return f"- [x] {paragraph_content}\n"
 
     return paragraph_content
@@ -152,10 +152,13 @@ def merge_highlights(highlights: List[GlyphRangeItem]):
     return merged_highlights
 
 
-class ObsidianMarkdownFile:  # TODO: Partial converted.
+class ObsidianMarkdownFile:
     def __init__(self, document: Document):
         self.pages = {}
         self.document = document
+
+        # First, add page tags for ALL pages (including those without .rm files)
+        self.process_all_page_tags()
 
     def retrieve_page(self, page_id: str):
         if not page_id in self.pages:
@@ -197,16 +200,15 @@ class ObsidianMarkdownFile:  # TODO: Partial converted.
 
         self.retrieve_page(page_id).highlights = merge_highlights(highlights)
 
-    def add_text(self, page_id: str, text: Paragraph):
-        pass  # TODO
-        # self.retrieve_page(page_id).text
+    def add_text(self, page_id: str, paragraphs: List[Paragraph]):
+        self.retrieve_page(page_id).text = paragraphs
 
     def add_page_tags(self, page_id: str, tags: List[Tag]):
         if not tags:
             return
         self.retrieve_page(page_id).tags = tags
 
-    def handle_page_tags(self):
+    def process_all_page_tags(self):
         for page in self.document.content.c_pages.pages:
             # Filter out this page's tags from the document's page_tags list
             page_tags = [
