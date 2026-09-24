@@ -2,7 +2,10 @@ import pytest
 from tests.NotebookMetadata import NotebookMetadata, PageMetadata
 from RemarkableNotebookType import ReMarkableNotebookType
 from remarks.metadata import ReMarkableAnnotationsFileHeaderVersion, ReMarkableDevice
-from remarks.warnings import scrybble_warning_tree_failed_to_build, scrybble_warning_typed_text_highlighting_not_supported
+from remarks.warnings import (
+    scrybble_warning_tree_failed_to_build,
+    scrybble_warning_typed_text_highlighting_not_supported,
+)
 
 
 @pytest.fixture
@@ -22,9 +25,9 @@ def markdown_tags_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=1,
-                tags=['star']
-            )
-        ]
+                tags=["star"],
+            ),
+        ],
     )
 
 
@@ -40,20 +43,21 @@ def gosper_notebook():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=0,
-                warnings=[scrybble_warning_tree_failed_to_build]
+                warnings=[scrybble_warning_tree_failed_to_build],
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=1,
-                warnings=[scrybble_warning_tree_failed_to_build]
+                warnings=[scrybble_warning_tree_failed_to_build],
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=2,
-                warnings=[scrybble_warning_tree_failed_to_build]
-            )
-        ]
+                warnings=[scrybble_warning_tree_failed_to_build],
+            ),
+        ],
     )
+
 
 @pytest.fixture
 def highlights_document():
@@ -92,15 +96,20 @@ def highlights_document():
                     "The computable numbers do not, however, include all definable numbers,",
                     "Although the class of computable numbers is so great, and in many Avays similar to the class of real numbers, it is nevertheless enumerable.",
                 ],
-                photo={ReMarkableDevice.reMarkablePaperPro: "tests/in/on computable numbers - RMPP - highlighter tool v6 - page 1.jpeg"}
+                photo={
+                    ReMarkableDevice.reMarkablePaperPro: "tests/in/on computable numbers - RMPP - highlighter tool v6 - page 1.jpeg"
+                },
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=1,
-                photo={ReMarkableDevice.reMarkablePaperPro: "tests/in/on computable numbers - RMPP - highlighter tool v6 - page 2.jpeg"}
-            )
-        ]
+                photo={
+                    ReMarkableDevice.reMarkablePaperPro: "tests/in/on computable numbers - RMPP - highlighter tool v6 - page 2.jpeg"
+                },
+            ),
+        ],
     )
+
 
 @pytest.fixture
 def highlights_multiline_document():
@@ -116,7 +125,7 @@ def highlights_multiline_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=0,
-                merged_highlights= [
+                merged_highlights=[
                     "suddenly there came a tapping,",
                     # TODO: These spelling mistakes come from either rmscene or from ReMarkable itself.
                     #       worth investigating!
@@ -124,7 +133,7 @@ def highlights_multiline_document():
                     "Let my heart be still a moment and this",
                     # TODO: These spelling mistakes come from either rmscene or from ReMarkable itself.
                     #       worth investigating!
-                    "But, with mien of lord or lady, perchedabove my chamber door—"
+                    "But, with mien of lord or lady, perchedabove my chamber door—",
                 ],
                 raw_highlights=[
                     "suddenly there came a tapping,",
@@ -132,17 +141,18 @@ def highlights_multiline_document():
                     "had sought to borrow",
                     "Let my heart be still a moment and this",
                     "But, with mien of lord or lady, perched",
-                    "above my chamber door—"
-                ]
+                    "above my chamber door—",
+                ],
             )
-        ]
+        ],
     )
+
 
 @pytest.fixture
 def v5_document():
     return NotebookMetadata(
         notebook_name="1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing",
-        description="Alan Turing's \"On Computable Numbers\" with annotations from xochitl v5",
+        description='Alan Turing\'s "On Computable Numbers" with annotations from xochitl v5',
         rmn_source="tests/in/on computable numbers - v5.rmn",
         notebook_type=ReMarkableNotebookType.PDF,
         pdf_pages=36,
@@ -163,8 +173,8 @@ def v5_document():
                 pdf_document_index=27,
                 raw_highlights=[],
                 warnings=[scrybble_warning_tree_failed_to_build],
-            )
-        ]
+            ),
+        ],
     )
 
 
@@ -183,7 +193,7 @@ def black_and_white():
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=0,
             )
-        ]
+        ],
     )
 
 
@@ -213,9 +223,10 @@ def colored_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=3,
-            )
-        ]
+            ),
+        ],
     )
+
 
 @pytest.fixture
 def shader_notebook():
@@ -228,10 +239,11 @@ def shader_notebook():
         pages=[
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
-                pdf_document_index=0
+                pdf_document_index=0,
             )
-        ]
+        ],
     )
+
 
 @pytest.fixture
 def file_with_annoying_name():
@@ -242,12 +254,14 @@ def file_with_annoying_name():
         rmn_source="tests/in/annoying filename.rmn",
         pdf_pages=1,
         pages=[
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
-                      pdf_document_index=0,
-                      raw_highlights=[],
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+                raw_highlights=[],
             )
-        ]
+        ],
     )
+
 
 @pytest.fixture
 def typed_text_notebook():
@@ -328,10 +342,11 @@ _**This is regular bold italic**_
 
 _p_
 
-_THis is the end paragra_ph""", # The typo is copied as-is from the document. Don't mind it :)
-            )
-        ]
+_THis is the end paragra_ph""",  # The typo is copied as-is from the document. Don't mind it :)
+            ),
+        ],
     )
+
 
 @pytest.fixture()
 def typed_test_real_world_document():
@@ -375,11 +390,20 @@ This update brings your typed text to the PDF export as well as to your Obsidian
         description="A document with real-world typed text, contains a newsletter for a Scrybble update",
         pages=[
             # The first page has text with the "wide" column setting
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0, typed_text=typed_text),
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+                typed_text=typed_text,
+            ),
             # The second page has text with the "narrow" column setting
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=1, typed_text=typed_text),
-        ]
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=1,
+                typed_text=typed_text,
+            ),
+        ],
     )
+
 
 @pytest.fixture()
 def duplicated_pdf_pages():
@@ -391,15 +415,28 @@ def duplicated_pdf_pages():
         description="A source PDF with one page having various copied pages",
         pages=[
             # The first page is from the original PDF
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+            ),
             # The second page is a duplicate of the first page, with additional annotations
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=1),
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=1,
+            ),
             # The third page is an inserted page
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=2),
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=2,
+            ),
             # The fourth page is a duplicate of page 3
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=3),
-        ]
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=3,
+            ),
+        ],
     )
+
 
 @pytest.fixture()
 def rotated_0_document():
@@ -410,8 +447,11 @@ def rotated_0_document():
         rmn_source="tests/in/rotated/rotated-0.rmn",
         description="A PDF with 0 degree rotation and handwritten 'hello' annotation",
         pages=[
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
-        ]
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+            ),
+        ],
     )
 
 
@@ -424,8 +464,11 @@ def rotated_90_document():
         rmn_source="tests/in/rotated/rotated-90.rmn",
         description="A PDF with 90 degree rotation and handwritten 'hello' annotation",
         pages=[
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
-        ]
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+            ),
+        ],
     )
 
 
@@ -438,8 +481,11 @@ def rotated_180_document():
         rmn_source="tests/in/rotated/rotated-180.rmn",
         description="A PDF with 180 degree rotation and handwritten 'hello' annotation",
         pages=[
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
-        ]
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+            ),
+        ],
     )
 
 
@@ -452,8 +498,11 @@ def rotated_270_document():
         rmn_source="tests/in/rotated/rotated-270.rmn",
         description="A PDF with 270 degree rotation and handwritten 'hello' annotation",
         pages=[
-            PageMetadata(rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6, pdf_document_index=0),
-        ]
+            PageMetadata(
+                rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
+                pdf_document_index=0,
+            ),
+        ],
     )
 
 
@@ -473,8 +522,8 @@ def orphaned_rm_file_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V6,
                 pdf_document_index=1,
-            )
-        ]
+            ),
+        ],
     )
 
 
@@ -486,7 +535,7 @@ def unannotated_pdf_document():
         rmn_source="tests/in/unannotated pdf.rmdoc",
         notebook_type=ReMarkableNotebookType.PDF,
         pdf_pages=5,
-        pages=[]
+        pages=[],
     )
 
 

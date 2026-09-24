@@ -26,7 +26,10 @@ def render_paragraph(paragraph: Paragraph):
         return f"\n###### {paragraph_content}\n"
     elif paragraph.style.legacy_style.value == ParagraphStyle.HEADING:
         return f"\n##### {paragraph_content}\n"
-    elif paragraph.style.legacy_style.value == ParagraphStyle.BULLET or paragraph.style.legacy_style.value == ParagraphStyle.BULLET2:
+    elif (
+        paragraph.style.legacy_style.value == ParagraphStyle.BULLET
+        or paragraph.style.legacy_style.value == ParagraphStyle.BULLET2
+    ):
         return f"- {paragraph_content}\n"
     elif paragraph.style.legacy_style.value == ParagraphStyle.CHECKBOX:
         return f"- [ ] {paragraph_content}\n"
@@ -86,14 +89,16 @@ def calculate_highlight_distance(h1: GlyphRangeItem, h2: GlyphRangeItem):
     distance = h2.start - end_of_h1
 
     if h1.color != h2.color:
-        return float('inf'), end_of_h1, h1, h2
+        return float("inf"), end_of_h1, h1, h2
 
     return distance, end_of_h1, h1, h2
 
 
 def merge_highlights(highlights: List[GlyphRangeItem]):
     max_gap_threshold = 3
-    merged_highlights = list(filter(lambda h: h is not None and type(h.start) is int, highlights.copy()))
+    merged_highlights = list(
+        filter(lambda h: h is not None and type(h.start) is int, highlights.copy())
+    )
     # Continue until no more changes
     while True:
         # Sort by starting position
@@ -165,26 +170,31 @@ class ObsidianMarkdownFile:
         return page
 
     def save(self, location: pathlib.Path):
-        frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.metadata.visible_name}
+        frontmatter = {
+            "scrybble_timestamp": int(time.time()),
+            "scrybble_filename": self.document.metadata.visible_name,
+        }
         if self.document.content.tags:
-            frontmatter["tags"] = [f"#remarkable/{tag.name}" for tag in self.document.content.tags]
+            frontmatter["tags"] = [
+                f"#remarkable/{tag.name}" for tag in self.document.content.tags
+            ]
 
         env = Environment(loader=FileSystemLoader(pathlib.Path(__file__).parent))
-        template = env.get_template('obsidian_markdown.md.jinja')
+        template = env.get_template("obsidian_markdown.md.jinja")
 
-        content = template.render(**{
-            'document': self.document,
-            'frontmatter': yaml.dump(frontmatter, indent=3, width=360),
-            'pages': self.pages,
-            'render_paragraph': render_paragraph
-        })
+        content = template.render(
+            **{
+                "document": self.document,
+                "frontmatter": yaml.dump(frontmatter, indent=3, width=360),
+                "pages": self.pages,
+                "render_paragraph": render_paragraph,
+            }
+        )
 
         with open(f"{location} _obsidian.md", "w") as f:
             f.write(content)
 
-    def add_highlights(
-            self, page_id: str, highlights: List[GlyphRangeItem]
-    ):
+    def add_highlights(self, page_id: str, highlights: List[GlyphRangeItem]):
         if not highlights:
             return
 
@@ -201,6 +211,8 @@ class ObsidianMarkdownFile:
     def process_all_page_tags(self):
         for page in self.document.content.c_pages.pages:
             # Filter out this page's tags from the document's page_tags list
-            page_tags = [tag for tag in self.document.content.page_tags if tag.page_id == page.id]
+            page_tags = [
+                tag for tag in self.document.content.page_tags if tag.page_id == page.id
+            ]
             if page_tags:
                 self.add_page_tags(page.id, page_tags)

@@ -47,8 +47,9 @@ rmc = { git = "https://github.com/scrybbling-together/rmc.git", rev = "50e7ec952
 
 [dependency-groups]
 dev = [
+    "black>=26.5.1",
     "pytest>=9.1.1,<10.0.0",
-    "tqdm>=4.70.0,<5.0.0"
+    "tqdm>=4.70.0,<5.0.0",
 ]
 
 [build-system]

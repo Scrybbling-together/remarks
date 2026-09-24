@@ -26,5 +26,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --all-groups
 
+      - name: Verify linting
+        run: poetry run black --check .
+
       - name: Run tests
         run: uv run pytest -m "not unfinished_feature"

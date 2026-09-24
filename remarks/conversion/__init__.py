@@ -1,7 +1,4 @@
-from .parsing import (
-    parse_rm_file,
-    check_rm_file_version
-)
+from .parsing import parse_rm_file, check_rm_file_version
 
 from .text import (
     check_if_text_extractable,

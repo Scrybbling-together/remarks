@@ -13,7 +13,8 @@ from remarks.utils import (
     is_inserted_page,
     get_pages_data,
     list_ann_rm_files,
-    get_visible_name, is_duplicate_page,
+    get_visible_name,
+    is_duplicate_page,
 )
 
 
@@ -49,7 +50,10 @@ class Document:
                         pno=insert_pos,
                     )
                     pages_added += 1
-                elif is_duplicate_page(page_idx) and i >= source_pdf_page_count + pages_added:
+                elif (
+                    is_duplicate_page(page_idx)
+                    and i >= source_pdf_page_count + pages_added
+                ):
                     # When you duplicate a page on the reMarkable in the case of a PDF
                     # You need to find the page in the source PDF and copy it
                     if page_idx < source_pdf_page_count:
@@ -59,7 +63,6 @@ class Document:
                 else:
                     # Page already exists in source PDF, nothing to do
                     pass
-
 
         # Thanks to @apoorvkh
         # - https://github.com/lucasrla/remarks/issues/11#issuecomment-1287175782
@@ -100,9 +103,7 @@ class Document:
         return pdf_src
 
     def pages(self):
-        page_uuids = set(
-            [f.stem for f in self.rm_annotation_files]
-        )
+        page_uuids = set([f.stem for f in self.rm_annotation_files])
 
         for page_uuid in page_uuids:
             if page_uuid not in self.pages_list:
@@ -122,7 +123,7 @@ class Document:
                 page_idx,
                 rm_annotation_file,
             )
-    
+
     def get_page_tags_for_page(self, page_uuid: str) -> List[str]:
         """Get tags for a specific page"""
         return get_page_tags(self.metadata_path, page_uuid)
@@ -138,4 +139,4 @@ def sanitize_filename(filename: str) -> str:
     #[]^|
     Within remarks, we replace these characters with a _
     """
-    return re.sub(r'[#[\]^|:/\\]', '_', filename)
+    return re.sub(r"[#[\]^|:/\\]", "_", filename)
