@@ -2387,13 +2387,13 @@ crypto = ["cryptography (>=3.4.0)"]
 
 [[package]]
 name = "pylibrm-lines"
-version = "1.3.4"
+version = "1.3.5"
 description = ""
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pylibrm_lines-1.3.4-py3-none-any.whl", hash = "sha256:39901584baacba2035c57609f154cca936113b70f87929dbd9da45d241eec049"},
+    {file = "pylibrm_lines-1.3.5-py3-none-any.whl", hash = "sha256:afc66b7984a408b0f385f6b6522097842e4aeb4f2b61129c8bfcbfc7ed123a89"},
 ]
 
 [package.dependencies]
@@ -3268,4 +3268,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "0bf3e00638c1d03c68cd914586efbd48b4f6bef000f9916913224fc495f47406"
+content-hash = "8202a3de226dfd7d39372687fcf9630b061b6726dce4cfc4fb7749937e961b3c"
