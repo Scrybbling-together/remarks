@@ -2,7 +2,7 @@ import pytest
 from tests.NotebookMetadata import NotebookMetadata, PageMetadata
 from RemarkableNotebookType import ReMarkableNotebookType
 from remarks.metadata import ReMarkableAnnotationsFileHeaderVersion, ReMarkableDevice
-from remarks.warnings import scrybble_warning_only_v6_supported, scrybble_warning_typed_text_highlighting_not_supported
+from remarks.warnings import scrybble_warning_tree_failed_to_build, scrybble_warning_typed_text_highlighting_not_supported
 
 
 @pytest.fixture
@@ -40,17 +40,17 @@ def gosper_notebook():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=0,
-                warnings=[scrybble_warning_only_v6_supported]
+                warnings=[scrybble_warning_tree_failed_to_build]
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=1,
-                warnings=[scrybble_warning_only_v6_supported]
+                warnings=[scrybble_warning_tree_failed_to_build]
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V3,
                 pdf_document_index=2,
-                warnings=[scrybble_warning_only_v6_supported]
+                warnings=[scrybble_warning_tree_failed_to_build]
             )
         ]
     )
@@ -150,19 +150,19 @@ def v5_document():
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V5,
                 pdf_document_index=0,
-                warnings=[scrybble_warning_only_v6_supported],
+                warnings=[scrybble_warning_tree_failed_to_build],
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V5,
                 pdf_document_index=1,
                 raw_highlights=[],
-                warnings=[scrybble_warning_only_v6_supported],
+                warnings=[scrybble_warning_tree_failed_to_build],
             ),
             PageMetadata(
                 rm_file_version=ReMarkableAnnotationsFileHeaderVersion.V5,
                 pdf_document_index=27,
                 raw_highlights=[],
-                warnings=[scrybble_warning_only_v6_supported],
+                warnings=[scrybble_warning_tree_failed_to_build],
             )
         ]
     )

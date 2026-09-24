@@ -1,2 +1,3 @@
 *.py,*.md text eol=lf
 *.rmn binary
+uv.lock linguist-generated=true -diff

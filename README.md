@@ -13,7 +13,7 @@ Remarks is designed and developed for Linux. There are no Remarks binaries.
 2. `nix develop` to work on remarks
 3. `nix run .#` to run remarks
 
-If you don't want to use Nix, you can use [poetry](https://python-poetry.org/) and install the dependencies manually.
+If you don't want to use Nix, you can use [uv](https://docs.astral.sh/uv/): run `uv sync --all-extras --all-groups`, then `uv run python -m remarks` and `uv run pytest -m "not unfinished_feature"`.
 
 ### Container image
 
