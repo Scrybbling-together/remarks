@@ -12,18 +12,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
+          # keep CI on the same interpreter the Nix build pins
           python-version: "3.12"
 
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install system libraries
+        # cairocffi (via rmc -> cairosvg) dlopen()s libcairo at import time
+        run: sudo apt-get update && sudo apt-get install -y libcairo2
 
       - name: Install dependencies
-        run: poetry install
+        run: uv sync --all-extras --all-groups
 
       - name: Verify linting
         run: poetry run black --check .
 
       - name: Run tests
-        run: poetry run pytest -m "not unfinished_feature"
+        run: uv run pytest -m "not unfinished_feature"
