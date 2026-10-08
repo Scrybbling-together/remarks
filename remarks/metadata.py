@@ -5,8 +5,9 @@ class ReMarkableAnnotationsFileHeaderVersion:
 
     UNKNOWN = "unknown"
 
+
 class ReMarkableDevice:
-    reMarkable = "reMarkable",
+    reMarkable = ("reMarkable",)
     """The original ReMarkable tablet"""
 
     reMarkable2 = "reMarkable 2"

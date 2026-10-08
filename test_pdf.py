@@ -6,7 +6,10 @@ from fitz import Document
 from remarks.output.ObsidianMarkdownFile import merge_highlights
 from remarks.output.PdfFile import extract_annot
 from tests.notebook_fixtures import *
-from tests.pdf_test_support import assert_page_renders_without_warnings, assert_warning_exists
+from tests.pdf_test_support import (
+    assert_page_renders_without_warnings,
+    assert_warning_exists,
+)
 
 r"""
  _____  _____  ______
@@ -16,6 +19,8 @@ r"""
 | |    | |__| | |
 |_|    |_____/|_|
 """
+
+
 @pytest.mark.pdf
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_valid_pdf(notebook: NotebookMetadata, remarks_document: Document):
@@ -24,20 +29,28 @@ def test_valid_pdf(notebook: NotebookMetadata, remarks_document: Document):
 
 @pytest.mark.pdf
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
-def test_correct_output_page_count(notebook: NotebookMetadata, remarks_document: Document):
+def test_correct_output_page_count(
+    notebook: NotebookMetadata, remarks_document: Document
+):
     assert remarks_document.page_count == notebook.pdf_pages
 
 
 @pytest.mark.pdf
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
-def test_warnings_match_specification(notebook: NotebookMetadata, remarks_document: Document):
+def test_warnings_match_specification(
+    notebook: NotebookMetadata, remarks_document: Document
+):
     for page in notebook.pages:
         if page.warnings:
             for warning in page.warnings:
-                assert_warning_exists(remarks_document, page.pdf_document_index, warning)
+                assert_warning_exists(
+                    remarks_document, page.pdf_document_index, warning
+                )
         else:
             # If no warnings specified for this page, verify page is clean
-            assert_page_renders_without_warnings(remarks_document, page.pdf_document_index)
+            assert_page_renders_without_warnings(
+                remarks_document, page.pdf_document_index
+            )
 
 
 @pytest.mark.pdf
@@ -45,7 +58,10 @@ def test_warnings_match_specification(notebook: NotebookMetadata, remarks_docume
 def test_smart_highlights(notebook: NotebookMetadata, remarks_document: Document):
     for page_metadata in notebook.pages:
         if page_metadata.raw_highlights:
-            if scrybble_warning_typed_text_highlighting_not_supported in page_metadata.warnings:
+            if (
+                scrybble_warning_typed_text_highlighting_not_supported
+                in page_metadata.warnings
+            ):
                 continue
             document_page = remarks_document[page_metadata.pdf_document_index]
             words_on_page = document_page.get_textpage().extractWORDS()
@@ -67,48 +83,49 @@ def demarkdown(markdown_text: str):
     text = markdown_text
 
     # Remove headers (# Header)
-    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r"^#{1,6}\s+", "", text, flags=re.MULTILINE)
 
     # Remove bold/italic formatting
-    text = re.sub(r'(\*\*|__)(.*?)\1', r'\2', text)  # Bold
-    text = re.sub(r'([*_])(.*?)\1', r'\2', text)  # Italic
+    text = re.sub(r"(\*\*|__)(.*?)\1", r"\2", text)  # Bold
+    text = re.sub(r"([*_])(.*?)\1", r"\2", text)  # Italic
 
     # Remove code blocks and inline code
-    text = re.sub(r'```[\s\S]*?```', '', text)  # Code blocks
-    text = re.sub(r'`([^`]+)`', r'\1', text)  # Inline code
+    text = re.sub(r"```[\s\S]*?```", "", text)  # Code blocks
+    text = re.sub(r"`([^`]+)`", r"\1", text)  # Inline code
 
     # Remove blockquotes
-    text = re.sub(r'^>\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r"^>\s+", "", text, flags=re.MULTILINE)
 
     # Remove horizontal rules
-    text = re.sub(r'^\s*[-*_]{3,}\s*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r"^\s*[-*_]{3,}\s*$", "", text, flags=re.MULTILINE)
 
     # Remove links - [text](url) -> text
-    text = re.sub(r'\[([^]]+)]\([^)]+\)', r'\1', text)
+    text = re.sub(r"\[([^]]+)]\([^)]+\)", r"\1", text)
 
     # Remove image syntax - ![alt](url) -> alt
-    text = re.sub(r'!\[([^]]+)]\([^)]+\)', r'\1', text)
+    text = re.sub(r"!\[([^]]+)]\([^)]+\)", r"\1", text)
 
     # Remove HTML tags
-    text = re.sub(r'<[^>]+>', '', text)
+    text = re.sub(r"<[^>]+>", "", text)
 
     # Remove ordered/unordered list markers
-    text = re.sub(r'^\s*[*\-+]\s+', '', text, flags=re.MULTILINE)  # Unordered lists
-    text = re.sub(r'^\s*\d+\.\s+', '', text, flags=re.MULTILINE)  # Ordered lists
+    text = re.sub(r"^\s*[*\-+]\s+", "", text, flags=re.MULTILINE)  # Unordered lists
+    text = re.sub(r"^\s*\d+\.\s+", "", text, flags=re.MULTILINE)  # Ordered lists
 
     # Clean up extra whitespace
-    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
     text = text.strip()
 
     return text
-
 
 
 @pytest.mark.pdf
 @pytest.mark.unfinished_feature
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
 def test_typed_text_is_readable(notebook: NotebookMetadata, remarks_document: Document):
-    pages_with_typed_text = list(filter(lambda x: x.typed_text is not None, notebook.pages))
+    pages_with_typed_text = list(
+        filter(lambda x: x.typed_text is not None, notebook.pages)
+    )
 
     if pages_with_typed_text:
         for page in pages_with_typed_text:
@@ -130,7 +147,9 @@ r"""
 
 @pytest.mark.pdf
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
-def test_output_pdf_has_no_rotation_metadata(notebook: NotebookMetadata, remarks_document: Document):
+def test_output_pdf_has_no_rotation_metadata(
+    notebook: NotebookMetadata, remarks_document: Document
+):
     """Verify that all pages in output PDFs have rotation=0.
 
     After processing by remarks, all rotation should be "baked in" to the page content,
@@ -138,12 +157,16 @@ def test_output_pdf_has_no_rotation_metadata(notebook: NotebookMetadata, remarks
     """
     for page_idx in range(remarks_document.page_count):
         page = remarks_document[page_idx]
-        assert page.rotation == 0, f"Page {page_idx} has rotation {page.rotation}, expected 0"
+        assert (
+            page.rotation == 0
+        ), f"Page {page_idx} has rotation {page.rotation}, expected 0"
 
 
 @pytest.mark.pdf
 @pytest.mark.parametrize("notebook", all_notebooks, indirect=True)
-def test_output_pdf_has_correct_dimensions(notebook: NotebookMetadata, remarks_document: Document):
+def test_output_pdf_has_correct_dimensions(
+    notebook: NotebookMetadata, remarks_document: Document
+):
     """Verify that output PDFs have correctly transformed dimensions.
 
     For documents with a source PDF:
@@ -174,12 +197,16 @@ def test_output_pdf_has_correct_dimensions(notebook: NotebookMetadata, remarks_d
         # For 90/270 rotations, dimensions should be swapped
         # For 0/180 rotations, dimensions should match
         if source_rotation in [90, 270]:
-            assert abs(output_width - source_height) < 1, \
-                f"Page {page_idx}: for {source_rotation}° rotation, output width ({output_width}) should match source height ({source_height})"
-            assert abs(output_height - source_width) < 1, \
-                f"Page {page_idx}: for {source_rotation}° rotation, output height ({output_height}) should match source width ({source_width})"
+            assert (
+                abs(output_width - source_height) < 1
+            ), f"Page {page_idx}: for {source_rotation}° rotation, output width ({output_width}) should match source height ({source_height})"
+            assert (
+                abs(output_height - source_width) < 1
+            ), f"Page {page_idx}: for {source_rotation}° rotation, output height ({output_height}) should match source width ({source_width})"
         else:
-            assert abs(output_width - source_width) < 1, \
-                f"Page {page_idx}: for {source_rotation}° rotation, output width ({output_width}) should match source width ({source_width})"
-            assert abs(output_height - source_height) < 1, \
-                f"Page {page_idx}: for {source_rotation}° rotation, output height ({output_height}) should match source height ({source_height})"
+            assert (
+                abs(output_width - source_width) < 1
+            ), f"Page {page_idx}: for {source_rotation}° rotation, output width ({output_width}) should match source width ({source_width})"
+            assert (
+                abs(output_height - source_height) < 1
+            ), f"Page {page_idx}: for {source_rotation}° rotation, output height ({output_height}) should match source height ({source_height})"

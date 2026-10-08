@@ -5,7 +5,7 @@ from remarks.utils import sanitize_obsidian_tag
 class TestTagSanitization:
     """
     Comprehensive unit tests for Obsidian tag sanitization.
-    
+
     Based on real Obsidian testing, these rules apply:
     - Tags must start with a letter (not number)
     - Alphanumeric + dash + underscore work well
@@ -27,7 +27,10 @@ class TestTagSanitization:
         assert sanitize_obsidian_tag("#simple") == "simple"
         assert sanitize_obsidian_tag("##double-hash") == "double-hash"
         assert sanitize_obsidian_tag("###triple") == "triple"
-        assert sanitize_obsidian_tag("#tag#with#internal#hashes") == "tag-with-internal-hashes"
+        assert (
+            sanitize_obsidian_tag("#tag#with#internal#hashes")
+            == "tag-with-internal-hashes"
+        )
 
     def test_angle_brackets(self):
         """Test that angle brackets are replaced (they break Obsidian)"""
@@ -81,16 +84,28 @@ class TestTagSanitization:
 
     def test_dash_cleanup(self):
         """Test that consecutive dashes are collapsed and leading/trailing dashes removed"""
-        assert sanitize_obsidian_tag("tag--with--double--dashes") == "tag-with-double-dashes"
+        assert (
+            sanitize_obsidian_tag("tag--with--double--dashes")
+            == "tag-with-double-dashes"
+        )
         assert sanitize_obsidian_tag("-leading-dash") == "leading-dash"
         assert sanitize_obsidian_tag("trailing-dash-") == "trailing-dash"
         assert sanitize_obsidian_tag("--multiple--leading--") == "multiple-leading"
 
     def test_complex_edge_cases(self):
         """Test complex real-world edge cases"""
-        assert sanitize_obsidian_tag("complex-tag.with@multiple&symbols!") == "complex-tag-with-multiple-symbols"
-        assert sanitize_obsidian_tag("tag with spaces and-symbols") == "tag-with-spaces-and-symbols"
-        assert sanitize_obsidian_tag("€£¥•mixed¿currency!symbols?") == "tag-€£¥-mixed¿currency-symbols"
+        assert (
+            sanitize_obsidian_tag("complex-tag.with@multiple&symbols!")
+            == "complex-tag-with-multiple-symbols"
+        )
+        assert (
+            sanitize_obsidian_tag("tag with spaces and-symbols")
+            == "tag-with-spaces-and-symbols"
+        )
+        assert (
+            sanitize_obsidian_tag("€£¥•mixed¿currency!symbols?")
+            == "tag-€£¥-mixed¿currency-symbols"
+        )
 
     def test_problematic_characters(self):
         """Test characters that cause parsing issues"""
@@ -103,8 +118,12 @@ class TestTagSanitization:
     def test_empty_and_minimal_cases(self):
         """Test empty and minimal input cases"""
         assert sanitize_obsidian_tag("") == ""  # Empty stays empty
-        assert sanitize_obsidian_tag("#") == "invalid-tag"  # Only hash becomes invalid-tag
-        assert sanitize_obsidian_tag("##") == "invalid-tag"  # Multiple hashes become invalid-tag
+        assert (
+            sanitize_obsidian_tag("#") == "invalid-tag"
+        )  # Only hash becomes invalid-tag
+        assert (
+            sanitize_obsidian_tag("##") == "invalid-tag"
+        )  # Multiple hashes become invalid-tag
         assert sanitize_obsidian_tag("a") == "a"
         assert sanitize_obsidian_tag("#a") == "a"
 
@@ -116,15 +135,22 @@ class TestTagSanitization:
 
     def test_emoji_handling(self):
         """Test emoji handling (likely to be replaced)"""
-        assert sanitize_obsidian_tag("🏷️tag") == "tag"  # Emoji gets replaced, then cleaned up
+        assert (
+            sanitize_obsidian_tag("🏷️tag") == "tag"
+        )  # Emoji gets replaced, then cleaned up
 
     def test_only_special_characters(self):
         """Test tags that are only special characters"""
-        assert sanitize_obsidian_tag("!!!") == "invalid-tag"  # All symbols become invalid-tag
+        assert (
+            sanitize_obsidian_tag("!!!") == "invalid-tag"
+        )  # All symbols become invalid-tag
         assert sanitize_obsidian_tag("$$$") == "invalid-tag"
         assert sanitize_obsidian_tag("@@@") == "invalid-tag"
 
     def test_preserve_internal_structure(self):
         """Test that internal structure with valid characters is preserved"""
-        assert sanitize_obsidian_tag("project_2024-Q1_phase-1") == "project_2024-Q1_phase-1"
+        assert (
+            sanitize_obsidian_tag("project_2024-Q1_phase-1")
+            == "project_2024-Q1_phase-1"
+        )
         assert sanitize_obsidian_tag("team/frontend/bug-123") == "team/frontend/bug-123"

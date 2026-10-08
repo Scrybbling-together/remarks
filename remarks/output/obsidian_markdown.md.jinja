@@ -9,7 +9,7 @@
 {% if pages %}
 ## Pages
 
-{% for index, page in pages %}### [[{{ document.metadata.visible_name }}.pdf#page={{ index + 1 }}|{{ document.metadata.visible_name }}, page {{ index + 1 }}]]
+{% for index, page in pages.items() %}### [[{{ document.metadata.visible_name }}.pdf#page={{ loop.index0 + 1 }}|{{ document.metadata.visible_name }}, page {{ loop.index0 + 1 }}]]
 {%- if page.tags %}
 {% for tag in page.tags %}#{{ tag.name }} {% endfor %}{% endif %}{% if page.highlights %}
 #### Highlights

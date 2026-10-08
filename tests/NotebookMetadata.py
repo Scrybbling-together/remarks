@@ -12,6 +12,7 @@ from remarks.warnings import ScrybbleWarning
 @dataclass
 class PageMetadata:
     """A single page in a ReMarkable notebook"""
+
     rm_file_version: str
     """The .rm file version"""
 
@@ -39,7 +40,6 @@ class PageMetadata:
     """A photograph of the page as rendered on a real ReMarkable device"""
 
 
-
 @dataclass
 class NotebookMetadata:
     """Notebook metadata is meant to describe the inputs and the outputs for a test scenario"""
@@ -65,7 +65,9 @@ class NotebookMetadata:
     tags: List[str] = field(default_factory=list)
     """The tags associated directly with the document"""
 
-    def get_page_by_pdf_page_number(self, pdf_page_number: int) -> Optional[PageMetadata]:
+    def get_page_by_pdf_page_number(
+        self, pdf_page_number: int
+    ) -> Optional[PageMetadata]:
         """
         Retrieve a PageMetadata object by its pdf_document_index.
 
@@ -91,8 +93,8 @@ class NotebookMetadata:
         if self.notebook_type == ReMarkableNotebookType.NOTEBOOK:
             return None
 
-        with zipfile.ZipFile(self.rmn_source, 'r') as z:
-            pdf_files = [name for name in z.namelist() if name.endswith('.pdf')]
+        with zipfile.ZipFile(self.rmn_source, "r") as z:
+            pdf_files = [name for name in z.namelist() if name.endswith(".pdf")]
             if pdf_files:
                 pdf_data = z.read(pdf_files[0])
                 return fitz.open(stream=pdf_data, filetype="pdf")

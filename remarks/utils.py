@@ -134,12 +134,12 @@ def construct_redirection_map(content: dict) -> List[int]:
 
     redirection_map = []
     if "cPages" in content:
-        for i, page in enumerate(content['cPages']['pages']):
+        for i, page in enumerate(content["cPages"]["pages"]):
             # Skip deleted pages to stay in sync with pages_list
             if page.get("deleted", {"value": 0})["value"] == 1:
                 continue
             if "redir" in page:
-                redirection_map.append(page['redir']['value'])
+                redirection_map.append(page["redir"]["value"])
             else:
                 redirection_map.append(INSERTED_PAGE)
     return redirection_map
@@ -156,13 +156,13 @@ def is_duplicate_page(idx: int) -> bool:
 def get_document_tags(path: str):
     content = read_meta_file(path, suffix=".content")
     for tag in content.get("tags") or []:
-        yield sanitize_obsidian_tag(tag['name'])
+        yield sanitize_obsidian_tag(tag["name"])
 
 
 def sanitize_obsidian_tag(tag: str) -> str:
     """
     Sanitize a reMarkable page tag for use in Obsidian.
-    
+
     Based on testing, Obsidian tags:
     - Must start with a letter (not number)
     - Work well with letters, numbers, dashes, underscores
@@ -188,13 +188,13 @@ def sanitize_obsidian_tag(tag: str) -> str:
     # Keep: letters (including accented), numbers, dashes, underscores, forward slashes
     # Also keep some Unicode that seems to work: ¿€£¥
     # Use \w to include accented characters, but exclude specific problematic ones
-    tag = re.sub(r'[^\w\-_/¿€£¥]', '-', tag, flags=re.UNICODE)
+    tag = re.sub(r"[^\w\-_/¿€£¥]", "-", tag, flags=re.UNICODE)
 
     # Collapse multiple consecutive dashes
-    tag = re.sub(r'-+', '-', tag)
+    tag = re.sub(r"-+", "-", tag)
 
     # Remove leading/trailing dashes
-    tag = tag.strip('-')
+    tag = tag.strip("-")
 
     # If tag is empty after cleanup, it was all invalid characters
     if not tag:
@@ -226,8 +226,11 @@ def get_pages_data(path: str) -> Tuple[List[str], List[int]]:
     content = read_meta_file(path, suffix=".content")
     redirection_map = construct_redirection_map(content)
     if "cPages" in content:
-        return [page["id"] for page in content["cPages"]["pages"] if not page.get("deleted", {
-            "value": 0})["value"] == 1], redirection_map
+        return [
+            page["id"]
+            for page in content["cPages"]["pages"]
+            if not page.get("deleted", {"value": 0})["value"] == 1
+        ], redirection_map
     return content.get("pages") or [], redirection_map
 
 

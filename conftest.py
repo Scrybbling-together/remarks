@@ -7,12 +7,14 @@ import fitz
 import remarks
 from tests.NotebookMetadata import NotebookMetadata
 
+
 def cleanup_output_folder():
     """Remove all .md and .pdf files from the tests/out folder."""
     output_root_dir = pathlib.Path("tests/out/")
-    for file_pattern in ['*.md', '*.pdf']:
+    for file_pattern in ["*.md", "*.pdf"]:
         for file in output_root_dir.glob(file_pattern):
             file.unlink()
+
 
 def pytest_sessionstart(session):
     cleanup_output_folder()
@@ -23,7 +25,7 @@ def pytest_addoption(parser):
         "--interactive",
         action="store_true",
         default=False,
-        help="run interactive tests that require developer verification"
+        help="run interactive tests that require developer verification",
     )
 
 
@@ -37,7 +39,7 @@ def with_remarks(metadata: NotebookMetadata):
         remarks.run_remarks(input_dir, output_dir)
         setattr(with_remarks, f"run_{input_name}", True)
 
-    return fitz.open(output_dir/f"{metadata.notebook_name} _remarks.pdf")
+    return fitz.open(output_dir / f"{metadata.notebook_name} _remarks.pdf")
 
 
 @dataclass
@@ -71,6 +73,7 @@ def obsidian_markdown(notebook):
             return f.read()
     else:
         return None
+
 
 @pytest.fixture
 def remarks_document(notebook):

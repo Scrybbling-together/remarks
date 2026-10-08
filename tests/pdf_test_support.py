@@ -6,11 +6,14 @@ from remarks.warnings import ScrybbleWarning
 def is_valid_pdf(document: Document) -> bool:
     return document.is_pdf
 
+
 def pdf_has_num_pages(document: Document, num_pages: int) -> bool:
     return document.page_count == num_pages
 
 
-def assert_warning_exists(document: Document, page_number: int, warning: ScrybbleWarning):
+def assert_warning_exists(
+    document: Document, page_number: int, warning: ScrybbleWarning
+):
     """
     @param warning:
     @param document:
@@ -19,7 +22,7 @@ def assert_warning_exists(document: Document, page_number: int, warning: Scrybbl
     """
     page = document[page_number]
     for annotation in page.annots(PDF_ANNOT_TEXT):
-        assert str(warning) in annotation.info['content']
+        assert str(warning) in annotation.info["content"]
         return
 
     assert False, f"No Scrybble warning found on page {page_number}"
@@ -37,6 +40,3 @@ def assert_page_renders_without_warnings(document: Document, page_number: int):
             assert False, f"Found a warning on page {page_number}"
 
     assert True
-
-
-

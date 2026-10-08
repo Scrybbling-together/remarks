@@ -56,10 +56,7 @@ def main():
     device = args_dict.pop("device")
 
     log_level = args_dict.pop("log_level")
-    logging.basicConfig(
-        format="%(message)s",
-        level=log_level
-    )
+    logging.basicConfig(format="%(message)s", level=log_level)
 
     if not input_dir.exists():
         parser.error(f'Directory "{input_dir}" does not exist')

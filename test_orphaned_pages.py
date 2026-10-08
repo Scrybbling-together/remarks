@@ -1,4 +1,5 @@
 """Test that orphaned .rm files (from deleted pages) don't crash processing."""
+
 import pytest
 from conftest import with_remarks
 from tests.notebook_fixtures import *

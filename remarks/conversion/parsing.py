@@ -49,7 +49,7 @@ def parse_v6(file_path: str) -> Tuple[TMetaData, bool]:
         "highlights": [],
         "glyph_ranges": [],
         "text": None,
-        "scene_tree": None
+        "scene_tree": None,
     }
 
     tree = pylibrm_lines.lib.buildTree(file_path.encode())
@@ -90,26 +90,6 @@ def determine_document_dimensions(file_path) -> ReMarkableDimensions:
     return ReMarkableDimensions(
         dims["x_max"] - dims["x_min"], dims["y_max"] - dims["y_min"]
     )
-
-
-def read_rm_file_version(file_path: str) -> str:
-    with open(file_path, "rb") as f:
-        src_header = f.readline()
-
-        # 32nd character (marked with V) is the version number
-        #                                                       V
-        expected_header_fmt = b"reMarkable .lines file, version=0          "
-        fmt = f"<{len(expected_header_fmt)}sI"
-        header, nlayers = struct.unpack_from(fmt, src_header, 0)
-        # 32nd character is the version number
-        version = chr(header[32])
-
-        if version == "3":
-            return ReMarkableAnnotationsFileHeaderVersion.V3
-        elif version == "6":
-            return ReMarkableAnnotationsFileHeaderVersion.V6
-        else:
-            return ReMarkableAnnotationsFileHeaderVersion.UNKNOWN
 
 
 def check_rm_file_version(file_path):
@@ -172,6 +152,7 @@ def parse_rm_file(file_path: str) -> Tuple[Tuple[TMetaData, bool], str]:
     raise ValueError(
         f"{file_path} is not a valid .rm file: <header={header}><nlayers={nlayers}>"
     )
+
 
 # The line segment will pop up hundreds or thousands of times in notebooks where it is relevant.
 # this flag ensures it will print at most once.

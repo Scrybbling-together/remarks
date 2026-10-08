@@ -4,32 +4,36 @@ from typing import List, Dict
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
-from rmscene.scene_items import GlyphRange, ParagraphStyle
 
 from rm_api.models import Document, Tag
-from pylibrm_lines.text import Paragraph
+from pylibrm_lines.text import Paragraph, ParagraphStyle
+from pylibrm_lines.scene_items.glyph_range import GlyphRangeItem
+
 
 def render_paragraph(paragraph: Paragraph):
     paragraph_content = ""
     for st in paragraph.contents:
-        st_text = str(st)
-        if st.properties['font-weight'] == "bold":
+        st_text = st.text
+        if st.formatting.bold:
             st_text = f"**{st_text}**"
-        if st.properties['font-style'] == "italic":
+        if st.formatting.italic:
             st_text = f"_{st_text}_"
         paragraph_content += st_text
 
-    if paragraph.style.value == ParagraphStyle.PLAIN:
+    if paragraph.style.legacy_style.value == ParagraphStyle.PLAIN:
         return f"\n{paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.BOLD:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.BOLD:
         return f"\n###### {paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.HEADING:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.HEADING:
         return f"\n##### {paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.BULLET or paragraph.style.value == ParagraphStyle.BULLET2:
+    elif (
+        paragraph.style.legacy_style.value == ParagraphStyle.BULLET
+        or paragraph.style.legacy_style.value == ParagraphStyle.BULLET2
+    ):
         return f"- {paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.CHECKBOX:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.CHECKBOX:
         return f"- [ ] {paragraph_content}\n"
-    elif paragraph.style.value == ParagraphStyle.CHECKBOX_CHECKED:
+    elif paragraph.style.legacy_style.value == ParagraphStyle.CHECKBOX_CHECKED:
         return f"- [x] {paragraph_content}\n"
 
     return paragraph_content
@@ -37,12 +41,12 @@ def render_paragraph(paragraph: Paragraph):
 
 class RMPage:
     def __init__(self):
-        self.highlights: List[GlyphRange] = []
+        self.highlights: List[GlyphRangeItem] = []
         self.tags: List[Tag] = []
         self.text: None | list[Paragraph] = None
 
 
-def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int) -> str:
+def merge_highlight_texts(h1: GlyphRangeItem, h2: GlyphRangeItem, distance: int) -> str:
     """
     Merge the text of two highlights based on their relative positions.
 
@@ -78,21 +82,23 @@ def merge_highlight_texts(h1: GlyphRange, h2: GlyphRange, distance: int) -> str:
     return " ".join(text.split())
 
 
-def calculate_highlight_distance(h1: GlyphRange, h2: GlyphRange):
+def calculate_highlight_distance(h1: GlyphRangeItem, h2: GlyphRangeItem):
     if h1.start > h2.start:
         h1, h2 = h2, h1
     end_of_h1 = h1.start + h1.length
     distance = h2.start - end_of_h1
 
     if h1.color != h2.color:
-        return float('inf'), end_of_h1, h1, h2
+        return float("inf"), end_of_h1, h1, h2
 
     return distance, end_of_h1, h1, h2
 
 
-def merge_highlights(highlights: List[GlyphRange]):
+def merge_highlights(highlights: List[GlyphRangeItem]):
     max_gap_threshold = 3
-    merged_highlights = list(filter(lambda h: h is not None and type(h.start) is int, highlights.copy()))
+    merged_highlights = list(
+        filter(lambda h: h is not None and type(h.start) is int, highlights.copy())
+    )
     # Continue until no more changes
     while True:
         # Sort by starting position
@@ -120,12 +126,13 @@ def merge_highlights(highlights: List[GlyphRange]):
                     new_length = new_end - new_start
 
                     # Create new highlight
-                    merged_highlight = GlyphRange(
+                    merged_highlight = GlyphRangeItem(
                         start=new_start,
                         length=new_length,
                         text=merge_highlight_texts(h1, h2, distance),
                         color=h1.color,
-                        rectangles=h1.rectangles + h2.rectangles
+                        argb_color=h1.argb_color,
+                        rects=h1.rects + h2.rects,
                     )
 
                     # Replace A with merged highlight and remove B
@@ -145,10 +152,13 @@ def merge_highlights(highlights: List[GlyphRange]):
     return merged_highlights
 
 
-class ObsidianMarkdownFile:  # TODO: Partial converted.
+class ObsidianMarkdownFile:
     def __init__(self, document: Document):
         self.pages = {}
         self.document = document
+
+        # First, add page tags for ALL pages (including those without .rm files)
+        self.process_all_page_tags()
 
     def retrieve_page(self, page_id: str):
         if not page_id in self.pages:
@@ -160,44 +170,49 @@ class ObsidianMarkdownFile:  # TODO: Partial converted.
         return page
 
     def save(self, location: pathlib.Path):
-        frontmatter = {"scrybble_timestamp": int(time.time()), "scrybble_filename": self.document.metadata.visible_name}
+        frontmatter = {
+            "scrybble_timestamp": int(time.time()),
+            "scrybble_filename": self.document.metadata.visible_name,
+        }
         if self.document.content.tags:
-            frontmatter["tags"] = [f"#remarkable/{tag.name}" for tag in self.document.content.tags]
+            frontmatter["tags"] = [
+                f"#remarkable/{tag.name}" for tag in self.document.content.tags
+            ]
 
         env = Environment(loader=FileSystemLoader(pathlib.Path(__file__).parent))
-        template = env.get_template('obsidian_markdown.md.jinja')
+        template = env.get_template("obsidian_markdown.md.jinja")
 
-        content = template.render(**{
-            'document': self.document,
-            'frontmatter': yaml.dump(frontmatter, indent=3, width=360),
-            'pages': self.pages,
-            'render_paragraph': render_paragraph
-        })
+        content = template.render(
+            **{
+                "document": self.document,
+                "frontmatter": yaml.dump(frontmatter, indent=3, width=360),
+                "pages": self.pages,
+                "render_paragraph": render_paragraph,
+            }
+        )
 
         with open(f"{location} _obsidian.md", "w") as f:
             f.write(content)
 
-    def add_highlights(
-        self, page_id: str, highlights: List[GlyphRange]
-    ):
+    def add_highlights(self, page_id: str, highlights: List[GlyphRangeItem]):
         if not highlights:
             return
 
         self.retrieve_page(page_id).highlights = merge_highlights(highlights)
 
-    def add_text(self, page_id: str, text):
-        if not text:
-            return
-        self.retrieve_page(page_id).text = text["text"].contents
+    def add_text(self, page_id: str, paragraphs: List[Paragraph]):
+        self.retrieve_page(page_id).text = paragraphs
 
-    def add_page_tags(self, page_id: str, tags: List[str]):
+    def add_page_tags(self, page_id: str, tags: List[Tag]):
         if not tags:
             return
         self.retrieve_page(page_id).tags = tags
 
-    def handle_page_tags(self):
+    def process_all_page_tags(self):
         for page in self.document.content.c_pages.pages:
             # Filter out this page's tags from the document's page_tags list
-            page_tags = [tag for tag in self.document.content.page_tags if tag.page_id == page.id]
+            page_tags = [
+                tag for tag in self.document.content.page_tags if tag.page_id == page.id
+            ]
             if page_tags:
                 self.add_page_tags(page.id, page_tags)
