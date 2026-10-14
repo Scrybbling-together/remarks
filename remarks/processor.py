@@ -209,6 +209,8 @@ class DocumentProcessor:
     @property
     def paper_size(self) -> Tuple[int, int]:
         if self.scene_info:
+            if self.document.content.is_landscape:
+                return [self.scene_info.paper_size[1], self.scene_info.paper_size[0]]
             return self.scene_info.paper_size
         else:
             return RM_SCREEN_SIZE
