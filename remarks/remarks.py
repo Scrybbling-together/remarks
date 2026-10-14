@@ -19,8 +19,7 @@ import rmc
 
 from .Document import Document
 from .conversion.parsing import (
-    parse_rm_file,
-    read_rm_file_version, )
+    parse_rm_file)
 from .metadata import ReMarkableAnnotationsFileHeaderVersion
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .output.PdfFile import apply_smart_highlight, add_error_annotation
@@ -51,16 +50,24 @@ def run_remarks(
             f'\nProcessing just one doc "{input_dir}"',
         )
     else:
-        for file in os.listdir(input_dir):
-            try:
-                docs.append(LocalDocument.load_rmdoc(input_dir / file))
-            except (zipfile.BadZipFile, FileNotFoundError):
-                logging.warning(f"Skipping {file} as it is not a valid reMarkable document")
-            paths.append(input_dir / file)
+        files = os.listdir(input_dir)
+        if all(any(f.endswith(ext) for f in files) for ext in ('.metadata', '.content')):
+            logging.info(
+                f'\nFound .metadata/.content file in "{input_dir}", will process just this document',
+            )
+            docs.append(LocalDocument.load_rmdoc(input_dir))
+            paths.append(input_dir)
+        else:
+            for file in files:
+                try:
+                    docs.append(LocalDocument.load_rmdoc(input_dir / file))
+                except (zipfile.BadZipFile, FileNotFoundError):
+                    logging.warning(f"Skipping {file} as it is not a valid reMarkable document")
+                paths.append(input_dir / file)
 
-        logging.info(
-            f'\nFound {len(docs)} documents in "{input_dir}", will process them now',
-        )
+            logging.info(
+                f'\nFound {len(docs)} documents in "{input_dir}", will process them now',
+            )
 
     for doc, path in zip(docs, paths):
         logging.info(f'\nFile: "{doc.metadata.visible_name} [type={doc.metadata.type}]" ({path})')
