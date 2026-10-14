@@ -241,7 +241,9 @@ def list_ann_rm_files(path):
     return list(content_dir.glob("*.rm"))
 
 
-def rect_to_murect(rect: pe.FRect, scaling: ScalingTypes = ScalingTypes.NO_SCALING) -> pymupdf.Rect:
+def rect_to_murect(
+    rect: pe.FRect, scaling: ScalingTypes = ScalingTypes.NO_SCALING
+) -> pymupdf.Rect:
     """Convert a pygame.Rect to a pymupdf.Rect"""
     if scaling == ScalingTypes.PDF_PTS:
         rect = pe.FRect(
@@ -251,6 +253,7 @@ def rect_to_murect(rect: pe.FRect, scaling: ScalingTypes = ScalingTypes.NO_SCALI
             rect.height / PDF_SCALING,
         )
     return pymupdf.Rect(rect.left, rect.top, rect.right, rect.bottom)
+
 
 def frame_to_pixmap(raw_frame: bytes, size: Tuple[int, int]) -> pymupdf.Pixmap:
     # return Image.frombytes('RGBA', size, raw_frame, 'raw', 'RGBA')

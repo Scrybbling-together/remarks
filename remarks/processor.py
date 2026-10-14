@@ -5,7 +5,13 @@ from typing import Tuple, Optional
 
 import pymupdf
 import pygame as pe
-from pylibrm_lines import SceneTree, FailedToBuildTree, Renderer, SceneInfo, set_debug_mode
+from pylibrm_lines import (
+    SceneTree,
+    FailedToBuildTree,
+    Renderer,
+    SceneInfo,
+    set_debug_mode,
+)
 from pylibrm_lines.renderer import BACKDROP_ALIGN_TOP_CENTER, PEN_HIGHLIGHTER
 from pylibrm_lines.scene_items.glyph_range import GlyphRangeItem
 from pylibrm_lines.scene_items.line import LineItem
@@ -30,6 +36,7 @@ class DocumentProcessor:
         self.pdf_page = None
         self.pdf_size_px = None
         self.page_bounds = None
+
     @property
     def doc_pages(self):
         return self.document.content.c_pages.pages
@@ -64,7 +71,7 @@ class DocumentProcessor:
 
         self.pdf_size_px = (
             self.pdf_page.rect.width * PDF_SCALING,
-            self.pdf_page.rect.height * PDF_SCALING
+            self.pdf_page.rect.height * PDF_SCALING,
         )
 
         try:
@@ -80,7 +87,7 @@ class DocumentProcessor:
         # Calculate the PDF Expand / Offsets
         _pdf_sides = (self.pdf_size_px[0] - self.paper_size[0]) / 2
         pdf_expand_left = (-self.page_bounds.left) - _pdf_sides
-        pdf_expand_right = (self.page_bounds.right - _pdf_sides - self.paper_size[0])
+        pdf_expand_right = self.page_bounds.right - _pdf_sides - self.paper_size[0]
 
         pdf_expand_top = -self.page_bounds.top
         pdf_expand_bottom = self.page_bounds.bottom - self.pdf_size_px[1]
@@ -93,12 +100,12 @@ class DocumentProcessor:
             -max(0, pdf_expand_left),
             -max(0, pdf_expand_bottom),
             self.pdf_size_px[0] + pdf_expand_x,
-            self.pdf_size_px[1] + pdf_expand_y
+            self.pdf_size_px[1] + pdf_expand_y,
         )
 
         size_rounded = (
             int(mediabox.width + min(0, pdf_expand_left) + min(0, pdf_expand_right)),
-            int(mediabox.height + min(0, pdf_expand_top) + min(0, pdf_expand_bottom))
+            int(mediabox.height + min(0, pdf_expand_top) + min(0, pdf_expand_bottom)),
         )
 
         # DEBUGGING INFO
@@ -110,7 +117,9 @@ class DocumentProcessor:
         #       "\nResizing to (in px):", mediabox,
         #       "\nResizing to (in pt):", rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
 
-        self.pdf_page.set_mediabox(rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS))
+        self.pdf_page.set_mediabox(
+            rect_to_murect(mediabox, scaling=ScalingTypes.PDF_PTS)
+        )
 
         # Add the backdrop for sampling
         self.renderer.config.backdrop_sampling = True
@@ -120,24 +129,24 @@ class DocumentProcessor:
         # Render the lines
         frame = frame_to_pixmap(
             self.renderer.get_frame_raw(
-                int(self.page_bounds.x), int(self.page_bounds.y),
-                int(self.page_bounds.width), int(self.page_bounds.height),
+                int(self.page_bounds.x),
+                int(self.page_bounds.y),
+                int(self.page_bounds.width),
+                int(self.page_bounds.height),
                 *size_rounded,
             ),
-            size_rounded
+            size_rounded,
         )
 
         # Add the lines to the PDF page
         self.pdf_page.insert_image(
             rect_to_murect(
                 pe.FRect(
-                    -min(0, pdf_expand_left),
-                    -min(0, pdf_expand_top),
-                    *size_rounded
+                    -min(0, pdf_expand_left), -min(0, pdf_expand_top), *size_rounded
                 ),
-                scaling=ScalingTypes.PDF_PTS
+                scaling=ScalingTypes.PDF_PTS,
             ),
-            pixmap=frame
+            pixmap=frame,
         )
 
         # Add PDF Highlighter annotations for glyph ranges
@@ -180,15 +189,19 @@ class DocumentProcessor:
                 for rect in glyph.rects:
                     annot = self.pdf_page.add_highlight_annot(
                         rect_to_murect(
-                            pe.FRect(rect).move(self.paper_size[0] / 2 - self.page_bounds.left, 0),
-                            scaling=ScalingTypes.PDF_PTS
+                            pe.FRect(rect).move(
+                                self.paper_size[0] / 2 - self.page_bounds.left, 0
+                            ),
+                            scaling=ScalingTypes.PDF_PTS,
                         )
                     )
-                    annot.set_colors(stroke=(
-                        glyph.argb_color[1] / 255,
-                        glyph.argb_color[2] / 255,
-                        glyph.argb_color[3] / 255,
-                    ))
+                    annot.set_colors(
+                        stroke=(
+                            glyph.argb_color[1] / 255,
+                            glyph.argb_color[2] / 255,
+                            glyph.argb_color[3] / 255,
+                        )
+                    )
                     annot.set_info(content=glyph.text)
                     annot.set_opacity(0)
                     annot.update()
@@ -207,7 +220,12 @@ class DocumentProcessor:
         if layers:
             for layer in layers:
                 size_tracker = layer.size_tracker
-                print(size_tracker.left, size_tracker.top, size_tracker.right, size_tracker.bottom)
+                print(
+                    size_tracker.left,
+                    size_tracker.top,
+                    size_tracker.right,
+                    size_tracker.bottom,
+                )
                 x = min(x, size_tracker.left)
                 y = min(y, size_tracker.top)
                 x2 = max(x2, size_tracker.right)
@@ -219,16 +237,18 @@ class DocumentProcessor:
     def get_pdf_page(self, index: int, page: Page) -> Optional[pymupdf.Page]:
         if not self.pdf_document:
             raise ValueError("PDF document is not loaded")
-        if self.document.content.file_type == 'notebook' or not page.redirect:
+        if self.document.content.file_type == "notebook" or not page.redirect:
             # Has no PDF page redirect / blank page / notebooks
             return self.pdf_document[index]
         if page.redirect.value >= 0 and page.redirect.value >= len(self.pdf_document):
-            raise IndexError(f"Page redirect index {page.redirect.value} is out of bounds for the PDF document")
+            raise IndexError(
+                f"Page redirect index {page.redirect.value} is out of bounds for the PDF document"
+            )
         return self.pdf_document[index]
 
     def load_or_create_pdf(self):
         if self.document.content.file_type in ["pdf", "epub"]:
-            file = self.document.file_uuid_map.get(f'{self.document.uuid}.pdf')
+            file = self.document.file_uuid_map.get(f"{self.document.uuid}.pdf")
             if not file:
                 raise FileNotFoundError("Could not find the PDF file for this document")
             pdf_path = self.document.get_file(file.hash)
@@ -241,7 +261,11 @@ class DocumentProcessor:
             self.pdf_document = pymupdf.open()
 
             for i, page in enumerate(self.doc_pages):
-                source_page = page.redirect.value if page.redirect and page.redirect.value >= 0 else i
+                source_page = (
+                    page.redirect.value
+                    if page.redirect and page.redirect.value >= 0
+                    else i
+                )
 
                 self.pdf_document.insert_pdf(
                     source,

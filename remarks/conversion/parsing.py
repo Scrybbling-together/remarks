@@ -20,9 +20,11 @@ def update_boundaries_from_point(x, y, boundaries):
     boundaries["x_min"] = min(boundaries["x_min"], x)
     boundaries["y_min"] = min(boundaries["y_min"], y)
 
+
 Rectangle = None
 TextDocument = None
 GlyphRange = None
+
 
 @dataclass
 class RemarksRectangle:
