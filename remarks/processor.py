@@ -1,6 +1,7 @@
+import json
 import logging
 import pathlib
-from typing import Tuple
+from typing import Tuple, Optional
 
 import pymupdf
 import pygame as pe
@@ -29,7 +30,6 @@ class DocumentProcessor:
         self.pdf_page = None
         self.pdf_size_px = None
         self.page_bounds = None
-
     @property
     def doc_pages(self):
         return self.document.content.c_pages.pages
@@ -44,7 +44,6 @@ class DocumentProcessor:
 
     def run(self):
         # First, add page tags for ALL pages (including those without .rm files)
-        self.obsidian_markdown.handle_page_tags()
         self.load_or_create_pdf()
 
         for i, page in enumerate(self.doc_pages):
@@ -58,6 +57,11 @@ class DocumentProcessor:
     def process_page(self, index: int, page: Page):
         logging.info(f"processing page {index + 1}, {page.id}")
         self.pdf_page = self.get_pdf_page(index, page)
+
+        rotation = self.pdf_page.rotation
+        if rotation:
+            rotation_matrix = self.pdf_page.remove_rotation()
+
         self.pdf_size_px = (
             self.pdf_page.rect.width * PDF_SCALING,
             self.pdf_page.rect.height * PDF_SCALING
@@ -139,6 +143,28 @@ class DocumentProcessor:
         # Add PDF Highlighter annotations for glyph ranges
         self.add_highlighter()
 
+        if rotation:
+            # logging.info(f"Restoring rotation {rotation} for page {index + 1}")
+            self.restore_rotation(rotation, rotation_matrix)
+
+    def restore_rotation(self, rotation: int, matrix: pymupdf.Matrix):
+        """Reverse remove_rotation() and restore the original page rotation."""
+        if rotation == 0:
+            return
+
+        cmd = pymupdf._format_g(tuple(matrix)).encode("utf8") + b" cm "
+        _ = pymupdf.TOOLS._insert_contents(self.pdf_page, cmd, False)
+
+        # Restore the original page dimensions.
+        mb = self.pdf_page.mediabox
+        if rotation in (90, 270):
+            x0, y0, x1, y1 = mb
+            mb.x0, mb.y0 = y0, x0
+            mb.x1, mb.y1 = y1, x1
+            self.pdf_page.set_mediabox(mb)
+
+        self.pdf_page.set_rotation(rotation)
+
     def add_highlighter(self):
         self.renderer.config.use_whitelist = True
         self.renderer.config.enable_pen(PEN_HIGHLIGHTER)
@@ -190,14 +216,13 @@ class DocumentProcessor:
         rect.size = (x2 - x, y2 - y)
         return rect
 
-    def get_pdf_page(self, index: int, page: Page) -> pymupdf.Page:
+    def get_pdf_page(self, index: int, page: Page) -> Optional[pymupdf.Page]:
         if not self.pdf_document:
             raise ValueError("PDF document is not loaded")
-        if self.document.content.file_type == 'notebook':
+        if self.document.content.file_type == 'notebook' or not page.redirect:
+            # Has no PDF page redirect / blank page / notebooks
             return self.pdf_document[index]
-        if not page.redirect:
-            raise ValueError(f"Page {page.id} does not have a redirect to a PDF page")
-        if page.redirect.value < 0 or page.redirect.value >= len(self.pdf_document):
+        if page.redirect.value >= 0 and page.redirect.value >= len(self.pdf_document):
             raise IndexError(f"Page redirect index {page.redirect.value} is out of bounds for the PDF document")
         return self.pdf_document[index]
 
@@ -209,17 +234,20 @@ class DocumentProcessor:
             pdf_path = self.document.get_file(file.hash)
             source = pymupdf.open(filename=pdf_path, filetype="pdf")
 
+            if not self.doc_pages:
+                self.pdf_document = source
+                return
+
             self.pdf_document = pymupdf.open()
 
             for i, page in enumerate(self.doc_pages):
-                source_page = page.redirect.value if page.redirect else i
+                source_page = page.redirect.value if page.redirect and page.redirect.value >= 0 else i
 
                 self.pdf_document.insert_pdf(
                     source,
                     from_page=source_page,
                     to_page=source_page,
                 )
-
             source.close()
         else:
             self.pdf_document = pymupdf.open()  # Create a new empty PDF document
