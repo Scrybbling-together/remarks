@@ -20,3 +20,6 @@ result
 
 .DS_Store
 .idea/
+/config.json
+/token
+/tests/in/cloud_download/
