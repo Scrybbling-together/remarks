@@ -29,6 +29,7 @@ class DocumentProcessor:
     tree: SceneTree
 
     def __init__(self, document: LocalDocument, output_dir: pathlib.Path):
+        self.tree = None
         self.document = document
         self.output_dir = output_dir
         self.obsidian_markdown = ObsidianMarkdownFile(document)
@@ -55,6 +56,7 @@ class DocumentProcessor:
 
         for i, page in enumerate(self.doc_pages):
             self.process_page(i, page)
+            self.delete_tree()
 
         doc_name = sanitize_filename(self.document.metadata.visible_name)
         output_pdf_path = self.output_dir / f"{doc_name} _remarks.pdf"
@@ -222,12 +224,12 @@ class DocumentProcessor:
         if layers:
             for layer in layers:
                 size_tracker = layer.size_tracker
-                print(
-                    size_tracker.left,
-                    size_tracker.top,
-                    size_tracker.right,
-                    size_tracker.bottom,
-                )
+                # print(
+                #     size_tracker.left,
+                #     size_tracker.top,
+                #     size_tracker.right,
+                #     size_tracker.bottom,
+                # )
                 x = min(x, size_tracker.left)
                 y = min(y, size_tracker.top)
                 x2 = max(x2, size_tracker.right)
@@ -279,3 +281,15 @@ class DocumentProcessor:
             self.pdf_document = pymupdf.open()  # Create a new empty PDF document
             for _ in self.doc_pages:
                 self.pdf_document.new_page()  # Add a new blank page
+
+    # noinspection protected-member
+    def delete_tree(self):
+        if getattr(self, "tree", None) is not None:
+            if self.tree._renderer is not None:
+                del self.tree._renderer
+            del self.tree
+
+
+    def __del__(self):
+        self.delete_tree()
+        del self

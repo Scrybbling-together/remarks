@@ -7,6 +7,7 @@ from functools import partial
 from pathlib import Path
 
 from rm_api import API
+from rm_api.defaults import FileTypes
 
 from rm_api.models import Document
 
@@ -71,7 +72,10 @@ for i, document in enumerate(api.documents.values(), 1):
     while document.downloading:
         print(f"Downloading full document {document.metadata.visible_name} {i}/{total_docs}", end="\r")
         time.sleep(0.1)
-    if not document.available:
+    files_available = document.check_files_availability()
+    pdf_is_there = document.content.file_type == FileTypes.Notebook.value or any(file.endswith(".pdf") for file in files_available)
+    available = all(file in files_available.keys() for file in document.content_files)
+    if not available or not pdf_is_there:
         print(f"Could not download {document.metadata.visible_name}")
         continue
     print(f"Exporting full document {document.metadata.visible_name} {i}/{total_docs}")

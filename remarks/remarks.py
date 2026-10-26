@@ -87,6 +87,7 @@ def run_remarks(input_dir: pathlib.Path, output_dir: pathlib.Path, device: str =
                 f"Error processing document {doc.metadata.visible_name}:\n{format_exc()}"
             )
             continue
+        del processor
 
     logging.info(
         f'\nDone processing "{input_dir}"',
