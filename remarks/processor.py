@@ -289,7 +289,6 @@ class DocumentProcessor:
                 del self.tree._renderer
             del self.tree
 
-
     def __del__(self):
         self.delete_tree()
         del self

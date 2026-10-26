@@ -16,8 +16,8 @@ if os.path.exists("config.json"):
         config = json.load(f)
 else:
     config = {
-    "uri": "https://webapp.cloud.remarkable.com/",
-    "discovery_uri": "https://service-manager-production-dot-remarkable-production.appspot.com/",
+        "uri": "https://webapp.cloud.remarkable.com/",
+        "discovery_uri": "https://service-manager-production-dot-remarkable-production.appspot.com/",
     }
     with open("config.json", "w") as f:
         json.dump(config, f, indent=4)
@@ -36,12 +36,13 @@ items = 0
 last_update_time = 0
 done = 0
 
+
 def strip_name(filename: str):
     # Source - https://stackoverflow.com/a/7406369
     # Posted by Remi, modified by community. See post 'Timeline' for change history
     # Retrieved 2026-10-25, License - CC BY-SA 4.0
 
-    keepcharacters = (' ', '.', '_')
+    keepcharacters = (" ", ".", "_")
     return "".join(c for c in filename if c.isalnum() or c in keepcharacters).rstrip()
 
 
@@ -51,9 +52,8 @@ def track_progress(items_done, items_total):
     done = items_done
     last_update_time = time.time()
 
-threading.Thread(
-    target=api.get_documents, args=(track_progress,), daemon=True
-).start()
+
+threading.Thread(target=api.get_documents, args=(track_progress,), daemon=True).start()
 
 while last_update_time <= 0:
     pass
@@ -70,10 +70,15 @@ for i, document in enumerate(api.documents.values(), 1):
     document.ensure_download()
 
     while document.downloading:
-        print(f"Downloading full document {document.metadata.visible_name} {i}/{total_docs}", end="\r")
+        print(
+            f"Downloading full document {document.metadata.visible_name} {i}/{total_docs}",
+            end="\r",
+        )
         time.sleep(0.1)
     files_available = document.check_files_availability()
-    pdf_is_there = document.content.file_type == FileTypes.Notebook.value or any(file.endswith(".pdf") for file in files_available)
+    pdf_is_there = document.content.file_type == FileTypes.Notebook.value or any(
+        file.endswith(".pdf") for file in files_available
+    )
     available = all(file in files_available.keys() for file in document.content_files)
     if not available or not pdf_is_there:
         print(f"Could not download {document.metadata.visible_name}")
@@ -84,6 +89,4 @@ for i, document in enumerate(api.documents.values(), 1):
 
     with zipfile.ZipFile(filepath, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for file in document.files:
-            zf.write(
-                os.path.join(api.sync_file_path, file.hash), arcname=file.uuid
-            )
+            zf.write(os.path.join(api.sync_file_path, file.hash), arcname=file.uuid)
