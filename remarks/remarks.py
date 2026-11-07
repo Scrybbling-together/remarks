@@ -34,6 +34,13 @@ from .warnings import scrybble_warning_tree_failed_to_build
 REMARKS_TEMP_DIR = get_writable_tempdir()
 
 
+if os.environ.get("REMARKS_LIBRM_DEBUG"):
+    pylibrm_lines.set_debug_mode(True)
+    pylibrm_lines.set_logger(lambda m: print(f"[librm INFO ] {m}"))
+    pylibrm_lines.set_error_logger(lambda m: print(f"[librm ERROR] {m}", file=sys.stderr))
+    pylibrm_lines.set_debug_logger(lambda m: print(f"[librm DEBUG] {m}", file=sys.stderr))
+
+
 def run_remarks(
         input_dir: pathlib.Path, output_dir: pathlib.Path,
         device: str = None
