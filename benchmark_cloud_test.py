@@ -57,7 +57,12 @@ for file in download_dir.iterdir():
 
     print("Running remarks......")
     start = time.time()
-    run_remarks(file, output_dir)
+    try:
+        run_remarks(file, output_dir, 'RM2')
+    except ValueError:
+        process_times[doc.uuid] = time.time() - start
+        errored_files.append(f"{file}/WHOLE_DOCUMENT")
+        continue
     process_times[doc.uuid] = time.time() - start
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -70,17 +75,10 @@ def save_as_json(name, dictionary):
         json.dump(dictionary, f)
 
 
-save_as_json(results_dir / "load_doc_times", load_doc_times)
-save_as_json(results_dir / "load_rm_times", load_rm_times)
-save_as_json(results_dir / "load_rm_times_individual", load_rm_times_individual)
-save_as_json(results_dir / "process_times", process_times)
-save_as_json(results_dir / "line_counts", line_counts)
-save_as_json(results_dir / "line_counts_individual", line_counts_individual)
-save_as_json(results_dir / "errored_files", errored_files)
-
-print("load_doc_times:", sum(load_doc_times) / len(load_doc_times))
-print("load_rm_times:", sum(load_rm_times) / len(load_rm_times))
-# print("load_rm_times_individual:", sum(load_rm_times_individual) / len(load_rm_times_individual))
-print("process_times:", sum(process_times) / len(process_times))
-print("line_counts:", sum(line_counts) / len(line_counts))
-# print("line_counts_individual:", sum(line_counts_individual) / len(line_counts_individual))
+save_as_json(results_dir / "load_doc_times.json", load_doc_times)
+save_as_json(results_dir / "load_rm_times.json", load_rm_times)
+save_as_json(results_dir / "load_rm_times_individual.json", load_rm_times_individual)
+save_as_json(results_dir / "process_times.json", process_times)
+save_as_json(results_dir / "line_counts.json", line_counts)
+save_as_json(results_dir / "line_counts_individual.json", line_counts_individual)
+save_as_json(results_dir / "errored_files.json", errored_files)
