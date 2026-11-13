@@ -58,7 +58,7 @@ for file in download_dir.iterdir():
     print("Running remarks......")
     start = time.time()
     try:
-        run_remarks(file, output_dir, 'RM2')
+        run_remarks(file, output_dir, "RM2")
     except ValueError:
         process_times[doc.uuid] = time.time() - start
         errored_files.append(f"{file}/WHOLE_DOCUMENT")
