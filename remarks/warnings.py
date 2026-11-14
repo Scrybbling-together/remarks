@@ -22,6 +22,8 @@ class ScrybbleWarning:
         return str(self) in annotation.get_text()
 
 
-scrybble_warning_only_v6_supported = ScrybbleWarning("This page is not V6")
+scrybble_warning_tree_failed_to_build = ScrybbleWarning(
+    "Failed to build scene tree for this page, this page might be corrupt")
 
-scrybble_warning_typed_text_highlighting_not_supported = ScrybbleWarning("Highlights on typed text is currently not supported")
+scrybble_warning_typed_text_highlighting_not_supported = ScrybbleWarning(
+    "Highlights on typed text is currently not supported")
