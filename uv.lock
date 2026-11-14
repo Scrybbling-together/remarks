@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12, <4.0"
 
 [[package]]
@@ -1836,7 +1836,7 @@ requires-dist = [
     { name = "pylibrm-lines", specifier = ">=1.3.5" },
     { name = "pymupdf", specifier = ">=1.23.5,<2" },
     { name = "pyyaml", specifier = ">=6.0.1,<7" },
-    { name = "rm-api", specifier = ">=1.3.3" },
+    { name = "rm-api", specifier = ">=1.3.4" },
     { name = "rmc", git = "https://github.com/scrybbling-together/rmc.git?rev=50e7ec9524af088ece67a6ba33281bc536c8f10b" },
     { name = "rmscene", git = "https://github.com/scrybbling-together/rmscene.git?rev=main" },
     { name = "sentry-sdk", extras = ["flask"], specifier = ">=2.25.0,<3" },
@@ -1878,7 +1878,7 @@ wheels = [
 
 [[package]]
 name = "rm-api"
-version = "1.3.3"
+version = "1.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1893,7 +1893,7 @@ dependencies = [
     { name = "websocket-client" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/11/47/9ebcd7ae4e1f6307173326b08fe4ac903a8f3f61cab6a86375597bec0013/rm_api-1.3.3-py3-none-any.whl", hash = "sha256:d5222e66b818d2d3a752084f3f0a89ad98386efd6ad32a47cd3ae5426d7cda9b", size = 1487759, upload-time = "2026-09-15T18:02:58.65Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/b1/143c149533a793a3b524e23d6c63dd8e03c0cfda4772eb4c6a445bbbd42f/rm_api-1.3.4-py3-none-any.whl", hash = "sha256:5aba99b216062b7be4aae2adefd929937184bd8f74ded8563d013b267f005cf2", size = 1488099, upload-time = "2026-11-14T20:22:30.928Z" },
 ]
 
 [[package]]
