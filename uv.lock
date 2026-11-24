@@ -1808,6 +1808,7 @@ dependencies = [
     { name = "pymupdf" },
     { name = "pyyaml" },
     { name = "rm-api" },
+    { name = "rm-lines-sys" },
     { name = "rmc" },
     { name = "rmscene" },
     { name = "sentry-sdk", extra = ["flask"] },
@@ -1837,6 +1838,7 @@ requires-dist = [
     { name = "pymupdf", specifier = ">=1.23.5,<2" },
     { name = "pyyaml", specifier = ">=6.0.1,<7" },
     { name = "rm-api", specifier = ">=1.3.4" },
+    { name = "rm-lines-sys", specifier = ">=1.4.10" },
     { name = "rmc", git = "https://github.com/scrybbling-together/rmc.git?rev=50e7ec9524af088ece67a6ba33281bc536c8f10b" },
     { name = "rmscene", git = "https://github.com/scrybbling-together/rmscene.git?rev=main" },
     { name = "sentry-sdk", extras = ["flask"], specifier = ">=2.25.0,<3" },
@@ -1898,15 +1900,15 @@ wheels = [
 
 [[package]]
 name = "rm-lines-sys"
-version = "1.4.9"
+version = "1.4.10"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/71/25/c1c1e97d65ae8d8400fbc79dcdba06fb4de0bb47f01a06721411636ec05d/rm_lines_sys-1.4.9-py3-none-macosx_15_0_arm64.whl", hash = "sha256:f22de9da741fdcf311d9b3f48f75a2d149d42dc368e9c385c8f498f31df133c8", size = 1811612, upload-time = "2026-11-24T10:07:30.735Z" },
-    { url = "https://files.pythonhosted.org/packages/54/18/a3aee0ad9087a541c7fc699d28b5323f0db307fc2be824cad7355f40d711/rm_lines_sys-1.4.9-py3-none-macosx_15_0_x86_64.whl", hash = "sha256:b639628d7e093af11570e60a4d7aef588b7a2c3f4944da99cdeab38e8fb8f888", size = 2000763, upload-time = "2026-11-24T10:07:32.195Z" },
-    { url = "https://files.pythonhosted.org/packages/d4/92/ef31e758d567cf9ddc5948de251dcc5d169c405a2d00be250b686a5c8916/rm_lines_sys-1.4.9-py3-none-manylinux_2_17_aarch64.whl", hash = "sha256:825e8a3044e44932f2288d111e42fa92b492c5fccc43da7869367626a69d9813", size = 2145240, upload-time = "2026-11-24T10:07:33.851Z" },
-    { url = "https://files.pythonhosted.org/packages/77/99/bced9b12cbe7e23d7e5835331b0700a241a6ad7054efd6afd593bb1079bb/rm_lines_sys-1.4.9-py3-none-manylinux_2_17_x86_64.whl", hash = "sha256:9469cf6694a6c446dd6174a360b7ff222fe1e78705d7a836191501e848a09337", size = 2417421, upload-time = "2026-11-24T10:07:35.352Z" },
-    { url = "https://files.pythonhosted.org/packages/30/7f/965b7999cd007c16c179f5a9a924b7c8ebbd5bebad36ae56c0c5fd9a6850/rm_lines_sys-1.4.9-py3-none-win_amd64.whl", hash = "sha256:494a4a9fe443aee3643542027307405dfce01bc2d42b741cd0d3eb1d1eda782a", size = 1666424, upload-time = "2026-11-24T10:07:36.832Z" },
-    { url = "https://files.pythonhosted.org/packages/38/03/4d834f513c3387b6204da2fb4acd319180766796d5b8a6a0ee59943548e6/rm_lines_sys-1.4.9-py3-none-win_arm64.whl", hash = "sha256:883da50afb43cd5cfcedb42e9a7ee8df634cf16d3c6d916d0113f02b5d5374a9", size = 1522831, upload-time = "2026-11-24T10:07:38.266Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/09/ac6431c0e79c5fd87e63660d380a48f93a4213a22bf0a15facac34559453/rm_lines_sys-1.4.10-py3-none-macosx_15_0_arm64.whl", hash = "sha256:1f993de99a37e8f4467d2c336e241fdd2c3abfd658798a7e80b8e20e5ca3d75d", size = 1811757, upload-time = "2026-11-24T13:03:51.677Z" },
+    { url = "https://files.pythonhosted.org/packages/81/4b/66aa8270ddee9e326e7a847bc903b7183876fb834df29c441731d64e3e15/rm_lines_sys-1.4.10-py3-none-macosx_15_0_x86_64.whl", hash = "sha256:f2cec5b1e0345f6cb0974b9c9ba9d3bee7e34fd7b2d2c68bf42b6f9b237644e8", size = 2000790, upload-time = "2026-11-24T13:03:53.132Z" },
+    { url = "https://files.pythonhosted.org/packages/81/b4/034a04824a9aab8deb9c37ce312d0bee69fd58babbd325da116f767b175d/rm_lines_sys-1.4.10-py3-none-manylinux_2_17_aarch64.whl", hash = "sha256:dc58cc22d8729cc6a3355981cc35f4a37793733e2ae48613d4e7a03f9c1413b3", size = 2145118, upload-time = "2026-11-24T13:03:54.339Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/1c/613b631f3c29328ee362145fb358bdd166559a45c93c924ef8039f0bd060/rm_lines_sys-1.4.10-py3-none-manylinux_2_17_x86_64.whl", hash = "sha256:091c8a77beb91efe5c6c962f29d4f9916b1fd62dd0acb20a724bb15bad5205c4", size = 2417454, upload-time = "2026-11-24T13:03:55.787Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/da/c3bc3ca4d55630710e1e0390b61334952794982092be0cb46c6e3afd74d9/rm_lines_sys-1.4.10-py3-none-win_amd64.whl", hash = "sha256:04519e26b9ca56ccb87635172771a0b6675f86f412a74b76f3619547761b4308", size = 1666443, upload-time = "2026-11-24T13:03:57.246Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/12/ce51d348b107fdb3df1a999f4ae9bb94342831b5ea19d12842efc66ff234/rm_lines_sys-1.4.10-py3-none-win_arm64.whl", hash = "sha256:084f5579481e2b4fe2791030666132508f18fe74365e32b8fefb64ad436ce7eb", size = 1522844, upload-time = "2026-11-24T13:03:58.522Z" },
 ]
 
 [[package]]
