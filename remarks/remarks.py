@@ -33,7 +33,7 @@ from .warnings import scrybble_warning_tree_failed_to_build
 
 REMARKS_TEMP_DIR = get_writable_tempdir()
 
-
+pylibrm_lines.lib.set_permissive_mode(True)
 if os.environ.get("REMARKS_LIBRM_DEBUG"):
     pylibrm_lines.set_debug_mode(True)
     pylibrm_lines.set_logger(lambda m: print(f"[librm INFO ] {m}"))
@@ -127,6 +127,7 @@ def process_document(
             # which allows skipping straight into the rest of remarks process
             scrybble_warning_tree_failed_to_build.render_as_annotation(page)
             continue
+        print(f"Making renderer for {page_uuid}", flush=True)
         renderer = pylibrm_lines.Renderer(tree)
 
         # Add the text
