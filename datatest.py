@@ -93,7 +93,8 @@ def process_file(file_path):
                 **os.environ,
                 # remarks depends on rmc, rmc depends on inkscape, inkscape can crash in parallel
                 # https://gitlab.com/inkscape/inkscape/-/issues/4716#note_1898150983
-                "SELF_CALL": "anything"
+                "SELF_CALL": "anything",
+                "REMARKS_LIBRM_DEBUG": "1"
             }
         )
         duration = time.time() - start_time
