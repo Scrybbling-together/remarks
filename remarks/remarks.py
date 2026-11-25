@@ -127,7 +127,6 @@ def process_document(
             # which allows skipping straight into the rest of remarks process
             scrybble_warning_tree_failed_to_build.render_as_annotation(page)
             continue
-        print(f"Making renderer for {page_uuid}", flush=True)
         renderer = pylibrm_lines.Renderer(tree)
 
         # Add the text
